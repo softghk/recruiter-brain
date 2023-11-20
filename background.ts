@@ -3,15 +3,15 @@
 export {}
 // Listen for a message from a content script to start the process
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.action === "open-tab-in-background-and-scrape-profile-data") {
+  if (request.action === "open-tab-in-background-and-extract-profile-data") {
     openTabAndScrape(request.url)
   }
 
-  if (request.action === "linkedInData") {
+  if (request.action === "extractedLinkedInData") {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       var activeTab = tabs[0]
       chrome.tabs.sendMessage(activeTab.id, {
-        action: "linkedInData",
+        action: "extractedLinkedInData",
         data: request.data
       })
     })
@@ -196,11 +196,14 @@ async function scrapeData() {
     }
   }
 
-  const linkedInData = extractLinkedInData()
+  const extractedLinkedInData = extractLinkedInData()
 
-  console.log("scrapeData - linkedInData", linkedInData)
+  console.log("extractedLinkedInData", extractedLinkedInData)
 
-  chrome.runtime.sendMessage({ action: "linkedInData", data: linkedInData })
+  chrome.runtime.sendMessage({
+    action: "extractedLinkedInData",
+    data: extractedLinkedInData
+  })
 
   setTimeout(() => {
     chrome.runtime.sendMessage({ action: "closeTab" })
