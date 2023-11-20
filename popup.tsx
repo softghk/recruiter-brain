@@ -90,9 +90,10 @@ function IndexPopup() {
 
       {/* More components or functionality can be added here */}
       <Button
-        onClick={() =>
+        onClick={() => {
           sendMessageToContentScript("extract-and-analyze-profile-data")
-        }
+          window.close()
+        }}
         sx={{ marginTop: 2 }}
         variant="contained"
         color="primary"
