@@ -1,7 +1,6 @@
 import { evaluateProfile } from "./utils/api-service.utils"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { extractProfile } from "./utils/profile-extraction"
-import { Queue } from "./utils/queue"
 import { scrollToBottom } from "./utils/scroll-to-bottom.utils"
 import { getStorageData } from "./utils/storage.utils"
 
