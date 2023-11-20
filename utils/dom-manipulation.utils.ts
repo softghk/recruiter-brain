@@ -53,7 +53,7 @@ function buildLoadingHtml() {
       <img src="https://i.ibb.co/MVCGgq2/logo.png" alt="Logo" style="position: absolute; top: 10px; right: 10px; width: 30px; height: auto;">
       <div style="text-align: center;">
         <div class="circular-loader"></div>
-        <p style="margin-top: 10px;">Loading...</p>
+        <p style="margin-top: 10px;">Analyzing VC...</p>
       </div>
     </div>
   `
@@ -98,6 +98,25 @@ function injectStyles() {
       font-size: 24px;
       font-weight: bold;
     }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .overlayLogo {
+        animation: pulse 1.5s infinite;
+    }
   `
 
   const styleTag = document.createElement("style")
@@ -112,7 +131,7 @@ export function createOverlay() {
   const overlayHtml = `
     <div id="scanningOverlay">
       <div>
-        <img src="https://i.ibb.co/9H8kg2n/logo-dark.png" alt="Logo">
+        <img src="https://i.ibb.co/9H8kg2n/logo-dark.png" alt="Logo" class="overlayLogo">
         <p>Scanning candidates</p>
       </div>
     </div>
