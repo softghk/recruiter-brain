@@ -1,52 +1,66 @@
 // @ts-nocheck
-
 export {}
-// Listen for a message from a content script to start the process
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.action === "open-tab-in-background-and-extract-profile-data") {
-    openTabAndScrape(request.url)
-  }
 
-  if (request.action === "extractedLinkedInData") {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      var activeTab = tabs[0]
-      chrome.tabs.sendMessage(activeTab.id, {
-        action: "extractedLinkedInData",
-        data: request.data
-      })
-    })
-  }
+// Action types for clarity and typo prevention
+const ActionTypes = {
+  OPEN_TAB_AND_EXTRACT: "open-tab-in-background-and-extract-profile-data",
+  EXTRACTED_DATA: "extractedLinkedInData",
+  CLOSE_TAB: "closeTab"
+}
 
-  if (request.action === "closeTab" && sender.tab) {
-    // Close the tab from which the message was sent
-    console.log("closing tab")
-    chrome.tabs.remove(sender.tab.id)
+// Listener for messages from content scripts
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case ActionTypes.OPEN_TAB_AND_EXTRACT:
+      openTabAndScrape(request.url)
+      break
+    case ActionTypes.EXTRACTED_DATA:
+      sendExtractedDataToActiveTab(request.data)
+      break
+    case ActionTypes.CLOSE_TAB:
+      closeSenderTab(sender)
+      break
   }
 })
 
 function openTabAndScrape(url) {
-  let isScriptInjected = false // flag to check if the script has been injected
+  let isScriptInjected = false
 
-  chrome.tabs.create({ url: url, active: false }, function (tab) {
-    chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
+  chrome.tabs.create({ url, active: false }, (tab) => {
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       if (
         tabId === tab.id &&
         changeInfo.status === "complete" &&
         !isScriptInjected
       ) {
-        console.log("starting executeScript in background tab")
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: scrapeData
         })
-        isScriptInjected = true // set the flag to true after injecting the script
+        isScriptInjected = true
       }
     })
   })
 }
 
-// scraping code
+function sendExtractedDataToActiveTab(data) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const activeTab = tabs[0]
+    chrome.tabs.sendMessage(activeTab.id, {
+      action: ActionTypes.EXTRACTED_DATA,
+      data
+    })
+  })
+}
 
+function closeSenderTab(sender) {
+  if (sender.tab) {
+    console.log("closing tab")
+    chrome.tabs.remove(sender.tab.id)
+  }
+}
+
+// scraping code
 async function scrapeData() {
   function waitForElement(selector, callback) {
     // Initial check if the element is already present
@@ -184,16 +198,16 @@ async function scrapeData() {
       console.log("start scraping waitForElement")
       waitForElement(".experience-card", resolve)
     })
+  }
 
-    // Check for the expand button and click if necessary
-    var button = document.querySelector(
-      "button.artdeco-button--muted.artdeco-button--icon-right[data-test-expandable-button]"
-    )
-    if (button) {
-      button.click()
-      // Short delay to allow for DOM updates after the click
-      await new Promise((resolve) => setTimeout(resolve, 250))
-    }
+  // Check for the expand button and click if necessary
+  var button = document.querySelector(
+    "button.artdeco-button--muted.artdeco-button--icon-right[data-test-expandable-button]"
+  )
+  if (button) {
+    button.click()
+    // Short delay to allow for DOM updates after the click
+    await new Promise((resolve) => setTimeout(resolve, 100))
   }
 
   const extractedLinkedInData = extractLinkedInData()

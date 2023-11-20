@@ -34,24 +34,6 @@ async function extractAndEvaluateProfiles() {
 
 async function processProfileList(profileList) {
   const jobDescription = await getStorageData("jobDescription")
-
-  // const queue = new Queue(2) // Set concurrency level, e.g., 5 tabs at a time
-  // profileList.forEach((profile) => {
-  //   queue.enqueue(async () => {
-  //     try {
-  //       const extractedProfile = await extractProfile(profile)
-  //       return evaluateProfile(
-  //         extractedProfile,
-  //         jobDescription,
-  //         (profileEvaluation) => {
-  //           injectDataIntoDom(profile, profileEvaluation)
-  //         }
-  //       )
-  //     } catch (error) {
-  //       console.error("Error processing profile:", error)
-  //     }
-  //   })
-  // })
   for (const profile of profileList) {
     const extractedProfile = await extractProfile(profile)
     evaluateProfile(extractedProfile, jobDescription, (profileEvaluation) => {
