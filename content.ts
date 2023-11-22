@@ -1,3 +1,5 @@
+import { injectControlPanel } from "~utils/inject-control-panel.utils"
+
 import { evaluateProfile } from "./utils/api-service.utils"
 import {
   createOverlay,
@@ -10,6 +12,8 @@ import { scrollToBottom } from "./utils/scroll-to-bottom.utils"
 import { getStorageData } from "./utils/storage.utils"
 
 export {}
+
+injectControlPanel()
 
 chrome.runtime.onMessage.addListener(
   async function (request, sender, sendResponse) {
