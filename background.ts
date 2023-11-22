@@ -89,6 +89,8 @@ async function scrapeData() {
   function extractLinkedInData() {
     const personal = {}
     const positions = []
+    const skills = []
+    const education = []
 
     // Extract personal information
     const personalElement = document.querySelector(
@@ -130,9 +132,44 @@ async function scrapeData() {
       }
     })
 
+    const skillElements = document.querySelectorAll(".skill-entity__wrapper")
+    skillElements.forEach((el) => {
+      const skillName = el
+        .querySelector(".skill-entity__skill-name")
+        ?.innerText.trim()
+      skills.push(skillName)
+    })
+
+    const educationElements = document.querySelectorAll(
+      ".background-entity.education-item"
+    )
+    educationElements.forEach((el) => {
+      const schoolName = el
+        .querySelector("[data-test-education-entity-school-name]")
+        ?.innerText.trim()
+      const degreeName = el
+        .querySelector("[data-test-education-entity-degree-name]")
+        ?.innerText.trim()
+      const fieldOfStudy = el
+        .querySelector("[data-test-education-entity-field-of-study]")
+        ?.innerText.trim()
+      const dates = el
+        .querySelector("[data-test-education-entity-dates]")
+        ?.innerText.trim()
+
+      education.push({
+        schoolName: schoolName,
+        degreeName: degreeName,
+        fieldOfStudy: fieldOfStudy,
+        dates: dates
+      })
+    })
+
     return {
       personal: personal,
-      positions: positions
+      positions: positions,
+      skills: skills
+      // education: education
     }
   }
 
@@ -200,15 +237,14 @@ async function scrapeData() {
     })
   }
 
-  // Check for the expand button and click if necessary
-  var button = document.querySelector(
-    "button.artdeco-button--muted.artdeco-button--icon-right[data-test-expandable-button]"
-  )
-  if (button) {
+  // Find all buttons with 'data-test-expandable-button' attribute and click each one
+  var buttons = document.querySelectorAll("button[data-test-expandable-button]")
+  buttons.forEach((button) => {
     button.click()
-    // Short delay to allow for DOM updates after the click
-    await new Promise((resolve) => setTimeout(resolve, 100))
-  }
+  })
+
+  // Wait for 100ms after all buttons have been clicked
+  await new Promise((resolve) => setTimeout(resolve, 100))
 
   const extractedLinkedInData = extractLinkedInData()
 
