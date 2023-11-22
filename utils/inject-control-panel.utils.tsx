@@ -1,7 +1,9 @@
+import createCache from "@emotion/cache"
+import { CacheProvider } from "@emotion/react"
 import ReactDOM from "react-dom"
 
-import ProfileDataComponent from "../ui-components/sample.component"
-import { waitForElement } from "./wait-for-element.utils"
+import SampleComponent from "../ui-components/sample.component"
+import { waitForElement } from "../utils/wait-for-element.utils"
 
 export async function injectControlPanel() {
   await new Promise((resolve) => {
@@ -11,10 +13,25 @@ export async function injectControlPanel() {
 
   if (targetElement) {
     const container = document.createElement("div")
-    targetElement.insertAdjacentElement("afterend", container)
+    targetElement.appendChild(container)
+    const shadowContainer = container.attachShadow({ mode: "open" })
+
+    const emotionRoot = document.createElement("style")
+    const shadowRootElement = document.createElement("div")
+    shadowContainer.appendChild(emotionRoot)
+    shadowContainer.appendChild(shadowRootElement)
+
+    const cache = createCache({
+      key: "css",
+      prepend: true,
+      container: emotionRoot
+    })
+
     ReactDOM.render(
-      <ProfileDataComponent rating={"123"} explanation={"abc"} />,
-      container
+      <CacheProvider value={cache}>
+        <SampleComponent />
+      </CacheProvider>,
+      shadowRootElement
     )
   } else {
     console.error("Target element for injecting data not found.")
