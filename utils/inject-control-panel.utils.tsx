@@ -6,10 +6,11 @@ import SampleComponent from "../ui-components/sample.component"
 import { waitForElement } from "../utils/wait-for-element.utils"
 
 export async function injectControlPanel() {
+  const querySelectorTargetElement = ".artdeco-tabs"
   await new Promise((resolve) => {
-    waitForElement(".artdeco-tabs", resolve)
+    waitForElement(querySelectorTargetElement, resolve)
   })
-  const targetElement = document.querySelector(".artdeco-tabs")
+  const targetElement = document.querySelector(querySelectorTargetElement)
 
   if (targetElement) {
     const container = document.createElement("div")
