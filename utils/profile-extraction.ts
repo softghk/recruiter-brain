@@ -1,7 +1,4 @@
-export async function extractProfile(profile) {
-  const href = profile.querySelector("a")?.href
-  const prospectName = profile.querySelector("a")?.text.trim()
-  console.log("getting profile from", prospectName)
+export async function extractProfile(href) {
   if (href) {
     try {
       const scrapedProfileData: any =
@@ -13,7 +10,7 @@ export async function extractProfile(profile) {
       console.error("Error in extracting profile:", error)
     }
   } else {
-    console.error("No href found for profile:", profile)
+    console.error("No href found for profile:", href)
   }
 }
 
