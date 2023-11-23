@@ -1,19 +1,21 @@
 import axios from "axios"
 
 export async function evaluateProfile(
-  extractedProfile,
+  profileUrl,
+  profile,
   jobDescription,
   callback
 ) {
   axios
     .post("http://localhost:3000/evaluation", {
-      vc: extractedProfile.positions,
-      jobDescription: jobDescription
+      vc: profile.positions,
+      jobDescription: jobDescription,
+      profileUrl: profileUrl
     })
     .then((response: any) => {
       console.log(
         "the evaluation for ",
-        extractedProfile.personal.name,
+        profile.personal.name,
         " is ",
         response.data.rating,
         response.data.explanation
