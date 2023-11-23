@@ -26,12 +26,14 @@ function removeLoadingIndicator(profile) {
 
 // Builds HTML string for injected data
 function buildDataHtml(rating, explanation) {
+  const formattedExplanation = explanation.replace(/\n/g, "<br>")
+
   return `
-    <div style="position: relative; margin-top: 20px; padding: 16px; background-color: #f3f6f8; border-radius: 8px; border: 1px solid #dce0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <div style="position: relative; margin-top: 20px; padding: 16px; background-color: #f3f6f8; border-radius: 8px; border: 1px solid #dce0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); word-wrap: break-word;">
       <img src="https://i.ibb.co/MVCGgq2/logo.png" alt="Logo" style="position: absolute; top: 10px; right: 10px; width: 30px; height: auto;">
       <div style="font-weight: 800; font-size: 16px; color: #303030; margin-bottom: 8px;">Rating: ${rating}</div>
       <div style="font-weight: 600; font-size: 14px; color: #303030; margin-bottom: 8px;">Role Fit Rating Explained</div>
-      <div style="font-size: 14px; line-height: 1.5; color: #303030;">${explanation}</div>
+      <div style="font-size: 14px; line-height: 1.5; color: #303030;">${formattedExplanation}</div>
     </div>
   `
 }
@@ -42,8 +44,12 @@ export function injectWaitingNoticeIntoDom(profile) {
     ".profile-list__border-bottom .history-group"
   )
 
-  const loadingHtml = buildLoadingHtml()
-  targetElement.insertAdjacentHTML("afterend", loadingHtml)
+  if (targetElement) {
+    const loadingHtml = buildLoadingHtml()
+    targetElement.insertAdjacentHTML("afterend", loadingHtml)
+  } else {
+    console.error("Target element for injecting data not found.")
+  }
 }
 
 // Builds HTML string for loading indicator
