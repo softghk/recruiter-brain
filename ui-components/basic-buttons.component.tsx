@@ -11,12 +11,9 @@ export default function BasicButtons() {
       <Button
         variant="contained"
         onClick={() => {
-          console.log("clicked1", document)
-          chrome.runtime.sendMessage(
-            { action: "someAction" },
-            function (response) {
-              console.log("Response:", response)
-            }
+          window.postMessage(
+            { action: "extract-and-analyze-profile-data" },
+            "*"
           )
         }}>
         Contained - Start scanning

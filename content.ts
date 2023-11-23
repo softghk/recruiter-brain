@@ -24,6 +24,15 @@ chrome.runtime.onMessage.addListener(
   }
 )
 
+window.addEventListener("message", function (event) {
+  if (
+    event.source === window &&
+    event.data.action === "extract-and-analyze-profile-data"
+  ) {
+    extractAndEvaluateProfiles()
+  }
+})
+
 async function extractAndEvaluateProfiles() {
   console.log("Extracting data from candidate list")
   try {
