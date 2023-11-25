@@ -21,7 +21,7 @@ export default function SampleComponent() {
           <Stack spacing={1}>
             <BasicButtons />
 
-            <RadioRating />
+            {/* <RadioRating /> */}
           </Stack>
         </Box>
       </Container>

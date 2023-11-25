@@ -7,7 +7,7 @@ import { sendMessageToContentScript } from "~utils/message.utils"
 export default function BasicButtons() {
   return (
     <Stack spacing={2} direction="row">
-      <Button variant="text">Text</Button>
+      {/* <Button variant="text">Text</Button> */}
       <Button
         variant="contained"
         onClick={() => {
@@ -16,9 +16,9 @@ export default function BasicButtons() {
             "*"
           )
         }}>
-        Contained - Start scanning
+        Evaluate Profiles
       </Button>
-      <Button variant="outlined">Outlined</Button>
+      {/* <Button variant="outlined">Outlined</Button> */}
     </Stack>
   )
 }
