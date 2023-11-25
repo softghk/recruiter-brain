@@ -36,7 +36,7 @@ export default function SampleComponent() {
 
             <BasicButtons />
 
-            <RadioRating />
+            {/* <RadioRating /> */}
           </Stack>
         </Box>
       </Container>
