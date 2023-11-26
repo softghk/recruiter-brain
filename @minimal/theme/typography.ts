@@ -5,7 +5,7 @@ export function remToPx(value: string) {
 }
 
 export function pxToRem(value: number) {
-  return `${value / 16}rem`;
+  return `${value / 10}rem`;
 }
 
 export function responsiveFontSizes({ sm, md, lg }: { sm: number; md: number; lg: number }) {
@@ -58,6 +58,7 @@ export const typography = {
     ...responsiveFontSizes({ sm: 26, md: 30, lg: 32 }),
   },
   h4: {
+    htmlFontSize: 10,
     fontWeight: 700,
     lineHeight: 1.5,
     fontSize: pxToRem(20),
