@@ -7,24 +7,23 @@ import {
   setPersistence
 } from "firebase/auth"
 import { useEffect, useState } from "react"
-
+import { useStorage } from '@plasmohq/storage/hook'
 import { auth } from "./firebaseClient"
+import { AuthInitialState, type AuthState } from "src/types"
+import { AUTH_STATE } from "src/config/storage.config"
 
 setPersistence(auth, browserLocalPersistence)
 
 export default function useFirebaseUser() {
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User>(null)
+  const [userInfo, setUserInfo] = useStorage<AuthState>(AUTH_STATE, AuthInitialState)
 
   const onLogout = async () => {
     setIsLoading(true)
     if (user) {
       await auth.signOut()
-
-      // await sendToBackground({
-      //   name: "removeAuth",
-      //   body: {}
-      // })
+      setUserInfo(AuthInitialState)
     }
   }
 
@@ -34,17 +33,14 @@ export default function useFirebaseUser() {
     const uid = user.uid
 
     // Get current user auth token
-    // user.getIdToken(true).then(async (token) => {
-    //   // Send token to background to save
-    //   await sendToBackground({
-    //     name: "saveAuth",
-    //     body: {
-    //       token,
-    //       uid,
-    //       refreshToken: user.refreshToken
-    //     }
-    //   })
-    // })
+    user.getIdToken(true).then(async (token) => {
+      setUserInfo({
+        email: user.email,
+        accessToken: token,
+        refreshToken: user.refreshToken,
+        isAuth: true
+      })
+    })
   }
 
   useEffect(() => {

@@ -3,11 +3,13 @@ import React, { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '~src/firebase/firebaseClient'
 
-import { AmplifyLoginView } from '~@minimal/sections/auth/amplify'
-import type { UserCredential } from '~src/types'
+import { AmplifyLoginView } from '@minimal/sections/auth/amplify'
+import { type UserCredential } from 'src/types'
+import useFirebaseUser from 'src/firebase/useFirebaseUser'
 
 const Login = () => {
 
+  const { onLogin } = useFirebaseUser()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -29,8 +31,9 @@ const Login = () => {
       }
 
     } finally {
-
+      onLogin()
     }
+
     setIsSubmitting(false)
   }
 

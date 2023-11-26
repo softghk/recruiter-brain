@@ -5,7 +5,7 @@ export type AuthState = {
   refreshToken: string,
 }
 
-export const AuthInitialState:AuthState = {
+export const AuthInitialState: AuthState = {
   isAuth: false,
   email: '',
   accessToken: '',

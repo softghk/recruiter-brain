@@ -28,13 +28,3 @@ export async function evaluateProfile(
       console.log("error during evaluation")
     })
 }
-
-export async function loginWithEmailAndPassword(data: UserCredential) {
-  const auth = getAuth()
-  try {
-    const resp = await signInWithEmailAndPassword(auth, data.email, data.password)
-    console.log(resp)
-  } catch (error) {
-    console.log(error)
-  }
-}
