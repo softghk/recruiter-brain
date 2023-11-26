@@ -35,7 +35,7 @@ const Login = () => {
   }
 
   return (
-    <Box width={400}>
+    <Box width={343}>
       <AmplifyLoginView onSubmit={onSubmitLogin} isSubmitting={isSubmitting} errorMsg={errorMsg} />
     </Box>
   )

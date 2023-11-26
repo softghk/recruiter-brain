@@ -5,7 +5,7 @@ import React, { useState } from "react"
 import { MinimalProvider } from '@minimal/Provider'
 import FabButton from "./fab-button.component"
 import { EXTENSION_ENABLE, EXTENSION_VISIBLE } from '~src/config/storage.config'
-import { Box, Modal, IconButton, Stack } from '@mui/material'
+import { Box, Modal, IconButton, Stack, styled } from '@mui/material'
 import Login from './login.component'
 import CloseIcon from '@mui/icons-material/Close'
 import Logo from 'react:~assets/logo.svg'
@@ -30,7 +30,7 @@ export default function SampleComponent() {
       <InjectorComponent />
       <Modal open={extensionVisible} disablePortal>
         <Box sx={{
-          padding: 4,
+          padding: 2,
           position: 'absolute',
           transform: 'translate(-50%, -50%)',
           backgroundColor: 'white',
@@ -40,10 +40,19 @@ export default function SampleComponent() {
           borderRadius: 2
         }}>
           {/* Render Modal Header */}
-          <Stack direction={'row'} justifyContent={'space-between'} sx={{ mb: 5 }}>
+          <Stack
+            direction={'row'}
+            justifyContent={'space-between'}
+            alignItems={'center'}
+            sx={{ mb: 5 }}
+          >
             <Logo />
-            <IconButton size='small' onClick={() => setExtensionVisible(false)}>
-              <CloseIcon />
+            <IconButton
+              size='small'
+              onClick={() => setExtensionVisible(false)}
+              style={{ background: '#bbb', width: 27, height: 27 }}
+            >
+              <CloseIcon style={{ color: 'white' }} fontSize='small' />
             </IconButton>
           </Stack>
 
@@ -54,7 +63,10 @@ export default function SampleComponent() {
 
         </Box>
       </Modal>
-      <FabButton sx={{ position: 'fixed', bottom: 20, right: 20 }} onClick={() => setExtensionVisible(true)} />
+      <FabButton
+        sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 10000, padding: 1.25 }}
+        onClick={() => setExtensionVisible(!extensionVisible)}
+      />
     </MinimalProvider>
   )
 }
