@@ -2,7 +2,6 @@ import { Box, Container, Stack } from "@mui/material"
 import React from "react"
 
 import BasicButtons from "./basic-buttons.component"
-import RadioRating from "./radio-rating.component"
 
 import { MinimalProvider } from '@minimal/Provider'
 import AppFeatured from "@minimal/sections/overview/app/app-featured"
@@ -19,7 +18,6 @@ export default function SampleComponent() {
           alignItems="center"
           padding={2}>
           <Stack spacing={1}>
-
             <AppFeatured list={_appFeatured} style={{ width: 500 }} />
 
             <AppCurrentDownload

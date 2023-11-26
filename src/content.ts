@@ -1,4 +1,4 @@
-import { injectControlPanel } from "~utils/inject-control-panel.utils"
+import { injectControlPanel } from "./utils/inject-control-panel.utils"
 
 import { evaluateProfile } from "./utils/api-service.utils"
 import {

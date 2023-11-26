@@ -2,7 +2,7 @@ import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
 import ReactDOM from "react-dom/client"
 
-import SampleComponent from "../ui-components/sample.component"
+import MainComponent from "../ui-components/main.component"
 import { waitForElement } from "../utils/wait-for-element.utils"
 
 import simpleBarStyle from 'data-text:simplebar-react/dist/simplebar.min.css';
@@ -14,7 +14,8 @@ import lazyStyle from 'data-text:react-lazy-load-image-component/src/effects/blu
 
 
 export async function injectControlPanel() {
-  const querySelectorTargetElement = ".artdeco-tabs"
+  // const querySelectorTargetElement = ".artdeco-tabs"
+  const querySelectorTargetElement = "body"
   await new Promise((resolve) => {
     waitForElement(querySelectorTargetElement, resolve)
   })
@@ -43,7 +44,7 @@ export async function injectControlPanel() {
 
     root.render(
       <CacheProvider value={cache}>
-        <SampleComponent />
+        <MainComponent />
       </CacheProvider>
     )
   } else {

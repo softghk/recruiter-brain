@@ -2,11 +2,9 @@
 import Stack from '@mui/material/Stack';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import Card, { CardProps } from '@mui/material/Card';
+import Card, { type CardProps } from '@mui/material/Card';
 import LinearProgress from '@mui/material/LinearProgress';
-// utils
-import { fPercent, fCurrency } from '@minimal/utils/format-number';
-
+import { styled } from '@mui/material'
 // ----------------------------------------------------------------------
 
 type ItemProps = {
@@ -20,6 +18,11 @@ interface Props extends CardProps {
   subheader?: string;
   data: ItemProps[];
 }
+
+const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  height: 8,
+  borderRadius: 5
+}));
 
 export default function EcommerceSalesOverview({ title, subheader, data, ...other }: Props) {
   return (
@@ -49,14 +52,14 @@ function ProgressItem({ progress }: ProgressItemProps) {
           {progress.label}
         </Typography>
 
-        <Typography variant="subtitle2">{fCurrency(progress.totalAmount)}</Typography>
-
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          &nbsp;({fPercent(progress.value)})
+          {progress.value} /&nbsp;
         </Typography>
+
+        <Typography variant="subtitle2"> {progress.totalAmount}</Typography>
       </Stack>
 
-      <LinearProgress
+      <BorderLinearProgress
         variant="determinate"
         value={progress.value}
         color={

@@ -10,32 +10,27 @@ import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
-// routes
-import { paths } from '@minimal/routes/paths';
-import { RouterLink } from '@minimal/routes/components';
-import { useSearchParams, useRouter } from '@minimal/routes/hook';
-// config
-import { PATH_AFTER_LOGIN } from '@minimal/config-global';
+
 // hooks
 import { useBoolean } from '@minimal/hooks/use-boolean';
-// auth
-import { useAuthContext } from '@minimal/auth/hooks';
+
 // components
 import Iconify from '@minimal/components/iconify';
 import FormProvider, { RHFTextField } from '@minimal/components/hook-form';
 
 // ----------------------------------------------------------------------
 
-export default function AmplifyLoginView() {
-  const { login } = useAuthContext();
-
-  const router = useRouter();
-
-  const [errorMsg, setErrorMsg] = useState('');
-
-  const searchParams = useSearchParams();
-
-  const returnTo = searchParams.get('returnTo');
+export default function AmplifyLoginView({
+  onForgot,
+  onSubmit,
+  errorMsg,
+  isSubmitting = false
+}: {
+  onForgot?: any,
+  onSubmit?: any,
+  errorMsg?: string,
+  isSubmitting?: boolean
+}) {
 
   const password = useBoolean();
 
@@ -57,32 +52,15 @@ export default function AmplifyLoginView() {
   const {
     reset,
     handleSubmit,
-    formState: { isSubmitting },
   } = methods;
 
-  const onSubmit = handleSubmit(async (data) => {
-    try {
-      await login?.(data.email, data.password);
-
-      router.push(returnTo || PATH_AFTER_LOGIN);
-    } catch (error) {
-      console.error(error);
-      reset();
-      setErrorMsg(typeof error === 'string' ? error : error.message);
-    }
+  const onSubmitLogin = handleSubmit(async (data) => {
+    onSubmit && onSubmit(data)
   });
 
   const renderHead = (
     <Stack spacing={2} sx={{ mb: 5 }}>
-      <Typography variant="h4">Sign in to Minimal</Typography>
-
-      <Stack direction="row" spacing={0.5}>
-        <Typography variant="body2">New user?</Typography>
-
-        <Link component={RouterLink} href={paths.auth.amplify.register} variant="subtitle2">
-          Create an account
-        </Link>
-      </Stack>
+      <Typography variant="h4">Sign in to Recruit Brain</Typography>
     </Stack>
   );
 
@@ -108,8 +86,6 @@ export default function AmplifyLoginView() {
       />
 
       <Link
-        component={RouterLink}
-        href={paths.auth.amplify.forgotPassword}
         variant="body2"
         color="inherit"
         underline="always"
@@ -132,7 +108,7 @@ export default function AmplifyLoginView() {
   );
 
   return (
-    <FormProvider methods={methods} onSubmit={onSubmit}>
+    <FormProvider methods={methods} onSubmit={onSubmitLogin}>
       {renderHead}
 
       {renderForm}
