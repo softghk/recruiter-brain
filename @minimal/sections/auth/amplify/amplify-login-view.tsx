@@ -60,7 +60,7 @@ export default function AmplifyLoginView({
 
   const renderHead = (
     <Stack spacing={2} sx={{ mb: 5 }}>
-      <Typography variant="h4">Sign in to Recruit Brain</Typography>
+      <Typography variant="h4" fontSize={"1.5rem"}>Sign in to Recruit Brain</Typography>
     </Stack>
   );
 

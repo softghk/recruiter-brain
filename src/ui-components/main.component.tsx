@@ -15,6 +15,13 @@ import LoadingComponent from './loading.component'
 import InjectorComponent from './injector.component'
 
 
+const StyledCloseIcon = styled(CloseIcon)(({theme}) => ({
+  width: 12,
+  height: 12,
+  color: 'white'
+}))
+
+
 export default function SampleComponent() {
 
   const [extensionEnabled] = useStorage(EXTENSION_ENABLE)
@@ -28,7 +35,7 @@ export default function SampleComponent() {
   return (
     <MinimalProvider>
       <InjectorComponent />
-      <Modal open={extensionVisible} disablePortal>
+      <Modal open={extensionVisible} disablePortal disableScrollLock>
         <Box sx={{
           padding: 2,
           position: 'absolute',
@@ -50,9 +57,9 @@ export default function SampleComponent() {
             <IconButton
               size='small'
               onClick={() => setExtensionVisible(false)}
-              style={{ background: '#bbb', width: 27, height: 27 }}
+              style={{ background: '#bbb', width: 24, height: 24 }}
             >
-              <CloseIcon style={{ color: 'white' }} fontSize='small' />
+              <StyledCloseIcon />
             </IconButton>
           </Stack>
 
