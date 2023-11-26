@@ -1,11 +1,24 @@
 import { Stack, Grid, Button } from '@mui/material'
-import React from 'react'
-import EcommerceSalesOverview from '~@minimal/sections/overview/e-commerce/ecommerce-sales-overview'
-import useFirebaseUser from '~src/firebase/useFirebaseUser'
+import React, { useEffect } from 'react'
+import EcommerceSalesOverview from '@minimal/sections/overview/e-commerce/ecommerce-sales-overview'
+import useFirebaseUser from 'src/firebase/useFirebaseUser'
+import { useStorage } from '@plasmohq/storage/hook'
+import { EXTENSION_VISIBLE } from 'src/config/storage.config'
+import { getStatisticData } from 'src/utils/api-service.utils'
 
 export const DashboardComponent = () => {
 
   const { onLogout } = useFirebaseUser()
+  const [visible] = useStorage(EXTENSION_VISIBLE)
+
+  useEffect(() => {
+    if (!visible)
+      return;
+    getStatisticData()
+      .then(data => {
+        console.log(data)
+      })
+  }, [visible])
 
   const data = [{
     label: 'PROFILES EVALUATED',
