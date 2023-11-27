@@ -127,9 +127,9 @@ async function saveDataToIndexedDB({
   evaluation
 }) {
   console.log("saveDataToIndexedDB")
-  const dbName = "yourDatabaseName"
-  const storeName = "yourStoreName"
-  const dbVersion = 2 // Increment this version when changes are made to the database structure
+  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+  const storeName = projectId
+  const dbVersion = 3 // Increment this version when changes are made to the database structure
 
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
@@ -606,32 +606,42 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function getDataFromIndexedDB({ projectId, jobDescriptionId, profileId }) {
   return new Promise((resolve, reject) => {
-    const dbName = "yourDatabaseName"
-    const storeName = "yourStoreName"
+    const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+    const storeName = projectId
 
     // Open the database
     const openRequest = indexedDB.open(dbName)
 
     openRequest.onsuccess = (event) => {
       const db = event.target.result
-      const tx = db.transaction(storeName, "readonly")
-      const store = tx.objectStore(storeName)
-      const request = store.getAll()
 
-      request.onsuccess = () => {
-        const data = request.result
-        // Filter the data based on the criteria
-        const filteredData = data.filter(
-          (item) =>
-            item.projectId === projectId &&
-            item.jobDescriptionId === jobDescriptionId &&
-            item.profileId === profileId
-        )
-        resolve(filteredData)
-      }
+      try {
+        const tx = db.transaction(storeName, "readonly")
+        const store = tx.objectStore(storeName)
+        const request = store.getAll()
 
-      request.onerror = () => {
-        reject("Error in retrieving data from IndexedDB")
+        request.onsuccess = () => {
+          const data = request.result
+          // Filter the data based on the criteria
+          const filteredData = data.filter(
+            (item) =>
+              item.projectId === projectId &&
+              item.jobDescriptionId === jobDescriptionId &&
+              item.profileId === profileId
+          )
+          resolve(filteredData)
+        }
+
+        request.onerror = () => {
+          reject("Error in retrieving data from IndexedDB")
+        }
+      } catch (error) {
+        // Handle case where object store does not exist
+        if (error.name === "NotFoundError") {
+          resolve(null) // Return null if the store does not exist
+        } else {
+          reject("Transaction failed", error)
+        }
       }
     }
 
@@ -640,6 +650,7 @@ function getDataFromIndexedDB({ projectId, jobDescriptionId, profileId }) {
     }
   })
 }
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("eventlistener", request.action)
   if (request.action === "getDataFromIndexedDB") {

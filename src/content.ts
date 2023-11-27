@@ -9,11 +9,11 @@ export {}
 injectControlPanel()
 
 // Content script to check job status every second
-// setInterval(() => {
-//   chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
-//     console.log("Current job status:", response)
-//   })
-// }, 1000)
+setInterval(() => {
+  chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
+    console.log("Current job status:", response)
+  })
+}, 1000)
 
 async function waitForElement2(selector) {
   return new Promise((resolve) => {
@@ -68,6 +68,8 @@ async function tryFetchingData(
     jobDescriptionId,
     profileId
   )
+  console.log("tryFetchingData", evaluationData)
+
   if (Array.isArray(evaluationData) && evaluationData.length) {
     console.log("Evaluation data found, injecting into DOM...", element)
     injectDataIntoDom(element, { data: evaluationData[0].evaluation })

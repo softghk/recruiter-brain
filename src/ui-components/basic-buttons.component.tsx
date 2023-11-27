@@ -30,7 +30,7 @@ export default function BasicButtons() {
               jobDescriptionId: generateMD5(jobDescription),
               href: href,
 
-              amount: 4,
+              amount: 25,
               jobDescription: jobDescription
             }
           })
