@@ -1,12 +1,11 @@
+import { _appFeatured } from "@minimal/_mock"
+import { MinimalProvider } from "@minimal/Provider"
+import AppCurrentDownload from "@minimal/sections/overview/app/app-current-download"
+import AppFeatured from "@minimal/sections/overview/app/app-featured"
 import { Box, Container, Stack } from "@mui/material"
 import React from "react"
 
 import BasicButtons from "./basic-buttons.component"
-
-import { MinimalProvider } from '@minimal/Provider'
-import AppFeatured from "@minimal/sections/overview/app/app-featured"
-import { _appFeatured } from "@minimal/_mock"
-import AppCurrentDownload from "@minimal/sections/overview/app/app-current-download"
 
 export default function SampleComponent() {
   return (
@@ -18,7 +17,7 @@ export default function SampleComponent() {
           alignItems="center"
           padding={2}>
           <Stack spacing={1}>
-            <AppFeatured list={_appFeatured} style={{ width: 500 }} />
+            {/* <AppFeatured list={_appFeatured} style={{ width: 500 }} />
 
             <AppCurrentDownload
               title="Current Download"
@@ -30,7 +29,7 @@ export default function SampleComponent() {
                   { label: 'Android', value: 78343 },
                 ],
               }}
-            />
+            /> */}
 
             <BasicButtons />
 

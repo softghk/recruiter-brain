@@ -1,67 +1,213 @@
 // @ts-nocheck
+import { v4 as uuidv4 } from "uuid"
+
+import { evaluateProfileApi } from "~utils/api-service.utils"
+
 export {}
 
 // Action types for clarity and typo prevention
 const ActionTypes = {
-  OPEN_TAB_AND_EXTRACT: "open-tab-in-background-and-extract-profile-data",
-  EXTRACTED_DATA: "extractedLinkedInData",
-  CLOSE_TAB: "closeTab"
+  EVALUATE_PROFILES: "evaluate-profiles",
+  GET_STATUS: "get-status",
+  PAUSE_JOB: "pause-job",
+  RESUME_JOB: "resume-job",
+  STOP_JOB: "stop-job",
+  TASK_DATA_RECEIVED: "task-data-received"
 }
 
-// Listener for messages from content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case ActionTypes.OPEN_TAB_AND_EXTRACT:
-      openTabAndScrape(request.url)
-      break
-    case ActionTypes.EXTRACTED_DATA:
-      sendExtractedDataToActiveTab(request.data)
-      break
-    case ActionTypes.CLOSE_TAB:
-      closeSenderTab(sender)
-      break
-  }
-})
+// Job and Task Statuses
+const JobStatus = {
+  PENDING: "pending",
+  COMPLETE: "complete",
+  FAILED: "failed",
+  PAUSED: "paused"
+}
 
-function openTabAndScrape(url) {
-  let isScriptInjected = false
+// Current job and its tasks
+let currentJob = null
+let tasks = []
 
-  chrome.tabs.create({ url, active: false }, (tab) => {
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-      if (
-        tabId === tab.id &&
-        changeInfo.status === "complete" &&
-        !isScriptInjected
-      ) {
+const openTabAndInjectCode = (jobData) => {
+  // Get the currently active tab
+  chrome.tabs.query({ active: true, currentWindow: true }, (activeTabs) => {
+    if (activeTabs.length > 0) {
+      const currentActiveTab = activeTabs[0]
+
+      // Create a new tab as active
+      chrome.tabs.create({ url: currentJob.href, active: true }, (newTab) => {
+        // Inject code into the newly opened tab
         chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: scrapeData
+          target: { tabId: newTab.id },
+          function: injectedCode,
+          args: [jobData]
         })
-        isScriptInjected = true
-      }
-    })
+
+        // Listen for a message from the content script in the new tab
+        chrome.runtime.onMessage.addListener(
+          (message, sender, sendResponse) => {
+            if (message && message.done) {
+              // Switch back to the previously active tab when the content script signals it's done
+              chrome.tabs.update(currentActiveTab.id, { active: true })
+            }
+          }
+        )
+      })
+    }
   })
 }
 
-function sendExtractedDataToActiveTab(data) {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const activeTab = tabs[0]
-    chrome.tabs.sendMessage(activeTab.id, {
-      action: ActionTypes.EXTRACTED_DATA,
-      data
-    })
-  })
+// Handle job evaluation
+const evaluateProfiles = (jobData) => {
+  const jobId = uuidv4()
+  currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
+  tasks = Array.from({ length: jobData.amount }, (_, i) => ({
+    id: i + 1,
+    status: JobStatus.PENDING
+  }))
+
+  openTabAndInjectCode({ ...jobData, jobId: jobId })
 }
 
-function closeSenderTab(sender) {
-  if (sender.tab) {
-    console.log("closing tab")
-    chrome.tabs.remove(sender.tab.id)
+// Process the next task
+const processNextTask = () => {
+  const task = tasks.find((t) => t.status === JobStatus.PENDING)
+  console.log("processNextTask", task)
+  if (!task) {
+    currentJob.status = JobStatus.COMPLETE
+    return
+  }
+
+  task.status = JobStatus.COMPLETE
+
+  // Mock task processing
+  setTimeout(() => {
+    console.log("Processing task", task.id)
+    // Mock API call
+    console.log("Sending mock API call with data:", {
+      ...mockData,
+      jobId: currentJob.projectId
+    })
+
+    setTimeout(() => {
+      console.log("API call complete", currentJob.projectId)
+    }, 5000)
+
+    // Process the next task
+    processNextTask()
+  }, 1000)
+}
+
+// Mock API call with a timeout, then save data to IndexedDB
+const mockAPICallAndSaveData = async (data, jobData) => {
+  const taskId = jobData.taskId
+  const jobId = jobData.jobId
+  console.log("API Call", data, jobData)
+  evaluateProfileApi(
+    data.personal.url,
+    data,
+    jobData.jobDescription,
+    async (response) => {
+      console.log("api response", response)
+      saveDataToIndexedDB({
+        projectId: jobData.projectId,
+        jobDescriptionId: jobData.jobDescriptionId,
+        profileId: data.personal.id,
+        evaluation: response
+      })
+      markTaskAsComplete(taskId, jobId)
+    }
+  )
+}
+
+// Save data to IndexedDB
+async function saveDataToIndexedDB({
+  projectId,
+  jobDescriptionId,
+  profileId,
+  evaluation
+}) {
+  console.log("saveDataToIndexedDB")
+  const dbName = "yourDatabaseName"
+  const storeName = "yourStoreName"
+  const dbVersion = 2 // Increment this version when changes are made to the database structure
+
+  // Open or create a database with an updated version
+  const openRequest = indexedDB.open(dbName, dbVersion)
+
+  // Handle database upgrade
+  openRequest.onupgradeneeded = (event) => {
+    const db = event.target.result
+    if (!db.objectStoreNames.contains(storeName)) {
+      db.createObjectStore(storeName, {
+        keyPath: "id",
+        autoIncrement: true
+      })
+    }
+  }
+
+  // Handle successful database opening
+  openRequest.onsuccess = async (event) => {
+    const db = event.target.result
+    const tx = db.transaction(storeName, "readwrite")
+    const store = tx.objectStore(storeName)
+    const data = { projectId, jobDescriptionId, profileId, evaluation }
+
+    const addRequest = store.add(data)
+
+    addRequest.onsuccess = () => {
+      console.log("Data saved to IndexedDB", data)
+      notifyContentScript("itemAddedToIndexedDb")
+    }
+
+    addRequest.onerror = () => {
+      console.error("Error saving data to IndexedDB")
+    }
+
+    // Close the transaction
+    tx.oncomplete = () => db.close()
+  }
+
+  // Handle errors in opening the database
+  openRequest.onerror = (event) => {
+    console.error("Error opening IndexedDB", event.target.errorCode)
   }
 }
 
-// scraping code
-async function scrapeData() {
+// Mark the current task as complete
+const markTaskAsComplete = (taskId, jobId) => {
+  console.log("markTaskAsComplete", taskId, jobId)
+  if (currentJob && currentJob.jobId === jobId) {
+    const task = tasks.find((t) => t.id === taskId)
+    if (task) {
+      task.status = JobStatus.COMPLETE
+      // Check if all tasks are complete and update job status if necessary
+      // ... additional logic ...
+      // processNextTask() // Process the next task, if any
+    }
+  }
+
+  if (areAllComplete(tasks)) {
+    currentJob.status = JobStatus.COMPLETE
+  }
+
+  function areAllComplete(arr) {
+    return arr.every((item) => item.status === "complete")
+  }
+}
+
+function notifyContentScript(action) {
+  // Query all tabs or a specific tab to send the message to
+  console.log("notifyContentScript", action)
+  chrome.tabs.query({}, function (tabs) {
+    for (let tab of tabs) {
+      // Send a message to the content script
+      chrome.tabs.sendMessage(tab.id, { action: action })
+    }
+  })
+}
+
+// The code to be injected into the new tab
+async function injectedCode(jobData) {
   function waitForElement(selector, callback) {
     // Initial check if the element is already present
     let element = document.querySelector(selector)
@@ -85,8 +231,152 @@ async function scrapeData() {
       subtree: true
     })
   }
+  // Function to wait for changes within a specific container using a timeout
+  function waitForContainerChanges(containerSelector, timeout = 500) {
+    return new Promise((resolve) => {
+      const container = document.querySelector(containerSelector)
 
+      if (!container) {
+        resolve()
+        return
+      }
+
+      const startTime = Date.now()
+
+      const checkChanges = () => {
+        const observer = new MutationObserver(() => {
+          observer.disconnect()
+          resolve()
+        })
+
+        observer.observe(container, { childList: true })
+
+        setTimeout(() => {
+          observer.disconnect()
+          resolve()
+        }, timeout)
+      }
+
+      // Check for changes immediately and set up a timeout
+      checkChanges()
+
+      const intervalId = setInterval(() => {
+        if (Date.now() - startTime >= timeout) {
+          clearInterval(intervalId)
+          resolve()
+        } else {
+          checkChanges()
+        }
+      }, 300)
+    })
+  }
+  function addOverlay() {
+    const logoSrc = "https://i.ibb.co/f4B31Pg/logo-light.png" // Replace with your logo image
+
+    // Create a div element for the overlay
+    const overlay = document.createElement("div")
+    overlay.style.position = "fixed"
+    overlay.style.top = "0"
+    overlay.style.left = "0"
+    overlay.style.width = "100%"
+    overlay.style.height = "100%"
+    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)" // Semi-transparent dark background
+    overlay.style.display = "flex"
+    overlay.style.justifyContent = "center"
+    overlay.style.alignItems = "center"
+    overlay.style.zIndex = "9999" // Ensure it's above other content;
+
+    // Create a container for the content
+    const contentContainer = document.createElement("div")
+    contentContainer.style.backgroundColor = "#fff" // Light background for content
+    contentContainer.style.padding = "20px"
+    contentContainer.style.borderRadius = "10px"
+    contentContainer.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)"
+    contentContainer.style.maxWidth = "80%"
+
+    // Create an image element for the logo
+    const logo = document.createElement("img")
+    logo.src = logoSrc
+    logo.style.maxWidth = "150px" // Customize the logo size as needed
+    logo.style.display = "block" // Center the logo
+
+    // Create a div element for the text
+    const textDiv = document.createElement("div")
+    textDiv.style.fontSize = "24px"
+    textDiv.style.color = "#333" // Customize text color
+    textDiv.style.marginTop = "20px" // Add spacing above the text
+    textDiv.textContent = "Please wait..."
+
+    // Append the logo and textDiv to the content container
+    contentContainer.appendChild(logo)
+    contentContainer.appendChild(textDiv)
+
+    // Append the content container to the overlay
+    overlay.appendChild(contentContainer)
+
+    // Append the overlay to the body of the page
+    document.body.appendChild(overlay)
+  }
   function extractLinkedInData() {
+    function extractPositionDetails(positionElement) {
+      const positionDetails = {
+        title: positionElement
+          .querySelector(
+            "[data-test-position-entity-title], [data-test-grouped-position-entity-title]"
+          )
+          ?.innerText.trim(),
+        company: positionElement
+          .querySelector("[data-test-position-entity-company-name]")
+          ?.innerText.trim(),
+        dateRange: positionElement
+          .querySelector(
+            "[data-test-position-entity-date-range], [data-test-grouped-position-entity-date-range]"
+          )
+          ?.innerText.trim(),
+        location: positionElement
+          .querySelector(
+            "[data-test-position-entity-location], [data-test-grouped-position-entity-location]"
+          )
+          ?.innerText.trim(),
+        duration: positionElement
+          .querySelector(
+            "[data-test-position-entity-duration], [data-test-grouped-position-entity-duration]"
+          )
+          ?.innerText.trim(),
+        description: positionElement
+          .querySelector(
+            "[data-test-position-entity-description], [data-test-grouped-position-entity-description]"
+          )
+          ?.innerText.trim(),
+        employmentStatus: positionElement
+          .querySelector(
+            "[data-test-position-entity-employment-status], [data-test-grouped-position-entity-employment-status]"
+          )
+          ?.innerText.trim(),
+        positionSkills: positionElement
+          .querySelector(".position-skills-entity")
+          ?.innerText.trim()
+        // positionSkills: positionElement
+        //   .querySelectorAll(".position-skills-entity")
+        //   ?.innerText.trim()
+      }
+
+      return positionDetails
+    }
+
+    function extractGroupedCompanyInfo(groupedElement) {
+      const companyInfo = {
+        company: groupedElement
+          .querySelector("[data-test-grouped-position-entity-company-name]")
+          ?.innerText.trim(),
+        companyLink: groupedElement
+          .querySelector("[data-test-grouped-position-entity-company-link]")
+          ?.getAttribute("href")
+      }
+
+      return companyInfo
+    }
+
     const personal = {}
     const positions = []
     const skills = []
@@ -106,6 +396,9 @@ async function scrapeData() {
       "div[data-test-row-lockup-location][data-live-test-row-lockup-location]"
     )
     personal.location = locationElement.innerText.trim().replace(/·\s*/, "")
+
+    personal.id = window.location.href.match(/profile\/(.*?)\?/)[1]
+    personal.url = window.location.href.split("?")[0]
 
     // Extract positions
     const positionElements = document.querySelectorAll(
@@ -168,94 +461,192 @@ async function scrapeData() {
     return {
       personal: personal,
       positions: positions,
-      skills: skills
-      // education: education
+      skills: skills,
+      education: education
     }
   }
 
-  function extractPositionDetails(positionElement) {
-    const positionDetails = {
-      title: positionElement
-        .querySelector(
-          "[data-test-position-entity-title], [data-test-grouped-position-entity-title]"
-        )
-        ?.innerText.trim(),
-      dateRange: positionElement
-        .querySelector(
-          "[data-test-position-entity-date-range], [data-test-grouped-position-entity-date-range]"
-        )
-        ?.innerText.trim(),
-      location: positionElement
-        .querySelector(
-          "[data-test-position-entity-location], [data-test-grouped-position-entity-location]"
-        )
-        ?.innerText.trim(),
-      duration: positionElement
-        .querySelector(
-          "[data-test-position-entity-duration], [data-test-grouped-position-entity-duration]"
-        )
-        ?.innerText.trim(),
-      description: positionElement
-        .querySelector(
-          "[data-test-position-entity-description], [data-test-grouped-position-entity-description]"
-        )
-        ?.innerText.trim(),
-      employmentStatus: positionElement
-        .querySelector(
-          "[data-test-position-entity-employment-status], [data-test-grouped-position-entity-employment-status]"
-        )
-        ?.innerText.trim(),
-      company: positionElement
-        .querySelector("[data-test-position-entity-company-name]")
-        ?.innerText.trim()
-    }
+  addOverlay()
+  // open first profile
+  await new Promise((resolve) =>
+    waitForElement("a[data-live-test-link-to-profile-link]", resolve)
+  )
+  document.querySelector("a[data-live-test-link-to-profile-link]").click()
 
-    return positionDetails
+  chrome.runtime.sendMessage({ done: true })
+
+  var run = 0
+  while (run < jobData.amount) {
+    // extract data when ready
+    await new Promise((resolve) => waitForElement(".background-card", resolve))
+    await new Promise((resolve) =>
+      waitForElement("span[data-test-skyline-pagination-text]", resolve)
+    )
+
+    // Find all buttons with 'data-test-expandable-button' attribute and click each one
+    var buttons = document.querySelectorAll(
+      "button[data-test-expandable-button]"
+    )
+    buttons.forEach((button) => {
+      button.click()
+    })
+
+    // Wait for 100ms after all buttons have been clicked
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    console.log("extracting data")
+    const currentTask = parseInt(
+      document.querySelector("span[data-test-skyline-pagination-text]")
+        .innerText
+    )
+    const name = document.querySelector(
+      "div.artdeco-entity-lockup__title"
+    ).innerText
+
+    const linkedInData = extractLinkedInData()
+
+    console.log(
+      "task",
+      currentTask,
+      "name",
+      name,
+      "jobData",
+      jobData,
+      linkedInData
+    )
+
+    chrome.runtime.sendMessage({
+      jobId: jobData.jobId,
+      jobData: jobData,
+      taskId: currentTask,
+      linkedInData: linkedInData
+    })
+
+    // go to next profile
+    run++
+
+    const nextButton = document.querySelector("a[data-test-pagination-next]")
+    nextButton.click()
+    await waitForContainerChanges(".profile__container")
+    await new Promise((resolve) =>
+      waitForElement(".expandable-list-profile-core__title", resolve)
+    )
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+  }
+}
+
+// Mock data for API call
+const mockData = {
+  profileName: "John Doe",
+  experience: "5 years",
+  skills: ["JavaScript", "React"]
+}
+
+// Pause the job
+const pauseJob = () => {
+  if (currentJob) {
+    currentJob.status = JobStatus.PAUSED
+  }
+}
+
+// Resume the job
+const resumeJob = () => {
+  if (currentJob && currentJob.status === JobStatus.PAUSED) {
+    currentJob.status = JobStatus.PENDING
+    processNextTask()
+  }
+}
+
+// Stop the job
+const stopJob = () => {
+  if (currentJob) {
+    currentJob.status = JobStatus.FAILED
+    tasks.forEach((task) => {
+      if (task.status === JobStatus.PENDING) {
+        task.status = JobStatus.FAILED
+      }
+    })
+  }
+}
+
+// Listener for messages from content scripts
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case ActionTypes.EVALUATE_PROFILES:
+      evaluateProfiles(request.data)
+      break
+    case ActionTypes.GET_STATUS:
+      sendResponse({ currentJob, tasks })
+      break
+    case ActionTypes.PAUSE_JOB:
+      pauseJob()
+      sendResponse({ status: "Job paused" })
+      break
+    case ActionTypes.RESUME_JOB:
+      resumeJob()
+      sendResponse({ status: "Job resumed" })
+      break
+    case ActionTypes.STOP_JOB:
+      stopJob()
+      sendResponse({ status: "Job stopped" })
+      break
   }
 
-  function extractGroupedCompanyInfo(groupedElement) {
-    const companyInfo = {
-      company: groupedElement
-        .querySelector("[data-test-grouped-position-entity-company-name]")
-        ?.innerText.trim(),
-      companyLink: groupedElement
-        .querySelector("[data-test-grouped-position-entity-company-link]")
-        ?.getAttribute("href")
-    }
-
-    return companyInfo
-  }
-
-  // Check if the key elements for data extraction are already present
-  const isDataReady = document.querySelector(".experience-card") // Replace with an actual selector that indicates data readiness
-
-  if (!isDataReady) {
-    // If data isn't ready, wait for the essential element
-    await new Promise((resolve) => {
-      console.log("start scraping waitForElement")
-      waitForElement(".experience-card", resolve)
+  if (sender.tab && request.taskId !== undefined) {
+    mockAPICallAndSaveData(request.linkedInData, {
+      ...request.jobData,
+      taskId: request.taskId
     })
   }
 
-  // Find all buttons with 'data-test-expandable-button' attribute and click each one
-  var buttons = document.querySelectorAll("button[data-test-expandable-button]")
-  buttons.forEach((button) => {
-    button.click()
+  return true // Indicate that the response is asynchronous
+})
+
+// TODO: Implement persistent storage for tasks and job status
+
+function getDataFromIndexedDB({ projectId, jobDescriptionId, profileId }) {
+  return new Promise((resolve, reject) => {
+    const dbName = "yourDatabaseName"
+    const storeName = "yourStoreName"
+
+    // Open the database
+    const openRequest = indexedDB.open(dbName)
+
+    openRequest.onsuccess = (event) => {
+      const db = event.target.result
+      const tx = db.transaction(storeName, "readonly")
+      const store = tx.objectStore(storeName)
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        const data = request.result
+        // Filter the data based on the criteria
+        const filteredData = data.filter(
+          (item) =>
+            item.projectId === projectId &&
+            item.jobDescriptionId === jobDescriptionId &&
+            item.profileId === profileId
+        )
+        resolve(filteredData)
+      }
+
+      request.onerror = () => {
+        reject("Error in retrieving data from IndexedDB")
+      }
+    }
+
+    openRequest.onerror = (event) => {
+      reject("Error opening IndexedDB", event.target.errorCode)
+    }
   })
-
-  // Wait for 100ms after all buttons have been clicked
-  await new Promise((resolve) => setTimeout(resolve, 100))
-
-  const extractedLinkedInData = extractLinkedInData()
-
-  console.log("extractedLinkedInData", extractedLinkedInData)
-
-  chrome.runtime.sendMessage({
-    action: "extractedLinkedInData",
-    data: extractedLinkedInData
-  })
-
-  setTimeout(() => {
-    chrome.runtime.sendMessage({ action: "closeTab" })
-  }, 25)
 }
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("eventlistener", request.action)
+  if (request.action === "getDataFromIndexedDB") {
+    console.log("getting data from indexedDB", request.payload)
+    getDataFromIndexedDB(request.payload)
+      .then((data) => sendResponse({ success: true, data }))
+      .catch((error) => sendResponse({ success: false, error }))
+    return true // Indicates asynchronous response
+  }
+})
