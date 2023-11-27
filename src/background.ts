@@ -129,7 +129,7 @@ async function saveDataToIndexedDB({
   console.log("saveDataToIndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
-  const dbVersion = 3 // Increment this version when changes are made to the database structure
+  const dbVersion = 4 // Increment this version when changes are made to the database structure
 
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
