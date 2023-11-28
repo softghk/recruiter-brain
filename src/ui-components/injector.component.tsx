@@ -11,8 +11,9 @@ import carouselThemeStyle from 'data-text:slick-carousel/slick/slick-theme.css';
 import lazyStyle from 'data-text:react-lazy-load-image-component/src/effects/blur.css';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
-import {useStorage} from '@plasmohq/storage/hook'
+import { useStorage } from '@plasmohq/storage/hook'
 import { EXTENSION_ENABLE } from '~src/config/storage.config';
+import { waitForElement } from '~src/utils/wait-for-element.utils';
 
 const InjectorComponent = () => {
 
@@ -20,47 +21,55 @@ const InjectorComponent = () => {
   const [enabled] = useStorage(EXTENSION_ENABLE)
 
   useEffect(() => {
-    const injectComponentId = 'recruit-brain-injector'
-    const querySelectorTargetElement = ".artdeco-tabs"
-    const targetElement = document.querySelector(querySelectorTargetElement)
-    const injectedComponent = document.getElementById(injectComponentId)
+    const inject = async () => {
+      const injectComponentId = 'recruit-brain-injector'
+      const querySelectorTargetElement = ".artdeco-tabs"
 
-    if (!user || !enabled) {
-      injectedComponent && injectedComponent.remove()
-      return
-    }
-
-
-    if (targetElement && !injectedComponent) {
-      const container = document.createElement("div")
-      container.setAttribute('id', 'recruit-brain-injector')
-      targetElement.appendChild(container)
-      const shadowContainer = container.attachShadow({ mode: "open" })
-
-      const emotionRoot = document.createElement("style")
-      const elementCSS = document.createElement('style')
-      elementCSS.textContent = carouselStyle + carouselThemeStyle + quillStyle + lazyStyle + simpleBarStyle + mapboxStyle
-      const shadowRootElement = document.createElement("div")
-      shadowContainer.appendChild(emotionRoot)
-      shadowContainer.appendChild(elementCSS)
-      shadowContainer.appendChild(shadowRootElement)
-
-      const cache = createCache({
-        key: "css",
-        prepend: true,
-        container: emotionRoot
+      await new Promise((resolve) => {
+        waitForElement(querySelectorTargetElement, resolve)
       })
 
-      const root = ReactDOM.createRoot(shadowRootElement as HTMLElement)
+      const targetElement = document.querySelector(querySelectorTargetElement)
+      const injectedComponent = document.getElementById(injectComponentId)
 
-      root.render(
-        <CacheProvider value={cache}>
-          <SampleComponent />
-        </CacheProvider>
-      )
-    } else {
-      console.error("Target element for injecting data not found.")
+      if (!user || !enabled) {
+        injectedComponent && injectedComponent.remove()
+        return
+      }
+
+
+      if (targetElement && !injectedComponent) {
+        const container = document.createElement("div")
+        container.setAttribute('id', 'recruit-brain-injector')
+        targetElement.appendChild(container)
+        const shadowContainer = container.attachShadow({ mode: "open" })
+
+        const emotionRoot = document.createElement("style")
+        const elementCSS = document.createElement('style')
+        elementCSS.textContent = carouselStyle + carouselThemeStyle + quillStyle + lazyStyle + simpleBarStyle + mapboxStyle
+        const shadowRootElement = document.createElement("div")
+        shadowContainer.appendChild(emotionRoot)
+        shadowContainer.appendChild(elementCSS)
+        shadowContainer.appendChild(shadowRootElement)
+
+        const cache = createCache({
+          key: "css",
+          prepend: true,
+          container: emotionRoot
+        })
+
+        const root = ReactDOM.createRoot(shadowRootElement as HTMLElement)
+
+        root.render(
+          <CacheProvider value={cache}>
+            <SampleComponent />
+          </CacheProvider>
+        )
+      } else {
+        console.error("Target element for injecting data not found.")
+      }
     }
+    inject()
   }, [user, enabled])
 
 
