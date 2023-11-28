@@ -4,9 +4,7 @@ export function injectDataIntoDom(profile, profileEvaluation) {
 
   const { rating, explanation } = profileEvaluation.data
 
-  const targetElement = profile.querySelector(
-    ".profile-list__border-bottom .history-group"
-  )
+  const targetElement = profile.querySelector(".artdeco-entity-lockup")
 
   if (targetElement) {
     const injectedDataHtml = buildDataHtml(rating, explanation)
