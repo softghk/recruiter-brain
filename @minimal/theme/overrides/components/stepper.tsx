@@ -7,6 +7,7 @@ export default function Stepper(theme: Theme) {
     MuiStepConnector: {
       styleOverrides: {
         line: {
+          minHeight: theme.spacing(6),
           borderColor: theme.palette.divider,
         },
       },

@@ -5,7 +5,8 @@ export function remToPx(value: string) {
 }
 
 export function pxToRem(value: number) {
-  return `${value / 10}rem`;
+  const unit = window?.location?.pathname?.includes('https://linkedin.com') ? 10 : 16
+  return `${value / unit}rem`;
 }
 
 export function responsiveFontSizes({ sm, md, lg }: { sm: number; md: number; lg: number }) {

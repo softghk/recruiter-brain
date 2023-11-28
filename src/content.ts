@@ -11,7 +11,7 @@ injectControlPanel()
 // Content script to check job status every second
 setInterval(() => {
   chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
-    console.log("Current job status:", response)
+    // console.log("Current job status:", response)
   })
 }, 1000)
 

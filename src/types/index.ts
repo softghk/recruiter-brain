@@ -17,3 +17,15 @@ export type UserCredential = {
   password: string,
   passwordConfirm?: string
 }
+
+export type JobSettings = {
+  description: string,
+  searchLimit: number,
+  autoAdd: boolean
+}
+
+export const JobInitialSetting: JobSettings = {
+  description: '',
+  searchLimit: 20,
+  autoAdd: false
+}

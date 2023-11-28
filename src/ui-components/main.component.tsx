@@ -15,7 +15,7 @@ import LoadingComponent from './loading.component'
 import InjectorComponent from './injector.component'
 
 
-const StyledCloseIcon = styled(CloseIcon)(({theme}) => ({
+const StyledCloseIcon = styled(CloseIcon)(({ theme }) => ({
   width: 12,
   height: 12,
   color: 'white'
@@ -44,7 +44,7 @@ export default function SampleComponent() {
           boxShadow: 24,
           top: '50%',
           left: '50%',
-          borderRadius: 2
+          borderRadius: 2,
         }}>
           {/* Render Modal Header */}
           <Stack
