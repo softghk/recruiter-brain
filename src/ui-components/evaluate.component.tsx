@@ -72,7 +72,8 @@ const EvaluateComponent = () => {
       {evaluateStarted && (
         <InjectorComponent
           injectComponentId={"recruiter-brain-progress"}
-          querySelectorTargetElement={".progress"}>
+          direction="prepend"
+          querySelectorTargetElement={".profile-list-container"}>
           <ScanningProgress />
         </InjectorComponent>
       )}

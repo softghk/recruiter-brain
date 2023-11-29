@@ -54,8 +54,11 @@ const InjectorComponent = ({
       if (targetElement && !injectedComponent) {
         const container = document.createElement("div")
         container.setAttribute("id", injectComponentId)
+
         if (direction === "after") targetElement.after(container)
+        else if (direction === "prepend") targetElement.prepend(container)
         else targetElement.appendChild(container)
+
         const shadowContainer = container.attachShadow({ mode: "open" })
 
         const emotionRoot = document.createElement("style")
