@@ -101,6 +101,8 @@ const EvaluateComponent = () => {
       />
       {currentJD.title === "" || currentJD.description === "" ? (
         <Button
+          size="small"
+          sx={{ color: "#2C65BC", borderColor: "#2C65BC", borderRadius: 3 }}
           onClick={() => setOpen({ eval: true, setting: false })}
           endIcon={
             <SvgIcon>
@@ -125,12 +127,14 @@ const EvaluateComponent = () => {
           <Button
             size="small"
             variant="outlined"
+            sx={{ color: "#2C65BC", borderColor: "#2C65BC", borderRadius: 3 }}
             onClick={() => setOpen({ eval: false, setting: true })}>
             Evaluate Profiles
           </Button>
           <Button
-            variant="outlined"
             size="small"
+            variant="outlined"
+            sx={{ color: "#2C65BC", borderColor: "#2C65BC", borderRadius: 3 }}
             onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
           </Button>
