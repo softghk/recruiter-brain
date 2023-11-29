@@ -27,7 +27,7 @@ const ScanningProgress = ({
     <Stack direction={"column"} gap={1} padding={2}>
       <Stack direction={"row"} alignItems={"center"} gap={1} width={"100%"}>
         <LinearProgress
-          value={15}
+          value={(completed / (total || 1)) * 100}
           variant="determinate"
           sx={{ width: "100%" }}
         />
