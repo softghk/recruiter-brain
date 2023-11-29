@@ -38,10 +38,20 @@ async function handleMutation(mutation) {
         .href.match(/profile\/(.*?)\?/)[1]
       try {
         const result = await chrome.storage.local.get(["jobDescription"])
-        const jobDescription = result.jobDescription || ""
 
-        const jobDescriptionId = generateMD5(jobDescription)
-        await tryFetchingData(projectId, jobDescriptionId, profileId, element)
+        chrome.runtime.sendMessage(
+          { action: "get-job-details" },
+          async (response) => {
+            const jobDescription = response.data?.[projectId] || ""
+            const jobDescriptionId = generateMD5(jobDescription)
+            await tryFetchingData(
+              projectId,
+              jobDescriptionId,
+              profileId,
+              element
+            )
+          }
+        )
       } catch (error) {
         console.error("Error chrome.storage.local.get():", error)
       }

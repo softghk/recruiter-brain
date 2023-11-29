@@ -1,7 +1,12 @@
 // @ts-nocheck
 import { v4 as uuidv4 } from "uuid"
 
+import { Storage } from "@plasmohq/storage"
+
 import { evaluateProfileApi } from "~utils/api-service.utils"
+import { JOB_DESCRIPTION } from "./config/storage.config"
+
+const storage = new Storage()
 
 export {}
 
@@ -12,7 +17,8 @@ const ActionTypes = {
   PAUSE_JOB: "pause-job",
   RESUME_JOB: "resume-job",
   STOP_JOB: "stop-job",
-  TASK_DATA_RECEIVED: "task-data-received"
+  TASK_DATA_RECEIVED: "task-data-received",
+  GET_JOB_DETAILS: "get-job-details"
 }
 
 // Job and Task Statuses
@@ -569,6 +575,8 @@ const stopJob = () => {
   }
 }
 
+// Retrieve data from plasmohq storage
+
 // Listener for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
@@ -590,6 +598,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       stopJob()
       sendResponse({ status: "Job stopped" })
       break
+    case ActionTypes.GET_JOB_DETAILS:
+      const response = storage.get(JOB_DESCRIPTION)
+      sendResponse({ data: response })
   }
 
   if (sender.tab && request.taskId !== undefined) {

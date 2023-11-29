@@ -31,7 +31,6 @@ const EvaluateComponent = () => {
   const onSaveJDToStore = (data: JobSettings) => {
     if (!description) setDescription({ [projectId]: data })
     else setDescription({ ...description, [projectId]: data })
-    chrome.storage.local.set({ jobDescription: description[projectId] })
   }
 
   const onResetJD = () => {
