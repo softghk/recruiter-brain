@@ -109,8 +109,9 @@ const EvaluateComponent = () => {
             borderRadius: 3,
             fontSize: "16px",
             paddingX: 1.5,
-            paddingY: 0.5
+            paddingY: "2px"
           }}
+          variant="outlined"
           onClick={() => setOpen({ eval: true, setting: false })}
           endIcon={
             <SvgIcon>
@@ -123,7 +124,7 @@ const EvaluateComponent = () => {
                 xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M15.6448 1.90649H13.3551V6.48593H15.6448V1.90649ZM19.0794 1.90649H16.7897V6.48593H19.0794V1.90649ZM12.2102 1.90649H9.92051V6.48593H12.2102V1.90649ZM13.3551 27.0934H15.6448V22.514H13.3551V27.0934ZM16.7897 27.0934H19.0794V22.514H16.7897V27.0934ZM9.92051 27.0934H12.2102V22.514H9.92051V27.0934ZM22.514 15.6448H27.0934V13.3551H22.514V15.6448ZM22.514 19.0794H27.0934V16.7897H22.514V19.0794ZM22.514 9.92051V12.2102H27.0934V9.92051H22.514ZM1.90649 15.6448H6.48593V13.3551H1.90649V15.6448ZM1.90649 19.0794H6.48593V16.7897H1.90649V19.0794ZM1.90649 12.2102H6.48593V9.92051H1.90649V12.2102ZM8.77565 20.2243H20.2243V8.77565H8.77565V20.2243ZM11.0654 11.0654H17.9345V17.9345H11.0654V11.0654Z"
-                  fill="black"
+                  fill="#d30000"
                 />
               </svg>
             </SvgIcon>
@@ -140,7 +141,7 @@ const EvaluateComponent = () => {
               borderRadius: 3,
               fontSize: "16px",
               paddingX: 1.5,
-              paddingY: 0.5
+              paddingY: "2px"
             }}
             onClick={() => setOpen({ eval: false, setting: true })}>
             Evaluate Profiles
@@ -153,7 +154,7 @@ const EvaluateComponent = () => {
               borderRadius: 3,
               fontSize: "16px",
               paddingX: 1.5,
-              paddingY: 0.5
+              paddingY: "2px"
             }}
             onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
