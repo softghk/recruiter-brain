@@ -75,6 +75,7 @@ const EvaluateModal = ({
           <TextField
             multiline
             rows={5}
+            label="Job Description"
             value={parseLines(temp.description)}
             placeholder="Job Description"
             disabled={data.description !== ""}

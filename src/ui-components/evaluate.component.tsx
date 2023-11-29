@@ -31,6 +31,7 @@ const EvaluateComponent = () => {
   const onSaveJDToStore = (data: JobSettings) => {
     if (!description) setDescription({ [projectId]: data })
     else setDescription({ ...description, [projectId]: data })
+    chrome.storage.local.set({ jobDescription: description[projectId] })
   }
 
   const onResetJD = () => {
@@ -101,8 +102,15 @@ const EvaluateComponent = () => {
       />
       {currentJD.title === "" || currentJD.description === "" ? (
         <Button
-          size="small"
-          sx={{ color: "#2C65BC", borderColor: "#2C65BC", borderRadius: 3 }}
+          sx={{
+            marginTop: -1,
+            color: "#d30000",
+            borderColor: "#d30000",
+            borderRadius: 3,
+            fontSize: "16px",
+            paddingX: 1.5,
+            paddingY: 0.5
+          }}
           onClick={() => setOpen({ eval: true, setting: false })}
           endIcon={
             <SvgIcon>
@@ -127,12 +135,12 @@ const EvaluateComponent = () => {
           <Button
             variant="outlined"
             sx={{
-              color: "#2C65BC",
-              borderColor: "#2C65BC",
+              color: "#d30000",
+              borderColor: "#d30000",
               borderRadius: 3,
               fontSize: "16px",
               paddingX: 1.5,
-              paddingY: 0
+              paddingY: 0.5
             }}
             onClick={() => setOpen({ eval: false, setting: true })}>
             Evaluate Profiles
@@ -140,12 +148,12 @@ const EvaluateComponent = () => {
           <Button
             variant="outlined"
             sx={{
-              color: "#2C65BC",
-              borderColor: "#2C65BC",
+              color: "#d30000",
+              borderColor: "#d30000",
               borderRadius: 3,
               fontSize: "16px",
               paddingX: 1.5,
-              paddingY: 0
+              paddingY: 0.5
             }}
             onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
