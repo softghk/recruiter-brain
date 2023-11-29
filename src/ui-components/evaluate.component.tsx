@@ -44,8 +44,7 @@ const EvaluateComponent = () => {
     setDescription({ ...description, [projectId]: jd })
   }
 
-  const onEvaluate = (e) => {
-    e.preventDefault()
+  const onEvaluate = () => {
     setOpen({ eval: false, setting: false })
     console.log("Evaluation Started")
 
@@ -68,6 +67,13 @@ const EvaluateComponent = () => {
     setEvaluateStarted(true)
   }
 
+  const onPauseScanning = () => {
+    chrome.runtime.sendMessage({ action: "pause-job" })
+  }
+  const onStopScanning = () => {
+    chrome.runtime.sendMessage({ action: "stop-job" })
+  }
+
   return (
     <>
       {evaluateStarted && (
@@ -75,7 +81,7 @@ const EvaluateComponent = () => {
           injectComponentId={"recruiter-brain-progress"}
           direction="prepend"
           querySelectorTargetElement={".profile-list-container"}>
-          <ScanningProgress />
+          <ScanningProgress onPause={onPauseScanning} onStop={onStopScanning} />
         </InjectorComponent>
       )}
       <EvaluateModal
@@ -116,16 +122,18 @@ const EvaluateComponent = () => {
         </Button>
       ) : (
         <Box sx={{ display: "flex", gap: 2 }}>
-          <a
-            className="ember-view job-action-link button-medium-secondary link-without-hover-visited sourcing-channels__button-tab job-action-link__navigate"
-            onClick={onEvaluate}>
-            Evaluate Profiles
-          </a>
-          <a
-            className="ember-view job-action-link button-medium-secondary link-without-hover-visited sourcing-channels__button-tab job-action-link__navigate"
+          <Button
+            size="small"
+            variant="outlined"
             onClick={() => setOpen({ eval: false, setting: true })}>
+            Evaluate Profiles
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
-          </a>
+          </Button>
         </Box>
       )}
     </>

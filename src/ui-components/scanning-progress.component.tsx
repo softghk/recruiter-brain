@@ -24,7 +24,7 @@ const ScanningProgress = ({
   }, [])
 
   return (
-    <Stack direction={"column"} gap={1} padding={2}>
+    <Stack direction={"column"} gap={0} padding={2}>
       <Stack direction={"row"} alignItems={"center"} gap={1} width={"100%"}>
         <LinearProgress
           value={(completed / (total || 1)) * 100}
