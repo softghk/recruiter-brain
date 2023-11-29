@@ -19,12 +19,14 @@ export type UserCredential = {
 }
 
 export type JobSettings = {
+  title: string,
   description: string,
-  searchLimit: number,
-  autoAdd: boolean
+  searchLimit?: number,
+  autoAdd?: boolean
 }
 
 export const JobInitialSetting: JobSettings = {
+  title: '',
   description: '',
   searchLimit: 20,
   autoAdd: false

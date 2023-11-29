@@ -11,20 +11,27 @@ import ReactDOM from "react-dom/client"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
-import { EXTENSION_ENABLE } from "~src/config/storage.config"
+import { MinimalProvider } from "~@minimal/Provider"
+import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
+import type { AuthState } from "~src/types"
 
-import SampleComponent from "./sample.component"
-
-const InjectorComponent = () => {
+const InjectorComponent = ({
+  injectComponentId,
+  querySelectorTargetElement,
+  children
+}) => {
   const { user } = useFirebaseUser()
   const [enabled] = useStorage(EXTENSION_ENABLE)
+  const [auth] = useStorage<AuthState>(AUTH_STATE)
 
   useEffect(() => {
     const inject = async () => {
-      const injectComponentId = 'recruit-brain-injector'
-      const querySelectorTargetElement = ".artdeco-tabs"
+      // const injectComponentId = "recruit-brain-injector"
+      // const querySelectorTargetElement = ".artdeco-tabs"
+
+      console.log(injectComponentId)
 
       await new Promise((resolve) => {
         waitForElement(querySelectorTargetElement, resolve)
@@ -33,21 +40,26 @@ const InjectorComponent = () => {
       const targetElement = document.querySelector(querySelectorTargetElement)
       const injectedComponent = document.getElementById(injectComponentId)
 
-      if (!user || !enabled) {
+      if (!auth.isAuth || !enabled) {
         injectedComponent && injectedComponent.remove()
         return
       }
 
-
       if (targetElement && !injectedComponent) {
         const container = document.createElement("div")
-        container.setAttribute('id', 'recruit-brain-injector')
+        container.setAttribute("id", injectComponentId)
         targetElement.appendChild(container)
         const shadowContainer = container.attachShadow({ mode: "open" })
 
         const emotionRoot = document.createElement("style")
-        const elementCSS = document.createElement('style')
-        elementCSS.textContent = carouselStyle + carouselThemeStyle + quillStyle + lazyStyle + simpleBarStyle + mapboxStyle
+        const elementCSS = document.createElement("style")
+        elementCSS.textContent =
+          carouselStyle +
+          carouselThemeStyle +
+          quillStyle +
+          lazyStyle +
+          simpleBarStyle +
+          mapboxStyle
         const shadowRootElement = document.createElement("div")
         shadowContainer.appendChild(emotionRoot)
         shadowContainer.appendChild(elementCSS)
@@ -63,7 +75,7 @@ const InjectorComponent = () => {
 
         root.render(
           <CacheProvider value={cache}>
-            <SampleComponent />
+            <MinimalProvider>{children}</MinimalProvider>
           </CacheProvider>
         )
       } else {
@@ -71,7 +83,7 @@ const InjectorComponent = () => {
       }
     }
     inject()
-  }, [user, enabled])
+  }, [user, enabled, injectComponentId, querySelectorTargetElement])
 
   return null
 }

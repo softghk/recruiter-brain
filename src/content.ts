@@ -2,7 +2,6 @@ import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
 import { injectControlPanel } from "./utils/inject-control-panel.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
-import { waitForElement } from "./utils/wait-for-element.utils"
 
 export {}
 
@@ -11,7 +10,7 @@ injectControlPanel()
 // Content script to check job status every second
 setInterval(() => {
   chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
-    // console.log("Current job status:", response)
+    console.log("Current job status:", response)
   })
 }, 1000)
 

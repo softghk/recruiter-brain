@@ -25,36 +25,24 @@ import { AuthProvider, AuthConsumer } from '@minimal/auth/context/jwt';
 
 // ----------------------------------------------------------------------
 
-export const MinimalProvider = ({children}) => {
+export const MinimalProvider = ({ children }) => {
 
   return (
-    <AuthProvider>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <SettingsProvider
-          defaultSettings={{
-            themeMode: 'light', // 'light' | 'dark'
-            themeDirection: 'ltr', //  'rtl' | 'ltr'
-            themeContrast: 'default', // 'default' | 'bold'
-            themeLayout: 'vertical', // 'vertical' | 'horizontal' | 'mini'
-            themeColorPresets: 'default', // 'default' | 'cyan' | 'purple' | 'blue' | 'orange' | 'red'
-            themeStretch: false,
-          }}
-        >
-          <ThemeProvider>
-            <MotionLazy>
-              <SnackbarProvider>
-                <CheckoutProvider>
-                  <SettingsDrawer />
-                  <ProgressBar />
-                  <AuthConsumer>
-                    {children}
-                  </AuthConsumer>
-                </CheckoutProvider>
-              </SnackbarProvider>
-            </MotionLazy>
-          </ThemeProvider>
-        </SettingsProvider>
-      </LocalizationProvider>
-    </AuthProvider>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <SettingsProvider
+        defaultSettings={{
+          themeMode: 'light', // 'light' | 'dark'
+          themeDirection: 'ltr', //  'rtl' | 'ltr'
+          themeContrast: 'default', // 'default' | 'bold'
+          themeLayout: 'vertical', // 'vertical' | 'horizontal' | 'mini'
+          themeColorPresets: 'default', // 'default' | 'cyan' | 'purple' | 'blue' | 'orange' | 'red'
+          themeStretch: false,
+        }}
+      >
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </SettingsProvider>
+    </LocalizationProvider>
   );
 }
