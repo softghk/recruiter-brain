@@ -44,7 +44,8 @@ const EvaluateComponent = () => {
     setDescription({ ...description, [projectId]: jd })
   }
 
-  const onEvaluate = () => {
+  const onEvaluate = (e) => {
+    e.preventDefault()
     setOpen({ eval: false, setting: false })
     console.log("Evaluation Started")
 
@@ -115,15 +116,16 @@ const EvaluateComponent = () => {
         </Button>
       ) : (
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" onClick={onEvaluate} size="small">
+          <a
+            className="ember-view job-action-link button-medium-secondary link-without-hover-visited sourcing-channels__button-tab job-action-link__navigate"
+            onClick={onEvaluate}>
             Evaluate Profiles
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
+          </a>
+          <a
+            className="ember-view job-action-link button-medium-secondary link-without-hover-visited sourcing-channels__button-tab job-action-link__navigate"
             onClick={() => setOpen({ eval: false, setting: true })}>
             <Iconify icon={"material-symbols:settings"} />
-          </Button>
+          </a>
         </Box>
       )}
     </>
