@@ -14,13 +14,19 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { MinimalProvider } from "~@minimal/Provider"
 import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
-import { waitForElement } from "~src/utils/wait-for-element.utils"
 import type { AuthState } from "~src/types"
+import { waitForElement } from "~src/utils/wait-for-element.utils"
 
 const InjectorComponent = ({
   injectComponentId,
   querySelectorTargetElement,
+  direction = "child",
   children
+}: {
+  injectComponentId: string
+  querySelectorTargetElement: string
+  direction?: string
+  children: any
 }) => {
   const { user } = useFirebaseUser()
   const [enabled] = useStorage(EXTENSION_ENABLE)
@@ -48,7 +54,8 @@ const InjectorComponent = ({
       if (targetElement && !injectedComponent) {
         const container = document.createElement("div")
         container.setAttribute("id", injectComponentId)
-        targetElement.appendChild(container)
+        if (direction === "after") targetElement.after(container)
+        else targetElement.appendChild(container)
         const shadowContainer = container.attachShadow({ mode: "open" })
 
         const emotionRoot = document.createElement("style")

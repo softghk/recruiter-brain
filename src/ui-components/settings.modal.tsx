@@ -48,7 +48,9 @@ const SettingsModal = ({
 
   useEffect(() => {
     const count = parseInt(
-      document.querySelector(".profile-list__header-info-text")?.innerText || 30
+      document
+        .querySelector(".profile-list__header-info-text")
+        ?.innerText?.split(" ")[0] || 30
     )
     setMaxProfileCount(count)
   }, [])

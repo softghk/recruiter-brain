@@ -45,8 +45,9 @@ export default function SampleComponent() {
   return (
     <MinimalProvider>
       <InjectorComponent
+        direction={'after'}
         injectComponentId={"recruit-brain-injector"}
-        querySelectorTargetElement={".artdeco-tabs"}>
+        querySelectorTargetElement={".sourcing-channels__post-job-link"}>
         <EvaluateComponent />
       </InjectorComponent>
       <Modal open={extensionVisible} disablePortal disableScrollLock>
