@@ -18,6 +18,7 @@ import {
 import React, { useEffect, useState } from "react"
 
 import type { JobSettings } from "~src/types"
+import { waitForElement } from "~src/utils/wait-for-element.utils"
 
 import ModalHeaderComponent from "./modal-header.component"
 
@@ -47,12 +48,20 @@ const SettingsModal = ({
   }, [data])
 
   useEffect(() => {
-    const count = parseInt(
-      document
-        .querySelector(".profile-list__header-info-text")
-        ?.innerText?.split(" ")[0] || 30
-    )
-    setMaxProfileCount(count)
+    const getResultCount = async () => {
+      const querySelectorTargetElement = ".profile-list__header-info-text"
+      await new Promise((resolve) => {
+        waitForElement(querySelectorTargetElement, resolve)
+      })
+
+      const count = parseInt(
+        document
+          .querySelector(querySelectorTargetElement)
+          ?.innerText?.split(" ")[0] || 30
+      )
+      setMaxProfileCount(count)
+    }
+    getResultCount()
   }, [])
 
   const onClickJD = () => {

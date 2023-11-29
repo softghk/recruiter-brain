@@ -114,11 +114,12 @@ const EvaluateComponent = () => {
         </Button>
       ) : (
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" onClick={onEvaluate}>
+          <Button variant="outlined" onClick={onEvaluate} size="small">
             Evaluate Profiles
           </Button>
           <Button
             variant="outlined"
+            size="small"
             onClick={() => setOpen({ eval: false, setting: true })}>
             <Iconify icon={"material-symbols:settings"} />
           </Button>
