@@ -141,7 +141,7 @@ const SettingsModal = ({
                     maxWidth={420}>
                     <Typography variant="subtitle2">0</Typography>
                     <Slider
-                      value={temp.searchLimit || 20}
+                      value={temp.searchLimit || 0}
                       onChange={(e, val) =>
                         setTemp({
                           ...temp,

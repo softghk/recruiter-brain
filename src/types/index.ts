@@ -1,33 +1,33 @@
 export type AuthState = {
-  isAuth: boolean,
+  isAuth: boolean
   email: string
-  accessToken: string,
-  refreshToken: string,
+  accessToken: string
+  refreshToken: string
 }
 
 export const AuthInitialState: AuthState = {
   isAuth: false,
-  email: '',
-  accessToken: '',
-  refreshToken: ''
+  email: "",
+  accessToken: "",
+  refreshToken: ""
 }
 
 export type UserCredential = {
-  email: string,
-  password: string,
+  email: string
+  password: string
   passwordConfirm?: string
 }
 
 export type JobSettings = {
-  title: string,
-  description: string,
-  searchLimit?: number,
+  title: string
+  description: string
+  searchLimit?: number
   autoAdd?: boolean
 }
 
 export const JobInitialSetting: JobSettings = {
-  title: '',
-  description: '',
-  searchLimit: 20,
+  title: "",
+  description: "",
+  searchLimit: 0,
   autoAdd: false
 }

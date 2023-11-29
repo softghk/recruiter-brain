@@ -58,7 +58,7 @@ const EvaluateComponent = () => {
         jobDescriptionId: generateMD5(currentJD.description || ""),
         href: href,
 
-        amount: currentJD.searchLimit || 20,
+        amount: currentJD.searchLimit || 0,
         jobTitle: currentJD.title || "",
         jobDescription: currentJD.description || ""
       }
@@ -123,18 +123,30 @@ const EvaluateComponent = () => {
           Activate RecruiterBrain
         </Button>
       ) : (
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, marginTop: -1 }}>
           <Button
-            size="small"
             variant="outlined"
-            sx={{ color: "#2C65BC", borderColor: "#2C65BC", borderRadius: 3 }}
+            sx={{
+              color: "#2C65BC",
+              borderColor: "#2C65BC",
+              borderRadius: 3,
+              fontSize: "16px",
+              paddingX: 1.5,
+              paddingY: 0
+            }}
             onClick={() => setOpen({ eval: false, setting: true })}>
             Evaluate Profiles
           </Button>
           <Button
-            size="small"
             variant="outlined"
-            sx={{ color: "#2C65BC", borderColor: "#2C65BC", borderRadius: 3 }}
+            sx={{
+              color: "#2C65BC",
+              borderColor: "#2C65BC",
+              borderRadius: 3,
+              fontSize: "16px",
+              paddingX: 1.5,
+              paddingY: 0
+            }}
             onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
           </Button>

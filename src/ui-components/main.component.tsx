@@ -36,8 +36,9 @@ export default function SampleComponent() {
   if (!extensionEnabled)
     return (
       <InjectorComponent
+        direction={"after"}
         injectComponentId={"recruit-brain-injector"}
-        querySelectorTargetElement={".artdeco-tabs"}>
+        querySelectorTargetElement={".sourcing-channels__post-job-link"}>
         <EvaluateComponent />
       </InjectorComponent>
     )
@@ -45,7 +46,7 @@ export default function SampleComponent() {
   return (
     <MinimalProvider>
       <InjectorComponent
-        direction={'after'}
+        direction={"after"}
         injectComponentId={"recruit-brain-injector"}
         querySelectorTargetElement={".sourcing-channels__post-job-link"}>
         <EvaluateComponent />
