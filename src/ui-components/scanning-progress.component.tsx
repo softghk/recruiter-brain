@@ -1,7 +1,5 @@
 import { Box, Button, LinearProgress, Stack, Typography } from "@mui/material"
-import React from "react"
-
-import { MinimalProvider } from "~@minimal/Provider"
+import React, { useEffect, useState } from "react"
 
 const ScanningProgress = ({
   onPause,
@@ -10,8 +8,23 @@ const ScanningProgress = ({
   onPause?: any
   onStop?: any
 }) => {
+  const [total, setTotal] = useState(0)
+  const [completed, setCompleted] = useState(0)
+
+  useEffect(() => {
+    // Content script to check job status every second
+    setInterval(() => {
+      chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
+        console.log("Current job status:", response)
+        const tasks = response.tasks
+        setTotal(tasks.length)
+        setCompleted(tasks.filter((item) => item.status === "complete").length)
+      })
+    }, 1000)
+  }, [])
+
   return (
-    <Stack direction={"column"} gap={1}>
+    <Stack direction={"column"} gap={1} padding={2}>
       <Stack direction={"row"} alignItems={"center"} gap={1} width={"100%"}>
         <LinearProgress
           value={15}
@@ -26,7 +39,9 @@ const ScanningProgress = ({
         </Button>
       </Stack>
       <Box>
-        <Typography variant="caption">8 of 25 profiles evaluated.</Typography>
+        <Typography variant="caption">
+          {completed} of {total} profiles evaluated.
+        </Typography>
       </Box>
     </Stack>
   )

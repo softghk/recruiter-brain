@@ -7,13 +7,6 @@ export {}
 
 injectControlPanel()
 
-// Content script to check job status every second
-setInterval(() => {
-  chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
-    console.log("Current job status:", response)
-  })
-}, 1000)
-
 async function waitForElement2(selector) {
   return new Promise((resolve) => {
     const observer = new MutationObserver(() => {
