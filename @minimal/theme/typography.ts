@@ -5,7 +5,7 @@ export function remToPx(value: string) {
 }
 
 export function pxToRem(value: number) {
-  const unit = window?.location?.pathname?.includes('https://linkedin.com') ? 10 : 16
+  const unit = 10
   return `${value / unit}rem`;
 }
 
