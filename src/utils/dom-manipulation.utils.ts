@@ -1,3 +1,5 @@
+import buildDataHTML from "src/ui-components/profile-evaluation.component"
+
 // Injects data into the DOM after profile evaluation
 export function injectDataIntoDom(profile, profileEvaluation) {
   removeLoadingIndicator(profile)
@@ -7,8 +9,10 @@ export function injectDataIntoDom(profile, profileEvaluation) {
   const targetElement = profile.querySelector(".artdeco-entity-lockup")
 
   if (targetElement) {
-    const injectedDataHtml = buildDataHtml(rating, explanation)
-    targetElement.insertAdjacentHTML("afterend", injectedDataHtml)
+    targetElement.insertAdjacentHTML(
+      "afterend",
+      buildDataHTML(rating, explanation)
+    )
   } else {
     console.error("Target element for injecting data not found.")
   }
@@ -20,20 +24,6 @@ function removeLoadingIndicator(profile) {
   if (loadingIndicator) {
     loadingIndicator.remove()
   }
-}
-
-// Builds HTML string for injected data
-function buildDataHtml(rating, explanation) {
-  const formattedExplanation = explanation.replace(/\n/g, "<br>")
-
-  return `
-    <div class="recruiter-brain-profile-evaluation" style="position: relative; margin-top: 20px; padding: 16px; background-color: #f3f6f8; border-radius: 8px; border: 1px solid #dce0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); word-wrap: break-word;">
-      <img src="https://i.ibb.co/MVCGgq2/logo.png" alt="Logo" style="position: absolute; top: 10px; right: 10px; width: 30px; height: auto;">
-      <div style="font-weight: 800; font-size: 16px; color: #303030; margin-bottom: 8px;">Rating: ${rating}</div>
-      <div style="font-weight: 600; font-size: 14px; color: #303030; margin-bottom: 8px;">Role Fit Rating Explained</div>
-      <div style="font-size: 14px; line-height: 1.5; color: #303030;">${formattedExplanation}</div>
-    </div>
-  `
 }
 
 // Injects a loading notice into the DOM
