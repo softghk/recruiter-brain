@@ -175,3 +175,15 @@ async function autoInject() {
 }
 
 autoInject()
+
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case 'url-changed':
+      console.log("URL CHANGED!!!")
+      break;
+  
+    default:
+      break;
+  }
+})

@@ -8,6 +8,7 @@ import carouselThemeStyle from "data-text:slick-carousel/slick/slick-theme.css"
 import carouselStyle from "data-text:slick-carousel/slick/slick.css"
 import React, { useEffect } from "react"
 import ReactDOM from "react-dom/client"
+import { useReactPath } from "src/utils/hooks.utils"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
@@ -31,21 +32,6 @@ const InjectorComponent = ({
   const { user } = useFirebaseUser()
   const [enabled] = useStorage(EXTENSION_ENABLE)
   const [auth] = useStorage<AuthState>(AUTH_STATE)
-
-  const useReactPath = () => {
-    const [path, setPath] = React.useState(window.location.pathname)
-    const listenToPopstate = () => {
-      const winPath = window.location.pathname
-      setPath(winPath)
-    }
-    React.useEffect(() => {
-      window.addEventListener("popstate", listenToPopstate)
-      return () => {
-        window.removeEventListener("popstate", listenToPopstate)
-      }
-    }, [])
-    return path
-  }
 
   const path = useReactPath()
 
