@@ -23,6 +23,8 @@ const EvaluateComponent = () => {
 
   const [description, setDescription] = useStorage(JOB_DESCRIPTION)
 
+  //  it works fine now. maybe cache problem.
+
   const currentJD: JobSettings = useMemo(
     () => description?.[projectId] || JobInitialSetting,
     [description]
