@@ -9,10 +9,13 @@ export function injectDataIntoDom(profile, profileEvaluation) {
   const targetElement = profile.querySelector(".artdeco-entity-lockup")
 
   if (targetElement) {
+    /*
     targetElement.insertAdjacentHTML(
       "afterend",
       buildDataHTML(rating, explanation)
     )
+    */
+    targetElement.after(buildDataHTML(rating, explanation))
   } else {
     console.error("Target element for injecting data not found.")
   }

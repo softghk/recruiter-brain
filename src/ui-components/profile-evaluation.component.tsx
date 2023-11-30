@@ -73,6 +73,8 @@ const profileContainer = (rating, explanation) => {
 
   const root = ReactDOM.createRoot(shadowRootElement as HTMLElement)
   root.render(<ProfileEvaluation rating={rating} explanation={explanation} />)
+
+  return container
 }
 
 export default profileContainer
