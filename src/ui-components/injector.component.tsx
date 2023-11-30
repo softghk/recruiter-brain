@@ -8,7 +8,6 @@ import carouselThemeStyle from "data-text:slick-carousel/slick/slick-theme.css"
 import carouselStyle from "data-text:slick-carousel/slick/slick.css"
 import React, { useEffect } from "react"
 import ReactDOM from "react-dom/client"
-import { useReactPath } from "src/utils/hooks.utils"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
@@ -33,8 +32,6 @@ const InjectorComponent = ({
   const [enabled] = useStorage(EXTENSION_ENABLE)
   const [auth] = useStorage<AuthState>(AUTH_STATE)
 
-  const path = useReactPath()
-
   useEffect(() => {
     const inject = async () => {
       await new Promise((resolve) => {
@@ -44,7 +41,7 @@ const InjectorComponent = ({
       const targetElement = document.querySelector(querySelectorTargetElement)
       const injectedComponent = document.getElementById(injectComponentId)
 
-      if (!auth?.isAuth || !enabled) {
+      if (!user || !auth?.isAuth || !enabled) {
         injectedComponent && injectedComponent.remove()
         return
       }
@@ -93,7 +90,7 @@ const InjectorComponent = ({
       }
     }
     inject()
-  }, [user, enabled, injectComponentId, querySelectorTargetElement, path])
+  }, [user, auth, enabled, injectComponentId, querySelectorTargetElement])
 
   return null
 }

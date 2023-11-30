@@ -177,14 +177,11 @@ async function autoInject() {
   observeListElement()
 }
 
-injectControlPanel()
-
 let previousURL = ""
 
 window.addEventListener("DOMNodeInserted", function () {
   const currentURL = window.location.href
   if (currentURL !== previousURL) {
-    console.log("URL changed to:", currentURL)
     previousURL = currentURL
     injectControlPanel()
     autoInject()
