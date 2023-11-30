@@ -27,7 +27,7 @@ function buildDataHtml(rating, explanation) {
   const formattedExplanation = explanation.replace(/\n/g, "<br>")
 
   return `
-    <div style="position: relative; margin-top: 20px; padding: 16px; background-color: #f3f6f8; border-radius: 8px; border: 1px solid #dce0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); word-wrap: break-word;">
+    <div class="recruiter-brain-profile-evaluation" style="position: relative; margin-top: 20px; padding: 16px; background-color: #f3f6f8; border-radius: 8px; border: 1px solid #dce0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); word-wrap: break-word;">
       <img src="https://i.ibb.co/MVCGgq2/logo.png" alt="Logo" style="position: absolute; top: 10px; right: 10px; width: 30px; height: auto;">
       <div style="font-weight: 800; font-size: 16px; color: #303030; margin-bottom: 8px;">Rating: ${rating}</div>
       <div style="font-weight: 600; font-size: 14px; color: #303030; margin-bottom: 8px;">Role Fit Rating Explained</div>
