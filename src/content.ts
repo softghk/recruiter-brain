@@ -7,6 +7,10 @@ export {}
 
 injectControlPanel()
 
+window.addEventListener("popstate", () => {
+  injectControlPanel()
+})
+
 async function waitForElement2(selector) {
   return new Promise((resolve) => {
     const observer = new MutationObserver(() => {
@@ -176,14 +180,13 @@ async function autoInject() {
 
 autoInject()
 
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
-    case 'url-changed':
+    case "url-changed":
       console.log("URL CHANGED!!!")
-      break;
-  
+      break
+
     default:
-      break;
+      break
   }
 })
