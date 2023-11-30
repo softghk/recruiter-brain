@@ -5,12 +5,6 @@ import { requestDataFromIndexedDB } from "./utils/storage.utils"
 
 export {}
 
-injectControlPanel()
-
-window.addEventListener("popstate", () => {
-  injectControlPanel()
-})
-
 async function waitForElement2(selector) {
   return new Promise((resolve) => {
     const observer = new MutationObserver(() => {
@@ -178,15 +172,15 @@ async function autoInject() {
   observeListElement()
 }
 
-autoInject()
+injectControlPanel()
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case "url-changed":
-      console.log("URL CHANGED!!!")
-      break
+let previousURL = ""
 
-    default:
-      break
+window.addEventListener("DOMNodeInserted", function () {
+  const currentURL = window.location.pathname
+  if (currentURL !== previousURL) {
+    previousURL = currentURL
+    injectControlPanel()
+    autoInject()
   }
 })
