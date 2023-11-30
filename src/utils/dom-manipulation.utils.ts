@@ -5,17 +5,21 @@ export function injectDataIntoDom(profile, profileEvaluation) {
   removeLoadingIndicator(profile)
 
   const { rating, explanation } = profileEvaluation.data
+  const profileId = profileEvaluation.profileId
 
   const targetElement = profile.querySelector(".artdeco-entity-lockup")
+  console.log("profileID:, ", profileId)
 
+  const profileElement = document.getElementById(
+    `recruit-brain-profile-${profileId}`
+  )
+
+  console.log("profileElement", profileElement)
+  if (profileElement) {
+    profileElement.remove()
+  }
   if (targetElement) {
-    /*
-    targetElement.insertAdjacentHTML(
-      "afterend",
-      buildDataHTML(rating, explanation)
-    )
-    */
-    targetElement.after(buildDataHTML(rating, explanation))
+    targetElement.after(buildDataHTML(rating, explanation, profileId))
   } else {
     console.error("Target element for injecting data not found.")
   }

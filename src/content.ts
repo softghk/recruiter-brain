@@ -29,7 +29,6 @@ async function handleMutation(mutation) {
         "ember-view profile-list__occlusion-area profile-list__border-bottom" &&
       currentClass === "ember-view profile-list__border-bottom"
     ) {
-      console.log("Updated <li>:", element)
       const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
       const profileId = element
         .querySelector("a")
@@ -79,8 +78,14 @@ async function tryFetchingData(
   console.log("tryFetchingData", evaluationData)
 
   if (Array.isArray(evaluationData) && evaluationData.length) {
-    console.log("Evaluation data found, injecting into DOM...", element)
-    injectDataIntoDom(element, { data: evaluationData[0].evaluation })
+    console.log(
+      "Evaluation data found, injecting into DOM...",
+      evaluationData[0].profileId
+    )
+    injectDataIntoDom(element, {
+      data: evaluationData[0].evaluation,
+      profileId
+    })
   } else {
     console.log("No evaluation data found, setting up listener...", element)
     const listenerFunction = async (message, sender, sendResponse) => {
@@ -94,7 +99,7 @@ async function tryFetchingData(
           profileId
         )
         if (Array.isArray(newData) && newData.length) {
-          injectDataIntoDom(element, { data: newData[0].evaluation })
+          injectDataIntoDom(element, { data: newData[0].evaluation, profileId })
           chrome.runtime.onMessage.removeListener(listenerFunction)
         }
       }
@@ -177,8 +182,9 @@ injectControlPanel()
 let previousURL = ""
 
 window.addEventListener("DOMNodeInserted", function () {
-  const currentURL = window.location.pathname
+  const currentURL = window.location.href
   if (currentURL !== previousURL) {
+    console.log("URL changed to:", currentURL)
     previousURL = currentURL
     injectControlPanel()
     autoInject()

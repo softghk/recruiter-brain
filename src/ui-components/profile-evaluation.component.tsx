@@ -58,15 +58,15 @@ const ProfileEvaluation = ({ rating, explanation }) => {
           fontSize: 14,
           lineHeight: 1.5,
           color: "#303030"
-        }}>
-        {formattedExplanation}
-      </div>
+        }}
+        dangerouslySetInnerHTML={{ __html: formattedExplanation }}></div>
     </div>
   )
 }
 
-const profileContainer = (rating, explanation) => {
+const profileContainer = (rating, explanation, profileId) => {
   const container = document.createElement("div")
+  container.setAttribute("id", `recruit-brain-profile-${profileId}`)
   const shadowContainer = container.attachShadow({ mode: "open" })
   const shadowRootElement = document.createElement("div")
   shadowContainer.appendChild(shadowRootElement)

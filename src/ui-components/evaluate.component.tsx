@@ -82,7 +82,7 @@ const EvaluateComponent = () => {
         <InjectorComponent
           injectComponentId={"recruiter-brain-progress"}
           direction="prepend"
-          querySelectorTargetElement={".profile-list-container"}>
+          querySelectorTargetElement={".page-layout__workspace"}>
           <ScanningProgress onPause={onPauseScanning} onStop={onStopScanning} />
         </InjectorComponent>
       )}
@@ -105,6 +105,8 @@ const EvaluateComponent = () => {
         <Button
           sx={{
             marginTop: -1,
+            marginLeft: -1,
+            marginRight: 1,
             color: "#d30000",
             borderColor: "#d30000",
             borderRadius: 3,
@@ -133,7 +135,14 @@ const EvaluateComponent = () => {
           Activate RecruiterBrain
         </Button>
       ) : (
-        <Box sx={{ display: "flex", gap: 2, marginTop: -1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            marginTop: -1,
+            marginLeft: -1,
+            marginRight: 1
+          }}>
           <Button
             variant="outlined"
             sx={{
