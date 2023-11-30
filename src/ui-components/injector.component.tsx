@@ -34,11 +34,6 @@ const InjectorComponent = ({
 
   useEffect(() => {
     const inject = async () => {
-      // const injectComponentId = "recruit-brain-injector"
-      // const querySelectorTargetElement = ".artdeco-tabs"
-
-      console.log(injectComponentId)
-
       await new Promise((resolve) => {
         waitForElement(querySelectorTargetElement, resolve)
       })
@@ -89,7 +84,9 @@ const InjectorComponent = ({
           </CacheProvider>
         )
       } else {
-        console.error(`Target element for ${injectComponentId} injecting data not found.`)
+        console.error(
+          `Target element for ${injectComponentId} injecting data not found.`
+        )
       }
     }
     inject()
