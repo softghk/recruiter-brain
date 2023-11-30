@@ -467,12 +467,14 @@ async function injectedCode(jobData) {
   }
 
   addOverlay()
-  // open first profile
+  // wait for profile list
   await new Promise((resolve) =>
     waitForElement("a[data-live-test-link-to-profile-link]", resolve)
   )
+  // open first profile in list
   document.querySelector("a[data-live-test-link-to-profile-link]").click()
 
+  // tell background script that page is loaded
   chrome.runtime.sendMessage({ done: true })
 
   var run = 0
