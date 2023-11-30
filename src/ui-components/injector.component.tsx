@@ -32,6 +32,23 @@ const InjectorComponent = ({
   const [enabled] = useStorage(EXTENSION_ENABLE)
   const [auth] = useStorage<AuthState>(AUTH_STATE)
 
+  const useReactPath = () => {
+    const [path, setPath] = React.useState(window.location.pathname)
+    const listenToPopstate = () => {
+      const winPath = window.location.pathname
+      setPath(winPath)
+    }
+    React.useEffect(() => {
+      window.addEventListener("popstate", listenToPopstate)
+      return () => {
+        window.removeEventListener("popstate", listenToPopstate)
+      }
+    }, [])
+    return path
+  }
+
+  const path = useReactPath()
+
   useEffect(() => {
     const inject = async () => {
       await new Promise((resolve) => {
@@ -90,7 +107,7 @@ const InjectorComponent = ({
       }
     }
     inject()
-  }, [user, enabled, injectComponentId, querySelectorTargetElement])
+  }, [user, enabled, injectComponentId, querySelectorTargetElement, path])
 
   return null
 }
