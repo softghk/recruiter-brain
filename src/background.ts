@@ -98,7 +98,7 @@ const processNextTask = () => {
 }
 
 // Mock API call with a timeout, then save data to IndexedDB
-const mockAPICallAndSaveData = async (data, jobData) => {
+const makeAPICallAndSaveData = async (data, jobData) => {
   const taskId = jobData.taskId
   const jobId = jobData.jobId
   console.log("API Call", data, jobData)
@@ -593,7 +593,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (sender.tab && request.taskId !== undefined) {
-    mockAPICallAndSaveData(request.linkedInData, {
+    makeAPICallAndSaveData(request.linkedInData, {
       ...request.jobData,
       taskId: request.taskId
     })
