@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid"
 import { Storage } from "@plasmohq/storage"
 
 import { evaluateProfileApi } from "~utils/api-service.utils"
+
 import { JOB_DESCRIPTION } from "./config/storage.config"
 
 const storage = new Storage()
@@ -599,8 +600,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ status: "Job stopped" })
       break
     case ActionTypes.GET_JOB_DETAILS:
-      const response = storage.get(JOB_DESCRIPTION)
-      sendResponse({ data: response })
+      storage.get(JOB_DESCRIPTION).then((response) => {
+        sendResponse({ data: response })
+      })
   }
 
   if (sender.tab && request.taskId !== undefined) {
