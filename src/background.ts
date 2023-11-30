@@ -64,6 +64,7 @@ const openTabAndInjectCode = (jobData) => {
 }
 
 // Handle job evaluation
+// this function is called from the content script
 const evaluateProfiles = (jobData) => {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
@@ -582,6 +583,7 @@ const stopJob = () => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
     case ActionTypes.EVALUATE_PROFILES:
+      console.log("evaluateProfiles request.data", request.data)
       evaluateProfiles(request.data)
       break
     case ActionTypes.GET_STATUS:

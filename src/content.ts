@@ -42,8 +42,16 @@ async function handleMutation(mutation) {
         chrome.runtime.sendMessage(
           { action: "get-job-details" },
           async (response) => {
-            const jobDescription = response.data?.[projectId] || ""
+            const jobData = response.data?.[projectId]
+            if (!jobData) return
+            const jobDescription = jobData.description || ""
             const jobDescriptionId = generateMD5(jobDescription)
+            console.log(
+              "jobDescription",
+              jobDescription,
+              "jobDescriptionId",
+              jobDescriptionId
+            )
             await tryFetchingData(
               projectId,
               jobDescriptionId,
