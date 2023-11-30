@@ -177,6 +177,8 @@ async function autoInject() {
   observeListElement()
 }
 
+injectControlPanel()
+
 let previousURL = ""
 
 window.addEventListener("DOMNodeInserted", function () {
