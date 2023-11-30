@@ -46,7 +46,7 @@ const InjectorComponent = ({
       const targetElement = document.querySelector(querySelectorTargetElement)
       const injectedComponent = document.getElementById(injectComponentId)
 
-      if (!auth.isAuth || !enabled) {
+      if (!auth?.isAuth || !enabled) {
         injectedComponent && injectedComponent.remove()
         return
       }
