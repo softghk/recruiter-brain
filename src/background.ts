@@ -120,7 +120,8 @@ const mockAPICallAndSaveData = async (data, jobData) => {
         projectId: jobData.projectId,
         jobDescriptionId: jobData.jobDescriptionId,
         profileId: data.personal.id,
-        evaluation: response
+        evaluation: response,
+        likes: 0
       })
       markTaskAsComplete(taskId, jobId)
     }
@@ -132,7 +133,8 @@ async function saveDataToIndexedDB({
   projectId,
   jobDescriptionId,
   profileId,
-  evaluation
+  evaluation,
+  likes
 }) {
   console.log("saveDataToIndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
@@ -158,7 +160,7 @@ async function saveDataToIndexedDB({
     const db = event.target.result
     const tx = db.transaction(storeName, "readwrite")
     const store = tx.objectStore(storeName)
-    const data = { projectId, jobDescriptionId, profileId, evaluation }
+    const data = { projectId, jobDescriptionId, profileId, evaluation, likes }
 
     const addRequest = store.add(data)
 
@@ -169,6 +171,42 @@ async function saveDataToIndexedDB({
 
     addRequest.onerror = () => {
       console.error("Error saving data to IndexedDB")
+    }
+
+    // Close the transaction
+    tx.oncomplete = () => db.close()
+  }
+
+  // Handle errors in opening the database
+  openRequest.onerror = (event) => {
+    console.error("Error opening IndexedDB", event.target.errorCode)
+  }
+}
+
+async function deleteDataFromIndexedDB({ id }) {
+  console.log("Delete Data from IndexedDB")
+  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+  const storeName = projectId
+  const dbVersion = 4 // Increment this version when changes are made to the database structure
+
+  // Open or create a database with an updated version
+  const openRequest = indexedDB.open(dbName, dbVersion)
+
+  // Handle successful database opening
+  openRequest.onsuccess = async (event) => {
+    const db = event.target.result
+    const tx = db.transaction(storeName, "readwrite")
+    const store = tx.objectStore(storeName)
+
+    const deleteRequest = store.delete(id)
+
+    deleteRequest.onsuccess = () => {
+      console.log("Data deleted from IndexedDB: ", id)
+      notifyContentScript("itemDeletedFromIndexedDb")
+    }
+
+    deleteRequest.onerror = () => {
+      console.error("Error deleting data from IndexedDB")
     }
 
     // Close the transaction
@@ -667,9 +705,7 @@ function getDataFromIndexedDB({ projectId, jobDescriptionId, profileId }) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("eventlistener", request.action)
   if (request.action === "getDataFromIndexedDB") {
-    console.log("getting data from indexedDB", request.payload)
     getDataFromIndexedDB(request.payload)
       .then((data) => sendResponse({ success: true, data }))
       .catch((error) => sendResponse({ success: false, error }))
