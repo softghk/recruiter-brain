@@ -17,6 +17,22 @@ import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import type { AuthState } from "~src/types"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
 
+const useReactPath = () => {
+  const [path, setPath] = React.useState(window.location.pathname)
+  const listenToPopstate = () => {
+    const winPath = window.location.pathname
+    if (path === winPath) return
+    setPath(winPath)
+  }
+  React.useEffect(() => {
+    window.addEventListener("DOMNodeInserted", listenToPopstate)
+    return () => {
+      window.removeEventListener("DOMNodeInserted", listenToPopstate)
+    }
+  }, [])
+  return path
+}
+
 const InjectorComponent = ({
   injectComponentId,
   querySelectorTargetElement,
@@ -31,6 +47,7 @@ const InjectorComponent = ({
   const { user } = useFirebaseUser()
   const [enabled] = useStorage(EXTENSION_ENABLE)
   const [auth] = useStorage<AuthState>(AUTH_STATE)
+  const path = useReactPath()
 
   useEffect(() => {
     const inject = async () => {
@@ -90,7 +107,7 @@ const InjectorComponent = ({
       }
     }
     inject()
-  }, [user, auth, enabled, injectComponentId, querySelectorTargetElement])
+  }, [user, auth, enabled, injectComponentId, querySelectorTargetElement, path])
 
   return null
 }

@@ -22,7 +22,13 @@ export async function injectControlPanel() {
   const targetElement = document.querySelector(querySelectorTargetElement)
   const injectedComponent = document.getElementById(injectComponentId)
 
+  console.log("====================================")
+  console.log("Injected Component", injectedComponent)
+
   if (targetElement && !injectedComponent) {
+    console.log(
+      `Target element: ${injectComponentId} for injecting data found!!!`
+    )
     const container = document.createElement("div")
     container.setAttribute("id", injectComponentId)
     targetElement.appendChild(container)
@@ -56,6 +62,8 @@ export async function injectControlPanel() {
       </CacheProvider>
     )
   } else {
-    console.error("Target element for injecting data not found.")
+    console.error(
+      `Target element: ${injectComponentId} for injecting data not found.`
+    )
   }
 }

@@ -10,7 +10,8 @@ import { useStorage } from "@plasmohq/storage/hook"
 import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
 import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-radial-bar"
-import { EXTENSION_ENABLE } from "~src/config/storage.config"
+import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
+import useFirebaseUser from "~src/firebase/useFirebaseUser"
 
 const customIcons: {
   [index: string]: {
@@ -56,13 +57,15 @@ const ProfileEvaluation = ({
   const [expanded, setExpanded] = useState(false)
   const [state] = useStorage<boolean>(EXTENSION_ENABLE)
 
+  const { user } = useFirebaseUser()
+  const [auth] = useStorage(AUTH_STATE)
   const formattedExplanation = explanation.replace(/\n/g, "<br>")
 
-  if (!state) return null
+  if (!user || !auth.isAuth || !state) return null
 
   return (
     <MinimalProvider>
-      <Card elevation={8} sx={{ paddingY: 5, paddingX: 3 }}>
+      <Card elevation={8} sx={{ paddingY: 5, paddingX: 3, marginTop: 2 }}>
         <img
           src="https://i.ibb.co/MVCGgq2/logo.png"
           alt="Logo"
@@ -70,7 +73,7 @@ const ProfileEvaluation = ({
             position: "absolute",
             top: 10,
             right: 10,
-            width: 43,
+            width: 36,
             height: "auto"
           }}
         />
