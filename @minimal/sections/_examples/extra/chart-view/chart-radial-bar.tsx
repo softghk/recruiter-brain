@@ -2,6 +2,7 @@
 
 // components
 import Chart, { useChart } from "@minimal/components/chart"
+import StrengthMeteorImage from "data-base64:~assets/strength-meteor.png"
 
 // utils
 
@@ -33,7 +34,8 @@ export default function ChartRadialBar({ series }: Props) {
       radialBar: {
         hollow: {
           size: "50%",
-          margin: 0
+          margin: 0,
+          imageClipped: false
         },
         startAngle: -90,
         endAngle: 90,
@@ -43,20 +45,26 @@ export default function ChartRadialBar({ series }: Props) {
       }
     },
     fill: {
-      type: "gradient",
-      gradient: {
-        type: "horizontal",
-        colorStops: [
-          {
-            offset: 0,
-            color: "#FF0900"
-          },
-          {
-            offset: 100,
-            color: "#14FF00"
-          }
-        ]
+      type: "image",
+      image: {
+        src: [StrengthMeteorImage],
+        width: 300,
+        height: 300
       }
+      // type: "gradient",
+      // gradient: {
+      //   type: "horizontal",
+      //   colorStops: [
+      //     {
+      //       offset: 0,
+      //       color: "#FF0900"
+      //     },
+      //     {
+      //       offset: 100,
+      //       color: "#14FF00"
+      //     }
+      //   ]
+      // }
     }
   })
 

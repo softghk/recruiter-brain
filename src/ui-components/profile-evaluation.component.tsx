@@ -1,7 +1,15 @@
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
 import ReplayIcon from "@mui/icons-material/Replay"
-import { Box, Card, IconButton, Rating, Stack, Typography } from "@mui/material"
+import {
+  Box,
+  Card,
+  CircularProgress,
+  IconButton,
+  Rating,
+  Stack,
+  Typography
+} from "@mui/material"
 import React, { useState } from "react"
 import ReactDOM from "react-dom/client"
 
@@ -12,6 +20,7 @@ import { MinimalProvider } from "~@minimal/Provider"
 import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-radial-bar"
 import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
+import { getEvaluationData } from "~src/utils/api-service.utils"
 
 const customIcons: {
   [index: string]: {
@@ -20,23 +29,23 @@ const customIcons: {
   }
 } = {
   1: {
-    icon: <Iconify icon="ic:round-sentiment-very-dissatisfied" />,
+    icon: <Iconify width={24} icon="ic:round-sentiment-very-dissatisfied" />,
     label: "Very Dissatisfied"
   },
   2: {
-    icon: <Iconify icon="ic:round-sentiment-dissatisfied" />,
+    icon: <Iconify width={24} icon="ic:round-sentiment-dissatisfied" />,
     label: "Dissatisfied"
   },
   3: {
-    icon: <Iconify icon="ic:round-sentiment-neutral" />,
+    icon: <Iconify width={24} icon="ic:round-sentiment-neutral" />,
     label: "Neutral"
   },
   4: {
-    icon: <Iconify icon="ic:round-sentiment-satisfied" />,
+    icon: <Iconify width={24} icon="ic:round-sentiment-satisfied" />,
     label: "Satisfied"
   },
   5: {
-    icon: <Iconify icon="ic:round-sentiment-very-satisfied" />,
+    icon: <Iconify width={24} icon="ic:round-sentiment-very-satisfied" />,
     label: "Very Satisfied"
   }
 }
@@ -61,11 +70,28 @@ const ProfileEvaluation = ({
   const [auth] = useStorage(AUTH_STATE)
   const formattedExplanation = explanation.replace(/\n/g, "<br>")
 
-  if (!user || !auth.isAuth || !state) return null
+  const [loading, setLoading] = useState(false)
+
+  const onRefreshEvaluation = async () => {
+    setLoading(true)
+    try {
+      await getEvaluationData()
+    } catch (error) {}
+    setLoading(false)
+  }
+
+  if (!user || !auth?.isAuth || !state) return null
 
   return (
     <MinimalProvider>
-      <Card elevation={8} sx={{ paddingY: 5, paddingX: 3, marginTop: 2 }}>
+      <Card
+        elevation={8}
+        sx={{
+          paddingY: 5,
+          paddingX: 3,
+          marginTop: 2,
+          width: "100%"
+        }}>
         <img
           src="https://i.ibb.co/MVCGgq2/logo.png"
           alt="Logo"
@@ -98,47 +124,57 @@ const ProfileEvaluation = ({
               </Typography>
             </Stack>
           </Box>
-          <Stack>
+          <Stack gap={1}>
             <Typography variant="h6">Profile Strength Indicator</Typography>
-            <Box gap={1}>
-              <Typography
-                variant="body2"
-                dangerouslySetInnerHTML={{ __html: formattedExplanation }}
-                sx={{
-                  display: expanded ? "block" : "-webkit-box",
-                  "-webkit-box-orient": "vertical",
-                  "-webkit-line-clamp": "3",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}
-              />
-              <Stack direction={"row"} gap={1}>
-                <Typography
-                  variant="body2"
-                  onClick={() => setExpanded(!expanded)}
-                  sx={{ textDecoration: "underline", cursor: "pointer" }}>
-                  {expanded ? "Show Less" : "Show More"}
-                </Typography>
-                <Rating
-                  name="customized-icons"
-                  defaultValue={2}
-                  getLabelText={(ratingValue) => customIcons[ratingValue].label}
-                  IconContainerComponent={IconContainer}
-                />
-              </Stack>
-            </Box>
+            <Typography
+              variant="body2"
+              dangerouslySetInnerHTML={{ __html: formattedExplanation }}
+              sx={{
+                display: expanded ? "block" : "-webkit-box",
+                "-webkit-box-orient": "vertical",
+                "-webkit-line-clamp": "3",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                flexGrow: 1
+              }}
+            />
+            <Typography
+              variant="body2"
+              onClick={() => setExpanded(!expanded)}
+              sx={{
+                textDecoration: "underline",
+                cursor: "pointer"
+              }}>
+              {expanded ? "Show Less" : "Show More"}
+            </Typography>
           </Stack>
         </Stack>
 
-        <Stack direction={"row"} justifyContent={"flex-end"}>
+        <Stack
+          direction={"row"}
+          justifyContent={"flex-end"}
+          alignItems={"center"}
+          gap={2}>
+          <Rating
+            name="customized-icons"
+            defaultValue={0}
+            onChange={(e) => console.log(e.target.value)}
+            getLabelText={(ratingValue) => customIcons[ratingValue].label}
+            IconContainerComponent={IconContainer}
+          />
           <IconButton
+            onClick={onRefreshEvaluation}
             size="small"
             style={{
               background: "#EDEFF2",
               width: 24,
               height: 24
             }}>
-            <ReplayIcon sx={{ fontSize: 16, color: "black" }} />
+            {loading ? (
+              <CircularProgress size={16} />
+            ) : (
+              <ReplayIcon sx={{ fontSize: 16, color: "black" }} />
+            )}
           </IconButton>
         </Stack>
       </Card>
