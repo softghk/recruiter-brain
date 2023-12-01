@@ -39,6 +39,27 @@ export async function evaluateProfileApi(
     })
 }
 
+export async function rateCandidateEvaluation(profileUrl, rating, callback) {
+  fetch("http://localhost:3000/evaluation/rating", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      profileUrl: profileUrl,
+      rating: rating
+    })
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("rated evaluation for")
+      callback(data)
+    })
+    .catch((error) => {
+      console.log("error during evaluation", error)
+    })
+}
+
 export async function getStatisticData() {
   return new Promise(async (resolve, reject) => {
     const data: AuthState = await storage.get(AUTH_STATE)
