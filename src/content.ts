@@ -84,10 +84,7 @@ async function tryFetchingData(
       "Evaluation data found, injecting into DOM...",
       evaluationData[0].profileId
     )
-    injectDataIntoDom(element, {
-      data: evaluationData[0].evaluation,
-      profileId
-    })
+    injectDataIntoDom(element, evaluationData[0])
   } else {
     //console.log("No evaluation data found, setting up listener...", element)
     const listenerFunction = async (message, sender, sendResponse) => {
@@ -101,7 +98,7 @@ async function tryFetchingData(
           profileId
         )
         if (Array.isArray(newData) && newData.length) {
-          injectDataIntoDom(element, { data: newData[0].evaluation, profileId })
+          injectDataIntoDom(element, newData[0])
           chrome.runtime.onMessage.removeListener(listenerFunction)
         }
       }

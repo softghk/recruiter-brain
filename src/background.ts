@@ -129,7 +129,7 @@ const mockAPICallAndSaveData = async (data, jobData) => {
 }
 
 // Save data to IndexedDB
-async function saveDataToIndexedDB({
+function saveDataToIndexedDB({
   projectId,
   jobDescriptionId,
   profileId,
@@ -144,79 +144,86 @@ async function saveDataToIndexedDB({
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
 
-  // Handle database upgrade
-  openRequest.onupgradeneeded = (event) => {
-    const db = event.target.result
-    if (!db.objectStoreNames.contains(storeName)) {
-      db.createObjectStore(storeName, {
-        keyPath: "id",
-        autoIncrement: true
-      })
-    }
-  }
-
-  // Handle successful database opening
-  openRequest.onsuccess = async (event) => {
-    const db = event.target.result
-    const tx = db.transaction(storeName, "readwrite")
-    const store = tx.objectStore(storeName)
-    const data = { projectId, jobDescriptionId, profileId, evaluation, likes }
-
-    const addRequest = store.add(data)
-
-    addRequest.onsuccess = () => {
-      console.log("Data saved to IndexedDB", data)
-      notifyContentScript("itemAddedToIndexedDb")
+  return new Promise((resolve, reject) => {
+    // Handle database upgrade
+    openRequest.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName, {
+          keyPath: "id",
+          autoIncrement: true
+        })
+      }
     }
 
-    addRequest.onerror = () => {
-      console.error("Error saving data to IndexedDB")
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      const db = event.target.result
+      const tx = db.transaction(storeName, "readwrite")
+      const store = tx.objectStore(storeName)
+      const data = { projectId, jobDescriptionId, profileId, evaluation, likes }
+
+      const addRequest = store.add(data)
+
+      addRequest.onsuccess = () => {
+        console.log("Data saved to IndexedDB", data)
+        notifyContentScript("itemAddedToIndexedDb")
+      }
+
+      addRequest.onerror = () => {
+        console.error("Error saving data to IndexedDB")
+      }
+
+      // Close the transaction
+      tx.oncomplete = () => db.close()
+      resolve()
     }
 
-    // Close the transaction
-    tx.oncomplete = () => db.close()
-  }
-
-  // Handle errors in opening the database
-  openRequest.onerror = (event) => {
-    console.error("Error opening IndexedDB", event.target.errorCode)
-  }
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
 }
 
 async function deleteDataFromIndexedDB({ id }) {
   console.log("Delete Data from IndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
-  const dbVersion = 4 // Increment this version when changes are made to the database structure
 
   // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName, dbVersion)
+  const openRequest = indexedDB.open(dbName)
 
-  // Handle successful database opening
-  openRequest.onsuccess = async (event) => {
-    const db = event.target.result
-    const tx = db.transaction(storeName, "readwrite")
-    const store = tx.objectStore(storeName)
+  return new Promise((resolve, reject) => {
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      const db = event.target.result
+      const tx = db.transaction(storeName, "readwrite")
+      const store = tx.objectStore(storeName)
 
-    const deleteRequest = store.delete(id)
+      const deleteRequest = store.delete(id)
 
-    deleteRequest.onsuccess = () => {
-      console.log("Data deleted from IndexedDB: ", id)
-      notifyContentScript("itemDeletedFromIndexedDb")
+      deleteRequest.onsuccess = () => {
+        console.log("Data deleted from IndexedDB: ", id)
+        resolve(id)
+      }
+
+      deleteRequest.onerror = () => {
+        console.error("Error deleting data from IndexedDB")
+        reject()
+      }
+
+      // Close the transaction
+      tx.oncomplete = () => db.close()
     }
 
-    deleteRequest.onerror = () => {
-      console.error("Error deleting data from IndexedDB")
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
     }
-
-    // Close the transaction
-    tx.oncomplete = () => db.close()
-  }
-
-  // Handle errors in opening the database
-  openRequest.onerror = (event) => {
-    console.error("Error opening IndexedDB", event.target.errorCode)
-  }
+  })
 }
 
 // Mark the current task as complete
@@ -710,5 +717,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .then((data) => sendResponse({ success: true, data }))
       .catch((error) => sendResponse({ success: false, error }))
     return true // Indicates asynchronous response
+  }
+
+  if (request.action === "updateDataFromIndexedDB") {
+    const data = request.payload
+    deleteDataFromIndexedDB(data.id).then(() => {
+      saveDataToIndexedDB(data)
+    })
   }
 })

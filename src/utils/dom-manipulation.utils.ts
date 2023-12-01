@@ -4,22 +4,20 @@ import buildDataHTML from "src/ui-components/profile-evaluation.component"
 export function injectDataIntoDom(profile, profileEvaluation) {
   removeLoadingIndicator(profile)
 
-  const { rating, explanation } = profileEvaluation.data
-  const profileId = profileEvaluation.profileId
+  const { id, profileId, likes, evaluation } = profileEvaluation
+  const { rating, explanation } = evaluation
 
   const targetElement = profile.querySelector(".artdeco-entity-lockup")
-  console.log("profileID:, ", profileId)
 
   const profileElement = document.getElementById(
     `recruit-brain-profile-${profileId}`
   )
 
-  console.log("profileElement", profileElement)
   if (profileElement) {
     profileElement.remove()
   }
   if (targetElement) {
-    targetElement.after(buildDataHTML(rating, explanation, profileId))
+    targetElement.after(buildDataHTML(profileEvaluation))
   } else {
     console.error("Target element for injecting data not found.")
   }

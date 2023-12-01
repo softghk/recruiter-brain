@@ -21,6 +21,7 @@ import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-
 import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { getEvaluationData } from "~src/utils/api-service.utils"
+import { updateDataFromIndexedDB } from "~src/utils/storage.utils"
 
 const customIcons: {
   [index: string]: {
@@ -56,13 +57,10 @@ function IconContainer(props: any) {
   return <span {...other}>{customIcons[value].icon}</span>
 }
 
-const ProfileEvaluation = ({
-  rating,
-  explanation
-}: {
-  rating: number
-  explanation: string
-}) => {
+const ProfileEvaluation = ({ data }: { data: any }) => {
+  const { id, profileId, likes, evaluation } = data
+  const { rating, explanation } = evaluation
+
   const [expanded, setExpanded] = useState(false)
   const [state] = useStorage<boolean>(EXTENSION_ENABLE)
 
@@ -78,6 +76,12 @@ const ProfileEvaluation = ({
       await getEvaluationData()
     } catch (error) {}
     setLoading(false)
+  }
+
+  const onChangeLikes = (e) => {
+    // update indexed db
+    const newData = { ...data, likes: e.target.value }
+    updateDataFromIndexedDB(newData)
   }
 
   if (!user || !auth?.isAuth || !state) return null
@@ -157,8 +161,8 @@ const ProfileEvaluation = ({
           gap={2}>
           <Rating
             name="customized-icons"
-            defaultValue={0}
-            onChange={(e) => console.log(e.target.value)}
+            defaultValue={likes}
+            onChange={onChangeLikes}
             getLabelText={(ratingValue) => customIcons[ratingValue].label}
             IconContainerComponent={IconContainer}
           />
@@ -182,7 +186,9 @@ const ProfileEvaluation = ({
   )
 }
 
-const profileContainer = (rating, explanation, profileId) => {
+const profileContainer = (profileEvaluation) => {
+  const { profileId } = profileEvaluation
+
   const container = document.createElement("div")
   container.setAttribute("id", `recruit-brain-profile-${profileId}`)
   const shadowContainer = container.attachShadow({ mode: "open" })
@@ -203,7 +209,7 @@ const profileContainer = (rating, explanation, profileId) => {
 
   root.render(
     <CacheProvider value={cache}>
-      <ProfileEvaluation rating={rating} explanation={explanation} />
+      <ProfileEvaluation data={profileEvaluation} />
     </CacheProvider>
   )
 
