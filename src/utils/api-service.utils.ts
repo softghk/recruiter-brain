@@ -39,7 +39,11 @@ export async function evaluateProfileApi(
     })
 }
 
-export async function rateCandidateEvaluation(profileUrl, rating, callback) {
+export async function rateCandidateEvaluation(
+  profileUrl,
+  evaluationRating,
+  callback
+) {
   fetch("http://localhost:3000/evaluation/rating", {
     method: "POST",
     headers: {
@@ -47,7 +51,7 @@ export async function rateCandidateEvaluation(profileUrl, rating, callback) {
     },
     body: JSON.stringify({
       profileUrl: profileUrl,
-      rating: rating
+      evaluationRating: evaluationRating
     })
   })
     .then((response) => response.json())
