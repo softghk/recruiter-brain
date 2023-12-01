@@ -1,65 +1,73 @@
 // @mui
-import { styled } from '@mui/material/styles';
-// utils
-import { fNumber } from '@minimal/utils/format-number';
+
 // components
-import Chart, { useChart } from '@minimal/components/chart';
+import Chart, { useChart } from "@minimal/components/chart"
+
+// utils
 
 // ----------------------------------------------------------------------
 
-const CHART_HEIGHT = 380;
-
-const LEGEND_HEIGHT = 72;
-
-const StyledChart = styled(Chart)(({ theme }) => ({
-  height: CHART_HEIGHT,
-  '& .apexcharts-canvas, .apexcharts-inner, svg, foreignObject': {
-    height: `100% !important`,
-  },
-  '& .apexcharts-legend': {
-    height: LEGEND_HEIGHT,
-    marginBottom: theme.spacing(3),
-    top: `calc(${CHART_HEIGHT - LEGEND_HEIGHT}px) !important`,
-  },
-}));
+const CHART_HEIGHT = 300
+const CHART_WIDTH = 200
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  series: number[];
-};
+  series: number[]
+}
 
 export default function ChartRadialBar({ series }: Props) {
   const chartOptions = useChart({
     chart: {
+      height: CHART_HEIGHT,
+      width: CHART_WIDTH,
       sparkline: {
-        enabled: true,
-      },
+        enabled: false
+      }
     },
-    labels: ['Apples', 'Oranges'],
+    labels: ["Percent"],
     legend: {
-      floating: true,
-      position: 'bottom',
-      horizontalAlign: 'center',
+      show: false
     },
     plotOptions: {
       radialBar: {
         hollow: {
-          size: '68%',
+          size: "50%",
+          margin: 0
         },
+        startAngle: -90,
+        endAngle: 90,
         dataLabels: {
-          value: {
-            offsetY: 16,
-          },
-          total: {
-            formatter: () => fNumber(2324),
-          },
-        },
-      },
+          show: false
+        }
+      }
     },
-  });
+    fill: {
+      type: "gradient",
+      gradient: {
+        type: "horizontal",
+        colorStops: [
+          {
+            offset: 0,
+            color: "#FF0900"
+          },
+          {
+            offset: 100,
+            color: "#14FF00"
+          }
+        ]
+      }
+    }
+  })
 
   return (
-    <StyledChart dir="ltr" type="radialBar" series={series} options={chartOptions} height={280} />
-  );
+    <Chart
+      dir="ltr"
+      type="radialBar"
+      series={series}
+      options={chartOptions}
+      height={CHART_HEIGHT}
+      width={CHART_WIDTH}
+    />
+  )
 }
