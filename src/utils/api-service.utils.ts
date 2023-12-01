@@ -44,7 +44,7 @@ export async function rateCandidateEvaluation(
   evaluationRating,
   callback
 ) {
-  fetch("http://localhost:3000/evaluation/rating", {
+  fetch("http://localhost:3000/evaluation/evaluation-rating", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
