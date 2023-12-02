@@ -21,3 +21,16 @@ export function waitForElement(selector, callback) {
     subtree: true
   })
 }
+
+export async function waitForElement2(selector) {
+  return new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (document.querySelector(selector)) {
+        observer.disconnect()
+        resolve("")
+      }
+    })
+
+    observer.observe(document.body, { childList: true, subtree: true })
+  })
+}
