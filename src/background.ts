@@ -6,6 +6,7 @@ import { Storage } from "@plasmohq/storage"
 import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
+import { notifyContentScript } from "./utils/notify-content-script.utils"
 
 const storage = new Storage()
 
@@ -253,42 +254,32 @@ const markTaskAsComplete = (taskId, jobId) => {
   }
 }
 
-function notifyContentScript(action) {
-  // Query all tabs or a specific tab to send the message to
-  console.log("notifyContentScript", action)
-  chrome.tabs.query({}, function (tabs) {
-    for (let tab of tabs) {
-      // Send a message to the content script
-      chrome.tabs.sendMessage(tab.id, { action: action })
-    }
-  })
-}
-
 // The code to be injected into the new tab
 async function injectedCode(jobData) {
-  function waitForElement(selector, callback) {
-    // Initial check if the element is already present
-    let element = document.querySelector(selector)
-    if (element) {
-      callback(element)
-      return
-    }
-
-    // Set up the MutationObserver
-    let observer = new MutationObserver(function (mutations, me) {
+  async function waitForElement2(selector) {
+    return new Promise((resolve) => {
       let element = document.querySelector(selector)
       if (element) {
-        callback(element)
-        me.disconnect() // Stop observing
+        resolve(element)
         return
       }
-    })
 
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true
+      let observer = new MutationObserver(function (mutations, me) {
+        let element = document.querySelector(selector)
+        if (element) {
+          resolve(element)
+          me.disconnect() // Stop observing
+          return
+        }
+      })
+
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      })
     })
   }
+
   // Function to wait for changes within a specific container using a timeout
   function waitForContainerChanges(containerSelector, timeout = 500) {
     return new Promise((resolve) => {
@@ -524,11 +515,9 @@ async function injectedCode(jobData) {
     }
   }
 
-  addOverlay()
+  // addOverlay()
   // wait for profile list
-  await new Promise((resolve) =>
-    waitForElement("a[data-live-test-link-to-profile-link]", resolve)
-  )
+  await waitForElement2("a[data-live-test-link-to-profile-link]")
   // open first profile in list
   document.querySelector("a[data-live-test-link-to-profile-link]").click()
 
@@ -537,13 +526,14 @@ async function injectedCode(jobData) {
 
   var run = 0
   while (run < jobData.amount) {
+    console.log("run start")
+    await new Promise((resolve) => setTimeout(resolve, 4000))
     // extract data when ready
-    await new Promise((resolve) => waitForElement(".background-card", resolve))
-    await new Promise((resolve) =>
-      waitForElement("span[data-test-skyline-pagination-text]", resolve)
-    )
+    await waitForElement2(".background-card")
 
     // Find all buttons with 'data-test-expandable-button' attribute and click each one
+    console.log("clicking buttons more")
+    await waitForElement2("button[data-test-expandable-button]")
     var buttons = document.querySelectorAll(
       "button[data-test-expandable-button]"
     )
@@ -555,25 +545,13 @@ async function injectedCode(jobData) {
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     console.log("extracting data")
-    const currentTask = parseInt(
-      document.querySelector("span[data-test-skyline-pagination-text]")
-        .innerText
-    )
+    const currentTask = run
     const name = document.querySelector(
       "div.artdeco-entity-lockup__title"
     ).innerText
-
     const linkedInData = extractLinkedInData()
 
-    console.log(
-      "task",
-      currentTask,
-      "name",
-      name,
-      "jobData",
-      jobData,
-      linkedInData
-    )
+    // console.log("task, skills:", linkedInData?.skills?.length)
 
     chrome.runtime.sendMessage({
       jobId: jobData.jobId,
@@ -588,10 +566,9 @@ async function injectedCode(jobData) {
     const nextButton = document.querySelector("a[data-test-pagination-next]")
     nextButton.click()
     await waitForContainerChanges(".profile__container")
-    await new Promise((resolve) =>
-      waitForElement(".expandable-list-profile-core__title", resolve)
-    )
-    await new Promise((resolve) => setTimeout(resolve, 4000))
+    await waitForElement2(".expandable-list-profile-core__title")
+
+    console.log("run end")
   }
 }
 
