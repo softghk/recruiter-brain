@@ -180,7 +180,7 @@ const SettingsModal = ({
                 size="small"
                 onClick={() => {
                   onChange && onChange(temp)
-                  onEvaluate && onEvaluate()
+                  onEvaluate && onEvaluate(temp)
                 }}>
                 Start Evaluating Profiles
               </Button>

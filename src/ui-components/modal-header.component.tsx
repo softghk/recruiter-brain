@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close"
-import { IconButton, styled } from "@mui/material"
+import { IconButton, styled, SvgIcon } from "@mui/material"
 import { Stack } from "@mui/system"
 import React from "react"
 import Logo from "react:~assets/logo.svg"

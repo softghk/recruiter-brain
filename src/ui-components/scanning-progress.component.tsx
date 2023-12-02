@@ -1,24 +1,45 @@
-import { Box, Button, LinearProgress, Stack, Typography } from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
+import {
+  Box,
+  Button,
+  IconButton,
+  LinearProgress,
+  Stack,
+  styled,
+  Typography
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
+
+const StyledCloseIcon = styled(CloseIcon)(({}) => ({
+  width: 20,
+  height: 20,
+  color: "white"
+}))
 
 const ScanningProgress = ({
   onPause,
-  onStop
+  onStop,
+  onClose
 }: {
   onPause?: any
   onStop?: any
+  onClose?: any
 }) => {
   const [total, setTotal] = useState(0)
   const [completed, setCompleted] = useState(0)
 
   useEffect(() => {
     // Content script to check job status every second
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
         console.log("Current job status:", response)
         const tasks = response.tasks
         setTotal(tasks.length)
-        setCompleted(tasks.filter((item) => item.status === "complete").length)
+        const completedTasks = tasks.filter(
+          (task) => task.status === "complete"
+        ).length
+        setCompleted(completedTasks)
+        if (completedTasks === tasks.length) clearInterval(intervalId)
       })
     }, 1000)
   }, [])
@@ -31,12 +52,23 @@ const ScanningProgress = ({
           variant="determinate"
           sx={{ width: "100%" }}
         />
-        <Button variant="contained" onClick={onPause}>
-          Pause
-        </Button>
-        <Button variant="contained" color="error" onClick={onStop}>
-          Stop
-        </Button>
+        {total > 0 && completed === total ? (
+          <IconButton
+            size="small"
+            onClick={onClose}
+            style={{ background: "#bbb", width: 24, height: 24 }}>
+            <StyledCloseIcon />
+          </IconButton>
+        ) : (
+          <>
+            <Button variant="contained" onClick={onPause}>
+              Pause
+            </Button>
+            <Button variant="contained" color="error" onClick={onStop}>
+              Stop
+            </Button>
+          </>
+        )}
       </Stack>
       <Box>
         <Typography variant="caption">

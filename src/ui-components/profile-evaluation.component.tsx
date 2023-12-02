@@ -20,7 +20,10 @@ import { MinimalProvider } from "~@minimal/Provider"
 import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-radial-bar"
 import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
-import { getEvaluationData } from "~src/utils/api-service.utils"
+import {
+  getEvaluationData,
+  rateCandidateEvaluation
+} from "~src/utils/api-service.utils"
 import { updateDataFromIndexedDB } from "~src/utils/storage.utils"
 
 const customIcons: {
@@ -80,8 +83,10 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
   const onChangeEvaluationRating = (e) => {
     // update indexed db
-    const newData = { ...data, evaluationRating: e.target.value }
+    const evaluationRating = Number(e.target.value)
+    const newData = { ...data, evaluationRating }
     updateDataFromIndexedDB(newData)
+    rateCandidateEvaluation(data.profileId, evaluationRating)
   }
 
   if (!user || !auth?.isAuth || !state) return null

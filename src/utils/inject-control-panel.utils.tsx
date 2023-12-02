@@ -22,9 +22,6 @@ export async function injectControlPanel() {
   const targetElement = document.querySelector(querySelectorTargetElement)
   const injectedComponent = document.getElementById(injectComponentId)
 
-  console.log("====================================")
-  console.log("Injected Component", injectedComponent)
-
   if (targetElement && !injectedComponent) {
     console.log(
       `Target element: ${injectComponentId} for injecting data found!!!`

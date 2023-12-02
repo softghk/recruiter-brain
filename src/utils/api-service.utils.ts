@@ -9,6 +9,11 @@ const storage = new Storage()
 export async function evaluateProfileApi(profileUrl, profile, jobDescription) {
   const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
   const accessToken = firebaseAuth.accessToken
+
+  const profileId = profileUrl.match(/\/profile\/([^\/]+)$/)[1]
+
+  console.log("evaluateProfileApi profileUrl", profileUrl, profileId)
+
   return new Promise((resolve, reject) => {
     fetch("http://localhost:3000/evaluation", {
       method: "POST",
@@ -17,9 +22,10 @@ export async function evaluateProfileApi(profileUrl, profile, jobDescription) {
         Authorization: accessToken
       },
       body: JSON.stringify({
+        profileId: profileId,
+        profileUrl: profileUrl,
         vc: profile.positions,
-        jobDescription: jobDescription,
-        profileUrl: profileUrl
+        jobDescription: jobDescription
       })
     })
       .then((response) => response.json())
@@ -40,7 +46,7 @@ export async function evaluateProfileApi(profileUrl, profile, jobDescription) {
   })
 }
 
-export async function rateCandidateEvaluation(profileUrl, evaluationRating) {
+export async function rateCandidateEvaluation(profileId, evaluationRating) {
   const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
   const accessToken = firebaseAuth.accessToken
   return new Promise((resolve, reject) => {
@@ -51,7 +57,7 @@ export async function rateCandidateEvaluation(profileUrl, evaluationRating) {
         Authorization: accessToken
       },
       body: JSON.stringify({
-        profileUrl: profileUrl,
+        profileId: profileId,
         evaluationRating: evaluationRating
       })
     })

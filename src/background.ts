@@ -137,7 +137,7 @@ function saveDataToIndexedDB({
   console.log("saveDataToIndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
-  const dbVersion = 4 // Increment this version when changes are made to the database structure
+  const dbVersion = 5 // Increment this version when changes are made to the database structure
 
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
@@ -191,7 +191,7 @@ function saveDataToIndexedDB({
   })
 }
 
-async function deleteDataFromIndexedDB({ id }) {
+async function deleteDataFromIndexedDB({ id, projectId }) {
   console.log("Delete Data from IndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
@@ -204,6 +204,7 @@ async function deleteDataFromIndexedDB({ id }) {
     openRequest.onsuccess = async (event) => {
       const db = event.target.result
       const tx = db.transaction(storeName, "readwrite")
+      console.log("storeName", storeName)
       const store = tx.objectStore(storeName)
 
       const deleteRequest = store.delete(id)
@@ -725,7 +726,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === "updateDataFromIndexedDB") {
     const data = request.payload
-    deleteDataFromIndexedDB(data.id).then(() => {
+    deleteDataFromIndexedDB(data).then(() => {
       saveDataToIndexedDB(data)
     })
   }

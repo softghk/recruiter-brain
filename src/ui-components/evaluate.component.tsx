@@ -46,7 +46,7 @@ const EvaluateComponent = () => {
     setDescription({ ...description, [projectId]: jd })
   }
 
-  const onEvaluate = () => {
+  const onEvaluate = (evaluationSettings) => {
     setOpen({ eval: false, setting: false })
     console.log("Evaluation Started")
 
@@ -57,12 +57,12 @@ const EvaluateComponent = () => {
       data: {
         projectId: href.match(/\/(\d+)\//)?.[1],
         searchContextId: (href.match(/searchContextId=([^&]+)/) || [])[1],
-        jobDescriptionId: generateMD5(currentJD.description || ""),
+        jobDescriptionId: generateMD5(evaluationSettings.description || ""),
         href: href,
 
-        amount: currentJD.searchLimit || 0,
-        jobTitle: currentJD.title || "",
-        jobDescription: currentJD.description || ""
+        amount: evaluationSettings.searchLimit || 0,
+        jobTitle: evaluationSettings.title || "",
+        jobDescription: evaluationSettings.description || ""
       }
     })
 
@@ -76,6 +76,12 @@ const EvaluateComponent = () => {
     chrome.runtime.sendMessage({ action: "stop-job" })
   }
 
+  const onCloseProgress = () => {
+    setEvaluateStarted(false)
+    const element = document.getElementById("recruiter-brain-progress")
+    if (element) element.remove()
+  }
+
   return (
     <>
       {evaluateStarted && (
@@ -83,7 +89,11 @@ const EvaluateComponent = () => {
           injectComponentId={"recruiter-brain-progress"}
           direction="prepend"
           querySelectorTargetElement={".page-layout__workspace"}>
-          <ScanningProgress onPause={onPauseScanning} onStop={onStopScanning} />
+          <ScanningProgress
+            onPause={onPauseScanning}
+            onStop={onStopScanning}
+            onClose={onCloseProgress}
+          />
         </InjectorComponent>
       )}
       <EvaluateModal
