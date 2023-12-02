@@ -4,8 +4,7 @@ import buildDataHTML from "src/ui-components/profile-evaluation.component"
 export function injectDataIntoDom(profile, profileEvaluation) {
   removeLoadingIndicator(profile)
 
-  const { id, profileId, likes, evaluation } = profileEvaluation
-  const { rating, explanation } = evaluation
+  const { profileId } = profileEvaluation
 
   const targetElement = profile.querySelector(".artdeco-entity-lockup")
 

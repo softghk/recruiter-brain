@@ -58,7 +58,7 @@ function IconContainer(props: any) {
 }
 
 const ProfileEvaluation = ({ data }: { data: any }) => {
-  const { id, profileId, likes, evaluation } = data
+  const { id, profileId, evaluationRating, evaluation } = data
   const { rating, explanation } = evaluation
 
   const [expanded, setExpanded] = useState(false)
@@ -78,9 +78,9 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     setLoading(false)
   }
 
-  const onChangeLikes = (e) => {
+  const onChangeEvaluationRating = (e) => {
     // update indexed db
-    const newData = { ...data, likes: e.target.value }
+    const newData = { ...data, evaluationRating: e.target.value }
     updateDataFromIndexedDB(newData)
   }
 
@@ -161,8 +161,8 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           gap={2}>
           <Rating
             name="customized-icons"
-            defaultValue={likes}
-            onChange={onChangeLikes}
+            defaultValue={evaluationRating}
+            onChange={onChangeEvaluationRating}
             getLabelText={(ratingValue) => customIcons[ratingValue].label}
             IconContainerComponent={IconContainer}
           />

@@ -121,7 +121,7 @@ const mockAPICallAndSaveData = async (data, jobData) => {
     jobDescriptionId: jobData.jobDescriptionId,
     profileId: data.personal.id,
     evaluation: profileEvaluation,
-    likes: -1
+    evaluationRating: -1
   })
   markTaskAsComplete(taskId, jobId)
 }
@@ -132,7 +132,7 @@ function saveDataToIndexedDB({
   jobDescriptionId,
   profileId,
   evaluation,
-  likes
+  evaluationRating
 }) {
   console.log("saveDataToIndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
@@ -159,7 +159,13 @@ function saveDataToIndexedDB({
       const db = event.target.result
       const tx = db.transaction(storeName, "readwrite")
       const store = tx.objectStore(storeName)
-      const data = { projectId, jobDescriptionId, profileId, evaluation, likes }
+      const data = {
+        projectId,
+        jobDescriptionId,
+        profileId,
+        evaluation,
+        evaluationRating
+      }
 
       const addRequest = store.add(data)
 
