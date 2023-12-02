@@ -70,7 +70,7 @@ const evaluateProfiles = (jobData) => {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
   tasks = Array.from({ length: jobData.amount }, (_, i) => ({
-    id: i + 1,
+    id: i,
     status: JobStatus.PENDING
   }))
 
@@ -527,12 +527,16 @@ async function injectedCode(jobData) {
   var run = 0
   while (run < jobData.amount) {
     console.log("run start")
+    console.time("Step1Time")
+    console.time("CompleteTime")
     await new Promise((resolve) => setTimeout(resolve, 4000))
     // extract data when ready
     await waitForElement2(".background-card")
+    console.timeEnd("Step1Time")
 
     // Find all buttons with 'data-test-expandable-button' attribute and click each one
     console.log("clicking buttons more")
+    console.time("Step2Time")
     await waitForElement2("button[data-test-expandable-button]")
     var buttons = document.querySelectorAll(
       "button[data-test-expandable-button]"
@@ -540,34 +544,36 @@ async function injectedCode(jobData) {
     buttons.forEach((button) => {
       button.click()
     })
+    console.timeEnd("Step2Time")
 
     // Wait for 100ms after all buttons have been clicked
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     console.log("extracting data")
-    const currentTask = run
-    const name = document.querySelector(
-      "div.artdeco-entity-lockup__title"
-    ).innerText
+    console.time("Step3Time")
+    const currentTaskId = run
     const linkedInData = extractLinkedInData()
+    console.timeEnd("Step3Time")
 
     // console.log("task, skills:", linkedInData?.skills?.length)
 
     chrome.runtime.sendMessage({
       jobId: jobData.jobId,
       jobData: jobData,
-      taskId: currentTask,
+      taskId: currentTaskId,
       linkedInData: linkedInData
     })
 
     // go to next profile
     run++
 
+    console.time("Step4Time")
     const nextButton = document.querySelector("a[data-test-pagination-next]")
     nextButton.click()
     await waitForContainerChanges(".profile__container")
     await waitForElement2(".expandable-list-profile-core__title")
-
+    console.timeEnd("Step4Time")
+    console.timeEnd("CompleteTime")
     console.log("run end")
   }
 }
