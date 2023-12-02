@@ -113,7 +113,6 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
         jobDescriptionId,
         profileId
       )
-      console.log("getEvaluationData", evaluationData)
       resolve(evaluationData)
     } catch (error) {
       console.error("Error fetching data from indexedDB:", error)
