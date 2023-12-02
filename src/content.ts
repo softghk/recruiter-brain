@@ -1,11 +1,23 @@
+import { tr } from "date-fns/locale"
 import buildDataHTML from "src/ui-components/profile-evaluation.component"
 
+import {
+  htmlClassInvisibleProfile,
+  htmlClassVisibleProfile
+} from "./utils/constants.utils"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
 import { injectControlPanel } from "./utils/inject-control-panel.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 
 export {}
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.action) {
+    console.log("content.js received message:", request.action)
+  }
+  return true
+})
 
 async function waitForElement2(selector) {
   return new Promise((resolve) => {
@@ -26,86 +38,88 @@ async function handleMutation(mutation) {
     const currentClass = element.getAttribute("class")
     const oldClass = mutation.oldValue
 
-    if (
-      oldClass ===
-        "ember-view profile-list__occlusion-area profile-list__border-bottom" &&
-      currentClass === "ember-view profile-list__border-bottom"
-    ) {
-      const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
-      const profileId = element
-        .querySelector("a")
-        .href.match(/profile\/(.*?)\?/)[1]
-      try {
-        const result = await chrome.storage.local.get(["jobDescription"])
+    const isOldClassInvisible = oldClass === htmlClassInvisibleProfile
+    const isCurrentClassVisible = currentClass === htmlClassVisibleProfile
+    const isProfileVisible = isOldClassInvisible && isCurrentClassVisible
 
-        chrome.runtime.sendMessage(
-          { action: "get-job-details" },
-          async (response) => {
-            const jobData = response.data?.[projectId]
-            if (!jobData) return
-            const jobDescription = jobData.description || ""
-            const jobDescriptionId = generateMD5(jobDescription)
-            console.log(
-              "jobDescription",
-              jobDescription,
-              "jobDescriptionId",
-              jobDescriptionId
-            )
-            await tryFetchingData(
-              projectId,
-              jobDescriptionId,
-              profileId,
-              element
-            )
-          }
+    if (isProfileVisible) {
+      try {
+        const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
+        const profileId = element
+          .querySelector("a")
+          .href.match(/profile\/(.*?)\?/)[1]
+        const jobData: any = await new Promise((resolve, reject) => {
+          chrome.runtime.sendMessage(
+            { action: "get-job-details" },
+            (response) => {
+              if (response.data) {
+                resolve(response.data)
+              } else {
+                reject("No data found for job details")
+              }
+            }
+          )
+        })
+
+        if (!jobData?.[projectId]) return
+        const jobDescription = jobData?.[projectId].description || ""
+        const jobDescriptionId = generateMD5(jobDescription)
+
+        const evaluationData = await getEvaluationData(
+          projectId,
+          jobDescriptionId,
+          profileId
         )
+
+        function injectDataIfAvailable(evaluationData, element) {
+          if (Array.isArray(evaluationData) && evaluationData.length) {
+            injectDataIntoDom(element, evaluationData[0])
+          } else {
+            chrome.runtime.onMessage.addListener(createDataListener(element))
+          }
+        }
+
+        function createDataListener(element) {
+          return async (message, sender, sendResponse) => {
+            if (message.action === "itemAddedToIndexedDb") {
+              const newData = await getEvaluationData(
+                projectId,
+                jobDescriptionId,
+                profileId
+              )
+              if (Array.isArray(newData) && newData.length) {
+                injectDataIntoDom(element, newData[0])
+                chrome.runtime.onMessage.removeListener(this)
+              }
+            }
+            return true
+          }
+        }
+
+        // Usage
+        injectDataIfAvailable(evaluationData, element)
       } catch (error) {
-        console.error("Error chrome.storage.local.get():", error)
+        console.error("Error get-job-details from backgrounds script:", error)
       }
     }
   }
 }
 
-async function tryFetchingData(
-  projectId,
-  jobDescriptionId,
-  profileId,
-  element
-) {
-  const evaluationData = await requestDataFromIndexedDB(
-    projectId,
-    jobDescriptionId,
-    profileId
-  )
-  console.log("tryFetchingData", evaluationData)
-
-  if (Array.isArray(evaluationData) && evaluationData.length) {
-    console.log(
-      "Evaluation data found, injecting into DOM...",
-      evaluationData[0].profileId
-    )
-    injectDataIntoDom(element, evaluationData[0])
-  } else {
-    //console.log("No evaluation data found, setting up listener...", element)
-    const listenerFunction = async (message, sender, sendResponse) => {
-      if (message.action === "itemAddedToIndexedDb") {
-        console.log(
-          "Received itemAddedToIndexedDb message. Trying to fetch data again."
-        )
-        const newData = await requestDataFromIndexedDB(
-          projectId,
-          jobDescriptionId,
-          profileId
-        )
-        if (Array.isArray(newData) && newData.length) {
-          injectDataIntoDom(element, newData[0])
-          chrome.runtime.onMessage.removeListener(listenerFunction)
-        }
-      }
-      return true
+async function getEvaluationData(projectId, jobDescriptionId, profileId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const evaluationData = await requestDataFromIndexedDB(
+        projectId,
+        jobDescriptionId,
+        profileId
+      )
+      console.log("tryFetchingData", evaluationData)
+      resolve(evaluationData)
+    } catch (error) {
+      console.error("Error fetching data from indexedDB:", error)
+      reject(error)
     }
-    chrome.runtime.onMessage.addListener(listenerFunction)
-  }
+  })
 }
 
 async function autoInject() {
