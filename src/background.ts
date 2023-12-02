@@ -110,22 +110,20 @@ const mockAPICallAndSaveData = async (data, jobData) => {
   const taskId = jobData.taskId
   const jobId = jobData.jobId
   console.log("API Call", data, jobData)
-  evaluateProfileApi(
+  const profileEvaluation = await evaluateProfileApi(
     data.personal.url,
     data,
-    jobData.jobDescription,
-    async (response) => {
-      console.log("api response", response)
-      saveDataToIndexedDB({
-        projectId: jobData.projectId,
-        jobDescriptionId: jobData.jobDescriptionId,
-        profileId: data.personal.id,
-        evaluation: response,
-        likes: 0
-      })
-      markTaskAsComplete(taskId, jobId)
-    }
+    jobData.jobDescription
   )
+  console.log("api response", profileEvaluation)
+  saveDataToIndexedDB({
+    projectId: jobData.projectId,
+    jobDescriptionId: jobData.jobDescriptionId,
+    profileId: data.personal.id,
+    evaluation: profileEvaluation,
+    likes: -1
+  })
+  markTaskAsComplete(taskId, jobId)
 }
 
 // Save data to IndexedDB
