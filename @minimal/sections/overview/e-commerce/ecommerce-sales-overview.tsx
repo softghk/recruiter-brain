@@ -1,30 +1,36 @@
 // @mui
-import Stack from '@mui/material/Stack';
-import CardHeader from '@mui/material/CardHeader';
-import Typography from '@mui/material/Typography';
-import Card, { type CardProps } from '@mui/material/Card';
-import LinearProgress from '@mui/material/LinearProgress';
-import { styled } from '@mui/material'
+import { styled } from "@mui/material"
+import Card, { type CardProps } from "@mui/material/Card"
+import CardHeader from "@mui/material/CardHeader"
+import LinearProgress from "@mui/material/LinearProgress"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+
 // ----------------------------------------------------------------------
 
 type ItemProps = {
-  label: string;
-  value: number;
-  totalAmount: number;
-};
+  label: string
+  value: number
+  totalAmount: number
+}
 
 interface Props extends CardProps {
-  title?: string;
-  subheader?: string;
-  data: ItemProps[];
+  title?: string
+  subheader?: string
+  data: ItemProps[]
 }
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 8,
   borderRadius: 5
-}));
+}))
 
-export default function EcommerceSalesOverview({ title, subheader, data, ...other }: Props) {
+export default function EcommerceSalesOverview({
+  title,
+  subheader,
+  data,
+  ...other
+}: Props) {
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />
@@ -35,14 +41,14 @@ export default function EcommerceSalesOverview({ title, subheader, data, ...othe
         ))}
       </Stack>
     </Card>
-  );
+  )
 }
 
 // ----------------------------------------------------------------------
 
 type ProgressItemProps = {
-  progress: ItemProps;
-};
+  progress: ItemProps
+}
 
 function ProgressItem({ progress }: ProgressItemProps) {
   return (
@@ -52,7 +58,7 @@ function ProgressItem({ progress }: ProgressItemProps) {
           {progress.label}
         </Typography>
 
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {progress.value} /&nbsp;
         </Typography>
 
@@ -61,13 +67,13 @@ function ProgressItem({ progress }: ProgressItemProps) {
 
       <BorderLinearProgress
         variant="determinate"
-        value={progress.value}
+        value={(progress.value / progress.totalAmount) * 100}
         color={
-          (progress.label === 'Total Income' && 'info') ||
-          (progress.label === 'Total Expenses' && 'warning') ||
-          'primary'
+          (progress.label === "Total Income" && "info") ||
+          (progress.label === "Total Expenses" && "warning") ||
+          "primary"
         }
       />
     </Stack>
-  );
+  )
 }
