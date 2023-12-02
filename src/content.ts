@@ -136,33 +136,33 @@ async function handleMutation(mutation) {
           profileId
         )
 
-        function injectDataIfAvailable(evaluationData, element) {
-          if (Array.isArray(evaluationData) && evaluationData.length) {
-            injectDataIntoDom(element, evaluationData[0])
-          } else {
-            chrome.runtime.onMessage.addListener(createDataListener(element))
-          }
-        }
-
-        function createDataListener(element) {
-          return async (message, sender, sendResponse) => {
+        if (Array.isArray(evaluationData) && evaluationData.length) {
+          console.log(
+            "Evaluation data found, injecting into DOM...",
+            evaluationData[0].profileId
+          )
+          injectDataIntoDom(element, evaluationData[0])
+        } else {
+          //console.log("No evaluation data found, setting up listener...", element)
+          const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
-              const newData = await getEvaluationData(
+              console.log(
+                "Received itemAddedToIndexedDb message. Trying to fetch data again."
+              )
+              const newData = await requestDataFromIndexedDB(
                 projectId,
                 jobDescriptionId,
                 profileId
               )
               if (Array.isArray(newData) && newData.length) {
                 injectDataIntoDom(element, newData[0])
-                chrome.runtime.onMessage.removeListener(this)
+                chrome.runtime.onMessage.removeListener(listenerFunction)
               }
             }
             return true
           }
+          chrome.runtime.onMessage.addListener(listenerFunction)
         }
-
-        // Usage
-        injectDataIfAvailable(evaluationData, element)
       } catch (error) {
         console.error("Error get-job-details from backgrounds script:", error)
       }
