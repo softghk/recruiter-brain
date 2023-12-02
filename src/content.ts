@@ -1,6 +1,3 @@
-import { tr } from "date-fns/locale"
-import buildDataHTML from "src/ui-components/profile-evaluation.component"
-
 import {
   htmlClassInvisibleProfile,
   htmlClassVisibleProfile
