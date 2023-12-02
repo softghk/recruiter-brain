@@ -161,8 +161,8 @@ export default function useChart(options?: ApexOptions) {
       // Radialbar
       radialBar: {
         track: {
-          strokeWidth: '100%',
-          background: alpha(theme.palette.grey[500], 0.16),
+          // strokeWidth: '100%',
+          // background: alpha(theme.palette.grey[500], 0.85),
         },
         dataLabels: {
           value: LABEL_VALUE,

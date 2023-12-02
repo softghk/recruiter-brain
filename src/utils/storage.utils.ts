@@ -31,3 +31,21 @@ export function requestDataFromIndexedDB(
       })
   })
 }
+
+export function updateDataFromIndexedDB(data) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime
+      .sendMessage({
+        action: "updateDataFromIndexedDB",
+        payload: data
+      })
+      .then((response) => {
+        if (response.success) {
+          resolve(response.data)
+        } else {
+          console.error("Error retrieving data:", response.error)
+          reject(response.error)
+        }
+      })
+  })
+}

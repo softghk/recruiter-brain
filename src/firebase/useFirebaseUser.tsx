@@ -1,23 +1,28 @@
 // src/firebase/useFirebaseUser.tsx
 
 import {
-  type User,
   browserLocalPersistence,
   onAuthStateChanged,
-  setPersistence
+  setPersistence,
+  type User
 } from "firebase/auth"
 import { useEffect, useState } from "react"
-import { useStorage } from '@plasmohq/storage/hook'
-import { auth } from "./firebaseClient"
-import { AuthInitialState, type AuthState } from "src/types"
 import { AUTH_STATE } from "src/config/storage.config"
+import { AuthInitialState, type AuthState } from "src/types"
+
+import { useStorage } from "@plasmohq/storage/hook"
+
+import { auth } from "./firebaseClient"
 
 setPersistence(auth, browserLocalPersistence)
 
 export default function useFirebaseUser() {
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User>(null)
-  const [userInfo, setUserInfo] = useStorage<AuthState>(AUTH_STATE, AuthInitialState)
+  const [userInfo, setUserInfo] = useStorage<AuthState>(
+    AUTH_STATE,
+    AuthInitialState
+  )
 
   const onLogout = async () => {
     setIsLoading(true)
@@ -47,6 +52,16 @@ export default function useFirebaseUser() {
     onAuthStateChanged(auth, (user) => {
       setIsLoading(false)
       setUser(user)
+      if (user) {
+        user.getIdToken(true).then(async (token) => {
+          setUserInfo({
+            email: user.email,
+            accessToken: token,
+            refreshToken: user.refreshToken,
+            isAuth: true
+          })
+        })
+      }
     })
   }, [])
 

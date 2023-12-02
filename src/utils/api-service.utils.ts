@@ -6,47 +6,101 @@ import { Storage } from "@plasmohq/storage"
 
 const storage = new Storage()
 
-export async function evaluateProfileApi(
-  profileUrl,
-  profile,
-  jobDescription,
-  callback
-) {
-  fetch("http://localhost:3000/evaluation", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      vc: profile.positions,
-      jobDescription: jobDescription,
-      profileUrl: profileUrl
+export async function evaluateProfileApi(profileUrl, profile, jobDescription) {
+  const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
+  const accessToken = firebaseAuth.accessToken
+
+  const profileId = profileUrl.match(/\/profile\/([^\/]+)$/)[1]
+
+  console.log("evaluateProfileApi profileUrl", profileUrl, profileId)
+
+  return new Promise((resolve, reject) => {
+    fetch("http://localhost:3000/evaluation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: accessToken
+      },
+      body: JSON.stringify({
+        profileId: profileId,
+        profileUrl: profileUrl,
+        vc: profile.positions,
+        jobDescription: jobDescription
+      })
     })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(
+          "the evaluation for ",
+          profile.personal.name,
+          " is ",
+          data.rating,
+          data.explanation
+        )
+        resolve(data)
+      })
+      .catch((error) => {
+        console.log("error during evaluation", error)
+        reject(error)
+      })
   })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(
-        "the evaluation for ",
-        profile.personal.name,
-        " is ",
-        data.rating,
-        data.explanation
-      )
-      callback(data)
+}
+
+export async function rateCandidateEvaluation(profileId, evaluationRating) {
+  const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
+  const accessToken = firebaseAuth.accessToken
+  return new Promise((resolve, reject) => {
+    fetch("http://localhost:3000/evaluation/evaluation-rating", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: accessToken
+      },
+      body: JSON.stringify({
+        profileId: profileId,
+        evaluationRating: evaluationRating
+      })
     })
-    .catch((error) => {
-      console.log("error during evaluation", error)
-    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("rated evaluation for")
+        resolve(data)
+      })
+      .catch((error) => {
+        console.log("error during evaluation", error)
+        reject(error)
+      })
+  })
 }
 
 export async function getStatisticData() {
+  const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
+  const accessToken = firebaseAuth.accessToken
   return new Promise(async (resolve, reject) => {
     const data: AuthState = await storage.get(AUTH_STATE)
     console.log(data)
     axios
+      .get(`http://localhost:3000/users/stats`, {
+        headers: {
+          Authorization: `${data.accessToken}`
+        }
+      })
+      .then((resp) => {
+        resolve(resp.data)
+      })
+      .catch((err) => {
+        reject(err)
+      })
+  })
+}
+
+export async function getEvaluationData() {
+  return new Promise(async (resolve, reject) => {
+    const data: AuthState = await storage.get(AUTH_STATE)
+    axios
       .get(`https://jsonplaceholder.typicode.com/posts`, {
         headers: {
-          Authorization: `Bearer ${data.accessToken}`
+          Authorization: `${data.accessToken}`
         }
       })
       .then((resp) => {

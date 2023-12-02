@@ -1,7 +1,13 @@
 // @ts-nocheck
 import { v4 as uuidv4 } from "uuid"
 
+import { Storage } from "@plasmohq/storage"
+
 import { evaluateProfileApi } from "~utils/api-service.utils"
+
+import { JOB_DESCRIPTION } from "./config/storage.config"
+
+const storage = new Storage()
 
 export {}
 
@@ -12,7 +18,8 @@ const ActionTypes = {
   PAUSE_JOB: "pause-job",
   RESUME_JOB: "resume-job",
   STOP_JOB: "stop-job",
-  TASK_DATA_RECEIVED: "task-data-received"
+  TASK_DATA_RECEIVED: "task-data-received",
+  GET_JOB_DETAILS: "get-job-details"
 }
 
 // Job and Task Statuses
@@ -57,6 +64,7 @@ const openTabAndInjectCode = (jobData) => {
 }
 
 // Handle job evaluation
+// this function is called from the content script
 const evaluateProfiles = (jobData) => {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
@@ -102,75 +110,125 @@ const makeAPICallAndSaveData = async (data, jobData) => {
   const taskId = jobData.taskId
   const jobId = jobData.jobId
   console.log("API Call", data, jobData)
-  evaluateProfileApi(
+  const profileEvaluation = await evaluateProfileApi(
     data.personal.url,
     data,
-    jobData.jobDescription,
-    async (response) => {
-      console.log("api response", response)
-      saveDataToIndexedDB({
-        projectId: jobData.projectId,
-        jobDescriptionId: jobData.jobDescriptionId,
-        profileId: data.personal.id,
-        evaluation: response
-      })
-      markTaskAsComplete(taskId, jobId)
-    }
+    jobData.jobDescription
   )
+  console.log("api response", profileEvaluation)
+  saveDataToIndexedDB({
+    projectId: jobData.projectId,
+    jobDescriptionId: jobData.jobDescriptionId,
+    profileId: data.personal.id,
+    evaluation: profileEvaluation,
+    evaluationRating: -1
+  })
+  markTaskAsComplete(taskId, jobId)
 }
 
 // Save data to IndexedDB
-async function saveDataToIndexedDB({
+function saveDataToIndexedDB({
   projectId,
   jobDescriptionId,
   profileId,
-  evaluation
+  evaluation,
+  evaluationRating
 }) {
   console.log("saveDataToIndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
-  const dbVersion = 4 // Increment this version when changes are made to the database structure
+  const dbVersion = 5 // Increment this version when changes are made to the database structure
 
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
 
-  // Handle database upgrade
-  openRequest.onupgradeneeded = (event) => {
-    const db = event.target.result
-    if (!db.objectStoreNames.contains(storeName)) {
-      db.createObjectStore(storeName, {
-        keyPath: "id",
-        autoIncrement: true
-      })
-    }
-  }
-
-  // Handle successful database opening
-  openRequest.onsuccess = async (event) => {
-    const db = event.target.result
-    const tx = db.transaction(storeName, "readwrite")
-    const store = tx.objectStore(storeName)
-    const data = { projectId, jobDescriptionId, profileId, evaluation }
-
-    const addRequest = store.add(data)
-
-    addRequest.onsuccess = () => {
-      console.log("Data saved to IndexedDB", data)
-      notifyContentScript("itemAddedToIndexedDb")
+  return new Promise((resolve, reject) => {
+    // Handle database upgrade
+    openRequest.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName, {
+          keyPath: "id",
+          autoIncrement: true
+        })
+      }
     }
 
-    addRequest.onerror = () => {
-      console.error("Error saving data to IndexedDB")
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      const db = event.target.result
+      const tx = db.transaction(storeName, "readwrite")
+      const store = tx.objectStore(storeName)
+      const data = {
+        projectId,
+        jobDescriptionId,
+        profileId,
+        evaluation,
+        evaluationRating
+      }
+
+      const addRequest = store.add(data)
+
+      addRequest.onsuccess = () => {
+        console.log("Data saved to IndexedDB", data)
+        notifyContentScript("itemAddedToIndexedDb")
+      }
+
+      addRequest.onerror = () => {
+        console.error("Error saving data to IndexedDB")
+      }
+
+      // Close the transaction
+      tx.oncomplete = () => db.close()
+      resolve()
     }
 
-    // Close the transaction
-    tx.oncomplete = () => db.close()
-  }
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
+}
 
-  // Handle errors in opening the database
-  openRequest.onerror = (event) => {
-    console.error("Error opening IndexedDB", event.target.errorCode)
-  }
+async function deleteDataFromIndexedDB({ id, projectId }) {
+  console.log("Delete Data from IndexedDB")
+  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+  const storeName = projectId
+
+  // Open or create a database with an updated version
+  const openRequest = indexedDB.open(dbName)
+
+  return new Promise((resolve, reject) => {
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      const db = event.target.result
+      const tx = db.transaction(storeName, "readwrite")
+      console.log("storeName", storeName)
+      const store = tx.objectStore(storeName)
+
+      const deleteRequest = store.delete(id)
+
+      deleteRequest.onsuccess = () => {
+        console.log("Data deleted from IndexedDB: ", id)
+        resolve(id)
+      }
+
+      deleteRequest.onerror = () => {
+        console.error("Error deleting data from IndexedDB")
+        reject()
+      }
+
+      // Close the transaction
+      tx.oncomplete = () => db.close()
+    }
+
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
 }
 
 // Mark the current task as complete
@@ -571,10 +629,13 @@ const stopJob = () => {
   }
 }
 
+// Retrieve data from plasmohq storage
+
 // Listener for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
     case ActionTypes.EVALUATE_PROFILES:
+      console.log("evaluateProfiles request.data", request.data)
       evaluateProfiles(request.data)
       break
     case ActionTypes.GET_STATUS:
@@ -592,6 +653,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       stopJob()
       sendResponse({ status: "Job stopped" })
       break
+    case ActionTypes.GET_JOB_DETAILS:
+      storage.get(JOB_DESCRIPTION).then((response) => {
+        sendResponse({ data: response })
+      })
   }
 
   if (sender.tab && request.taskId !== undefined) {
@@ -654,12 +719,17 @@ function getDataFromIndexedDB({ projectId, jobDescriptionId, profileId }) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("eventlistener", request.action)
   if (request.action === "getDataFromIndexedDB") {
-    console.log("getting data from indexedDB", request.payload)
     getDataFromIndexedDB(request.payload)
       .then((data) => sendResponse({ success: true, data }))
       .catch((error) => sendResponse({ success: false, error }))
     return true // Indicates asynchronous response
+  }
+
+  if (request.action === "updateDataFromIndexedDB") {
+    const data = request.payload
+    deleteDataFromIndexedDB(data).then(() => {
+      saveDataToIndexedDB(data)
+    })
   }
 })

@@ -11,64 +11,103 @@ import ReactDOM from "react-dom/client"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
-import { EXTENSION_ENABLE } from "~src/config/storage.config"
+import { MinimalProvider } from "~@minimal/Provider"
+import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
+import type { AuthState } from "~src/types"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
 
-import SampleComponent from "./sample.component"
+const useReactPath = () => {
+  const [path, setPath] = React.useState(window.location.pathname)
+  const listenToPopstate = () => {
+    const winPath = window.location.pathname
+    if (path === winPath) return
+    setPath(winPath)
+  }
+  React.useEffect(() => {
+    window.addEventListener("DOMNodeInserted", listenToPopstate)
+    return () => {
+      window.removeEventListener("DOMNodeInserted", listenToPopstate)
+    }
+  }, [])
+  return path
+}
 
-const InjectorComponent = () => {
+const InjectorComponent = ({
+  injectComponentId,
+  querySelectorTargetElement,
+  direction = "child",
+  children
+}: {
+  injectComponentId: string
+  querySelectorTargetElement: string
+  direction?: string
+  children: any
+}) => {
   const { user } = useFirebaseUser()
   const [enabled] = useStorage(EXTENSION_ENABLE)
+  const [auth] = useStorage<AuthState>(AUTH_STATE)
+  const path = useReactPath()
 
   useEffect(() => {
-    const injectComponentId = "recruit-brain-injector"
-    const querySelectorTargetElement = ".artdeco-tabs"
-    const targetElement = document.querySelector(querySelectorTargetElement)
-    const injectedComponent = document.getElementById(injectComponentId)
-
-    if (!user || !enabled) {
-      injectedComponent && injectedComponent.remove()
-      return
-    }
-
-    if (targetElement && !injectedComponent) {
-      const container = document.createElement("div")
-      container.setAttribute("id", "recruit-brain-injector")
-      targetElement.appendChild(container)
-      const shadowContainer = container.attachShadow({ mode: "open" })
-
-      const emotionRoot = document.createElement("style")
-      const elementCSS = document.createElement("style")
-      elementCSS.textContent =
-        carouselStyle +
-        carouselThemeStyle +
-        quillStyle +
-        lazyStyle +
-        simpleBarStyle +
-        mapboxStyle
-      const shadowRootElement = document.createElement("div")
-      shadowContainer.appendChild(emotionRoot)
-      shadowContainer.appendChild(elementCSS)
-      shadowContainer.appendChild(shadowRootElement)
-
-      const cache = createCache({
-        key: "css",
-        prepend: true,
-        container: emotionRoot
+    const inject = async () => {
+      await new Promise((resolve) => {
+        waitForElement(querySelectorTargetElement, resolve)
       })
 
-      const root = ReactDOM.createRoot(shadowRootElement as HTMLElement)
+      const targetElement = document.querySelector(querySelectorTargetElement)
+      const injectedComponent = document.getElementById(injectComponentId)
 
-      root.render(
-        <CacheProvider value={cache}>
-          <SampleComponent />
-        </CacheProvider>
-      )
-    } else {
-      console.error("Target element for injecting data not found.")
+      if (!user || !auth?.isAuth || !enabled) {
+        injectedComponent && injectedComponent.remove()
+        return
+      }
+
+      if (targetElement && !injectedComponent) {
+        const container = document.createElement("div")
+        container.setAttribute("id", injectComponentId)
+
+        if (direction === "after") targetElement.after(container)
+        else if (direction === "prepend") targetElement.prepend(container)
+        else targetElement.appendChild(container)
+
+        const shadowContainer = container.attachShadow({ mode: "open" })
+
+        const emotionRoot = document.createElement("style")
+        const elementCSS = document.createElement("style")
+        elementCSS.textContent =
+          carouselStyle +
+          carouselThemeStyle +
+          quillStyle +
+          lazyStyle +
+          simpleBarStyle +
+          mapboxStyle
+        const shadowRootElement = document.createElement("div")
+        shadowContainer.appendChild(emotionRoot)
+        shadowContainer.appendChild(elementCSS)
+        shadowContainer.appendChild(shadowRootElement)
+
+        const cache = createCache({
+          key: "css",
+          prepend: true,
+          container: emotionRoot
+        })
+
+        const root = ReactDOM.createRoot(shadowRootElement as HTMLElement)
+
+        root.render(
+          <CacheProvider value={cache}>
+            <MinimalProvider>{children}</MinimalProvider>
+          </CacheProvider>
+        )
+      } else {
+        console.error(
+          `Target element for ${injectComponentId} injecting data not found.`
+        )
+      }
     }
-  }, [user, enabled])
+    inject()
+  }, [user, auth, enabled, injectComponentId, querySelectorTargetElement, path])
 
   return null
 }
