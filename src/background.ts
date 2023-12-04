@@ -515,7 +515,7 @@ async function injectedCode(jobData) {
     }
   }
 
-  // addOverlay()
+  addOverlay()
   // wait for profile list
   await waitForElement2("a[data-live-test-link-to-profile-link]")
   // open first profile in list
@@ -525,11 +525,12 @@ async function injectedCode(jobData) {
   chrome.runtime.sendMessage({ done: true })
 
   var run = 0
+  console.time("CompleteJobTime")
   while (run < jobData.amount) {
     console.log("run start")
     console.time("Step1Time")
     console.time("CompleteTime")
-    await new Promise((resolve) => setTimeout(resolve, 4000))
+    await new Promise((resolve) => setTimeout(resolve, 3500))
     // extract data when ready
     await waitForElement2(".background-card")
     console.timeEnd("Step1Time")
@@ -576,6 +577,7 @@ async function injectedCode(jobData) {
     console.timeEnd("CompleteTime")
     console.log("run end")
   }
+  console.timeEnd("CompleteJobTime")
 }
 
 // Mock data for API call

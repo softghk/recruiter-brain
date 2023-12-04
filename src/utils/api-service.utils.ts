@@ -78,14 +78,14 @@ export async function getStatisticData() {
   const accessToken = firebaseAuth.accessToken
   return new Promise(async (resolve, reject) => {
     const data: AuthState = await storage.get(AUTH_STATE)
-    console.log(data)
     axios
-      .get(`http://localhost:3000/users/stats`, {
+      .get(`http://localhost:3000/evaluation/daily-stats`, {
         headers: {
           Authorization: `${data.accessToken}`
         }
       })
       .then((resp) => {
+        console.log("daily stats", resp.data)
         resolve(resp.data)
       })
       .catch((err) => {
