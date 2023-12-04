@@ -11,6 +11,8 @@ import { waitForElement2 } from "./utils/wait-for-element.utils"
 
 export {}
 
+injectEvaluationResults()
+
 let previousURL = ""
 
 window.addEventListener("DOMNodeInserted", function () {
@@ -20,7 +22,6 @@ window.addEventListener("DOMNodeInserted", function () {
     previousURL = currentURL
     injectMainComponent()
     insertEvaluationComponent()
-    injectEvaluationResults()
   }
 })
 

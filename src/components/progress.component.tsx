@@ -95,10 +95,12 @@ export const injectScanningProgress = async () => {
   const targetElement = document.querySelector(querySelectorTargetElement)
   const injectComponent = document.getElementById(injectComponentId)
 
+  console.log("targetElement, injectComponent", targetElement, injectComponent)
+
   if (targetElement && !injectComponent) {
     const container = document.createElement("div")
     container.setAttribute("id", injectComponentId)
-    targetElement.appendChild(container)
+    targetElement.prepend(container)
     const shadowContainer = container.attachShadow({ mode: "open" })
 
     const emotionRoot = document.createElement("style")
@@ -113,7 +115,10 @@ export const injectScanningProgress = async () => {
       container: emotionRoot
     })
 
-    const removeProgress = () => targetElement.remove()
+    const removeProgress = () => {
+      const element = document.getElementById(injectComponentId)
+      if (element) element.remove()
+    }
 
     root.render(
       <CacheProvider value={cache}>
@@ -126,10 +131,9 @@ export const injectScanningProgress = async () => {
 }
 
 export const removeScanningProgress = () => {
-  const injectComponentId = "recruit-brain-injector"
+  const injectComponentId = "recruiter-brain-progress"
   const element = document.getElementById(injectComponentId)
-
-  element.remove()
+  if (element) element.remove()
 }
 
 export default ScanningProgress
