@@ -6,15 +6,12 @@ import { Storage } from "@plasmohq/storage"
 import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
-<<<<<<< HEAD
 import {
   deleteDataFromIndexedDB,
   getDataFromIndexedDB,
   saveDataToIndexedDB
 } from "./utils/indexed-db.utils"
-=======
 import { notifyContentScript } from "./utils/notify-content-script.utils"
->>>>>>> d3f2596b7819cf1ce863850d7ecd604231fbc15c
 
 const storage = new Storage()
 
