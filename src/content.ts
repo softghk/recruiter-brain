@@ -1,8 +1,10 @@
 import buildDataHTML from "src/ui-components/profile-evaluation.component"
 
+import { insertEvaluationComponent } from "./components/evaluation"
+import { injectMainComponent } from "./components/main"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
-import { injectControlPanel } from "./utils/inject-control-panel.utils"
+// import { injectControlPanel } from "./utils/inject-control-panel.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 
 export {}
@@ -108,7 +110,7 @@ async function tryFetchingData(
   }
 }
 
-async function autoInject() {
+async function injectEvaluationResults() {
   const listElementSelector = "ol.profile-list"
   const parentSelector = ".page-layout__workspace"
 
@@ -176,7 +178,9 @@ async function autoInject() {
   observeListElement()
 }
 
-//injectControlPanel()
+// injectMainComponent()
+// insertEvaluationComponent()
+// injectEvaluationResults()
 
 let previousURL = ""
 
@@ -185,8 +189,9 @@ window.addEventListener("DOMNodeInserted", function () {
   if (currentURL !== previousURL) {
     console.log("URL changed to:", currentURL)
     previousURL = currentURL
-    injectControlPanel()
-    autoInject()
+    injectMainComponent()
+    insertEvaluationComponent()
+    injectEvaluationResults()
   }
 })
 

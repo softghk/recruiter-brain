@@ -1,4 +1,4 @@
-import buildDataHTML from "src/ui-components/profile-evaluation.component"
+import buildDataHTML from "src/components/sections/evaluation-result.component"
 
 // Injects data into the DOM after profile evaluation
 export function injectDataIntoDom(profile, profileEvaluation) {

@@ -1,7 +1,5 @@
 import { useStorage } from "@plasmohq/storage/hook"
 
-import "src/utils/firebase-service.utils"
-
 import { MinimalProvider } from "@minimal/Provider"
 import CloseIcon from "@mui/icons-material/Close"
 import { Box, IconButton, Modal, Stack, styled } from "@mui/material"
