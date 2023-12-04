@@ -79,7 +79,7 @@ const EvaluationSettingsModal = ({
         onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={onClickJD}>Change Job Description</MenuItem>
       </Menu>
-      <Modal open={open} onClose={onClose}>
+      <Modal open={open} onClose={onClose} width={800}>
         <Card elevation={4}>
           <CardHeader
             title="Evalute Profiles"
@@ -140,7 +140,7 @@ const EvaluationSettingsModal = ({
           </CardContent>
         </Card>
 
-        <Box>
+        <Box sx={{ marginTop: 2 }}>
           <Button
             variant="contained"
             color="primary"

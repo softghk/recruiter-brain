@@ -1,10 +1,11 @@
+import { insertEvaluationComponent } from "./components/evaluation"
+import { injectMainComponent } from "./components/main"
 import {
   htmlClassInvisibleProfile,
   htmlClassVisibleProfile
 } from "./utils/constants.utils"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
-// import { injectControlPanel } from "./utils/inject-control-panel.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
@@ -17,8 +18,9 @@ window.addEventListener("DOMNodeInserted", function () {
   if (currentURL !== previousURL) {
     console.log("URL changed to:", currentURL)
     previousURL = currentURL
-    injectControlPanel()
-    autoInject()
+    injectMainComponent()
+    insertEvaluationComponent()
+    injectEvaluationResults()
   }
 })
 

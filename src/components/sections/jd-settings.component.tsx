@@ -121,7 +121,7 @@ const JDSettingsModal = ({
           setResetModal(false)
         }}
       />
-      <Modal open={open} onClose={onClose}>
+      <Modal open={open} onClose={onClose} width={800}>
         {!activated ? renderJDInput() : renderCompleted()}
       </Modal>
     </>

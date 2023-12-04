@@ -18,11 +18,13 @@ const StyledCloseIcon = styled(CloseIcon)(({ theme }) => ({
 export default function Modal({
   open,
   onClose,
-  children
+  children,
+  width = 400
 }: {
   open?: boolean
   onClose?: any
   children: any
+  width?: number
 }) {
   return (
     <MuiModal open={open} disablePortal disableScrollLock>
@@ -35,7 +37,8 @@ export default function Modal({
           boxShadow: 24,
           top: "50%",
           left: "50%",
-          borderRadius: 2
+          borderRadius: 2,
+          width: width
         }}>
         {/* Render MuiModal Header */}
         <Stack
