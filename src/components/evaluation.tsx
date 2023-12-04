@@ -165,11 +165,12 @@ export const insertEvaluationComponent = async () => {
   })
 
   const targetElement = document.querySelector(querySelectorTargetElement)
+  const injectComponent = document.getElementById(injectComponentId)
 
-  if (targetElement) {
+  if (targetElement && !injectComponent) {
     const container = document.createElement("div")
     container.setAttribute("id", injectComponentId)
-    targetElement.appendChild(container)
+    targetElement.after(container)
     const shadowContainer = container.attachShadow({ mode: "open" })
 
     const emotionRoot = document.createElement("style")

@@ -11,7 +11,6 @@ import { EXTENSION_ENABLE, EXTENSION_VISIBLE } from "~src/config/storage.config"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
 
 import FabButton from "./common/fab-button.component"
-import InjectorComponent from "./common/injector.component"
 import LoadingComponent from "./common/loading.component"
 import Modal from "./common/modal.component"
 import Login from "./sections/login.component"
@@ -53,14 +52,17 @@ const Home = () => {
 
 export const injectMainComponent = async () => {
   const querySelectorTargetElement = "body"
+  const injectComponentId = "recruitbrain-main-component"
   await new Promise((resolve) => {
     waitForElement(querySelectorTargetElement, resolve)
   })
 
   const targetElement = document.querySelector(querySelectorTargetElement)
+  const injectComponent = document.getElementById(injectComponentId)
 
-  if (targetElement) {
+  if (targetElement && !injectComponent) {
     const container = document.createElement("div")
+    container.setAttribute("id", injectComponentId)
     targetElement.appendChild(container)
     const shadowContainer = container.attachShadow({ mode: "open" })
 
