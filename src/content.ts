@@ -158,6 +158,7 @@ async function handleMutation(mutation) {
                 profileId
               )
               if (Array.isArray(newData) && newData.length) {
+                console.log("INJECT DATA INTO DOM")
                 injectDataIntoDom(element, newData[0])
                 chrome.runtime.onMessage.removeListener(listenerFunction)
               }
