@@ -103,6 +103,46 @@ export async function deleteDataFromIndexedDB({ id, projectId }) {
   })
 }
 
+export async function deleteAllFromIndexedDB({ projectId }) {
+  console.log("Delete All Data from IndexedDB")
+  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+  const storeName = projectId
+
+  // Open or create a database with an updated version
+  const openRequest = indexedDB.open(dbName)
+
+  return new Promise((resolve, reject) => {
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      const db = event.target.result
+      const tx = db.transaction(storeName, "readwrite")
+      console.log("storeName", storeName)
+      const store = tx.objectStore(storeName)
+
+      const deleteRequest = store.clear()
+
+      deleteRequest.onsuccess = () => {
+        console.log("All Data deleted from IndexedDB: ", projectId)
+        resolve(projectId)
+      }
+
+      deleteRequest.onerror = () => {
+        console.error("Error deleting data from IndexedDB")
+        reject()
+      }
+
+      // Close the transaction
+      tx.oncomplete = () => db.close()
+    }
+
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
+}
+
 export function getDataFromIndexedDB({
   projectId,
   jobDescriptionId,
