@@ -19,7 +19,6 @@ import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
 import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-radial-bar"
 import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
-import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import {
   getEvaluationData,
   rateCandidateEvaluation
@@ -67,7 +66,6 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   const [expanded, setExpanded] = useState(false)
   const [state] = useStorage<boolean>(EXTENSION_ENABLE)
 
-  const { user } = useFirebaseUser()
   const [auth] = useStorage(AUTH_STATE)
   const formattedExplanation = explanation.replace(/\n/g, "<br>")
 
@@ -89,7 +87,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     rateCandidateEvaluation(data.profileId, evaluationRating)
   }
 
-  if (!user || !auth?.isAuth || !state) return null
+  if (!auth?.isAuth || !state) return null
 
   return (
     <MinimalProvider>
