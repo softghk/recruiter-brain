@@ -110,9 +110,13 @@ const processNextTask = () => {
 const makeAPICallAndSaveData = async (data, jobData) => {
   const taskId = jobData.taskId
   const jobId = jobData.jobId
-  console.log("API Call", data, jobData)
+  const profileUrl = data.personal.url
+  const profileId = profileUrl.match(/\/profile\/([^\/]+)$/)[1]
+  const jobDescriptionId = jobData.jobDescriptionId
+  console.log("API Call000", data, jobData, profileId)
   const profileEvaluation = await evaluateProfileApi(
-    data.personal.url,
+    profileId,
+    jobDescriptionId,
     data,
     jobData.jobDescription
   )

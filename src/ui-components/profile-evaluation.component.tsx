@@ -86,7 +86,12 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     const evaluationRating = Number(e.target.value)
     const newData = { ...data, evaluationRating }
     updateDataFromIndexedDB(newData)
-    rateCandidateEvaluation(data.profileId, evaluationRating)
+    console.log("datadatadata", data)
+    rateCandidateEvaluation(
+      data.profileId,
+      data.jobDescriptionId,
+      evaluationRating
+    )
   }
 
   if (!user || !auth?.isAuth || !state) return null
