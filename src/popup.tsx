@@ -20,15 +20,25 @@ const IndexPopup = () => {
   const { onLogout } = useFirebaseUser()
 
   const onReset = () => {
-    onLogout()
-    deleteAllDatabases()
-    const evaluations = document.getElementsByClassName(
-      `recruit-brain-profile-evaluation`
-    )
-    for (let i = 0; i < evaluations.length; i++) {
-      const element = evaluations[i]
-      element.remove()
-    }
+    // chrome.runtime.sendMessage({
+    //   action: "reset-evaluations",
+    //   response: (response) => {
+    //     console.log(response)
+    //   }
+    // })
+    chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
+      var activeTab = tabs[0]
+      chrome.tabs.sendMessage(activeTab.id, { action: "reset-evaluations" })
+    })
+    // onLogout()
+    // deleteAllDatabases()
+    // const evaluations = document.getElementsByClassName(
+    //   `recruit-brain-profile-evaluation`
+    // )
+    // for (let i = 0; i < evaluations.length; i++) {
+    //   const element = evaluations[i]
+    //   element.remove()
+    // }
   }
 
   return (

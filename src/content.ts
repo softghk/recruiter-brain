@@ -6,6 +6,7 @@ import {
 } from "./utils/constants.utils"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
+import { deleteAllDatabases } from "./utils/indexed-db.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
@@ -44,13 +45,6 @@ const injectComponents = () => {
 }
 
 injectComponents()
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.action) {
-    console.log("content.js received message:", request.action)
-  }
-  return true
-})
 
 async function injectEvaluationResults() {
   const listElementSelector = "ol.profile-list"
@@ -209,3 +203,22 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
     }
   })
 }
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  switch (request.action) {
+    case "reset-evaluations":
+      deleteAllDatabases()
+      const evaluations = document.getElementsByClassName(
+        `recruit-brain-profile-evaluation`
+      )
+      for (let i = 0; i < evaluations.length; i++) {
+        const element = evaluations[i]
+        element.remove()
+      }
+      break
+  }
+  if (request.action) {
+    console.log("content.js received message:", request.action)
+  }
+  return true
+})
