@@ -530,8 +530,8 @@ async function injectedCode(jobData) {
     }
   }
   function closeThisTab() {
-    chrome.tabs.query({ active: true }, function (tabs) {
-      chrome.tabs.remove(tabs[0].id)
+    chrome.runtime.sendMessage({
+      action: "close-tab"
     })
   }
   addOverlay()
@@ -662,6 +662,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       storage.get(JOB_DESCRIPTION).then((response) => {
         sendResponse({ data: response })
       })
+  }
+
+  if (request.action === "close-tab" && sender.tab) {
+    console.log("background task complete, closing tab")
+    chrome.tabs.remove(sender.tab.id)
   }
 
   if (sender.tab && request.taskId !== undefined) {
