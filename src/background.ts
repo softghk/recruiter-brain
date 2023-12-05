@@ -55,7 +55,7 @@ const openTabAndInjectCode = (jobData) => {
           (message, sender, sendResponse) => {
             if (message && message.done) {
               // Switch back to the previously active tab when the content script signals it's done
-              chrome.tabs.update(currentActiveTab.id, { active: true })
+              // chrome.tabs.update(currentActiveTab.id, { active: true })
             }
           }
         )
@@ -529,7 +529,11 @@ async function injectedCode(jobData) {
       education: education
     }
   }
-
+  function closeThisTab() {
+    chrome.tabs.query({ active: true }, function (tabs) {
+      chrome.tabs.remove(tabs[0].id)
+    })
+  }
   addOverlay()
   // wait for profile list
   await waitForElement2("a[data-live-test-link-to-profile-link]")
@@ -593,6 +597,7 @@ async function injectedCode(jobData) {
     console.log("run end")
   }
   console.timeEnd("CompleteJobTime")
+  closeThisTab()
 }
 
 // Mock data for API call
