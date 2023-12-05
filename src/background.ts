@@ -355,10 +355,21 @@ async function injectedCode(jobData) {
 
     // Create a div element for the text
     const textDiv = document.createElement("div")
-    textDiv.style.fontSize = "24px"
     textDiv.style.color = "#333" // Customize text color
     textDiv.style.marginTop = "20px" // Add spacing above the text
     textDiv.textContent = "Please wait..."
+    textDiv.innerHTML = `<h2><strong>Please wait while we process your request.</strong></h2>
+
+    <div style="padding:20px;">
+  <ul>
+    <li>Do not close this tab.</li>
+    <li>Once the process is complete, this tab will close automatically.</li>
+    <li>You can use the browser as usual in the meantime.</li>
+  </ul>
+  </div>
+  
+  <p><b>Recommended: Keep this tab open for faster completion.</b></p>
+`
 
     // Append the logo and textDiv to the content container
     contentContainer.appendChild(logo)
