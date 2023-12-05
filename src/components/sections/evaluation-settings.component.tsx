@@ -106,7 +106,7 @@ const EvaluationSettingsModal = ({
               <Box
                 display={"flex"}
                 alignItems={"center"}
-                gap={1}
+                gap={2.5}
                 maxWidth={420}>
                 <Typography variant="subtitle2">0</Typography>
                 <Slider

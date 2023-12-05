@@ -194,6 +194,7 @@ const profileContainer = (profileEvaluation) => {
 
   const container = document.createElement("div")
   container.setAttribute("id", `recruit-brain-profile-${profileId}`)
+  container.setAttribute("class", `recruit-brain-profile-evaluation`)
   const shadowContainer = container.attachShadow({ mode: "open" })
   const shadowRootElement = document.createElement("div")
 

@@ -55,7 +55,11 @@ const ResetJDModal = ({
             </Typography>
           </Box>
 
-          <Box display={"flex"} justifyContent={"flex-end"} gap={1.5}>
+          <Box
+            display={"flex"}
+            justifyContent={"flex-end"}
+            gap={1.5}
+            sx={{ marginTop: 2 }}>
             <Button variant="contained" color="error" onClick={onOk}>
               Reset Job Description
             </Button>

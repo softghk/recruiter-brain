@@ -143,6 +143,19 @@ export async function deleteAllFromIndexedDB({ projectId }) {
   })
 }
 
+export function deleteAllDatabases(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    indexedDB
+      .databases()
+      .then((r) => {
+        for (var i = 0; i < r.length; i++) indexedDB.deleteDatabase(r[i].name)
+      })
+      .then(() => {
+        resolve()
+      })
+  })
+}
+
 export function getDataFromIndexedDB({
   projectId,
   jobDescriptionId,

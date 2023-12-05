@@ -12,6 +12,7 @@ import { MinimalProvider } from "~@minimal/Provider"
 import { EXTENSION_ENABLE, JOB_DESCRIPTION } from "~src/config/storage.config"
 import { JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
+import { deleteAllFromIndexedDB } from "~src/utils/indexed-db.utils"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
 
 import { injectScanningProgress } from "./progress.component"
@@ -46,9 +47,18 @@ const EvaluateComponent = () => {
   }
 
   const onResetJD = () => {
-    if (!description) setDescription({})
-    else {
+    if (!description) {
+      setDescription({})
+    } else {
       setDescription({ ...description, [projectId]: JobInitialSetting })
+    }
+    deleteAllFromIndexedDB({ projectId })
+    const evaluations = document.getElementsByClassName(
+      `recruit-brain-profile-evaluation`
+    )
+    for (let i = 0; i < evaluations.length; i++) {
+      const element = evaluations[i]
+      element.remove()
     }
   }
 

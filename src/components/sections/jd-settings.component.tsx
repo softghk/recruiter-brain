@@ -76,7 +76,7 @@ const JDSettingsModal = ({
         </Stack>
       </Card>
 
-      <Box>
+      <Box sx={{ marginTop: 2 }}>
         {data.title !== "" || data.description !== "" ? (
           <Button variant="outlined" onClick={() => setResetModal(true)}>
             Reset

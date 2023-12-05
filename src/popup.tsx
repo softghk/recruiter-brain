@@ -1,20 +1,36 @@
 import {
   Box,
-  Stack,
-  SvgIcon,
-  Switch,
+  Button,
   ToggleButton,
   ToggleButtonGroup,
   Typography
 } from "@mui/material"
-import React, { useState } from "react"
+import React from "react"
 import Logo from "react:~assets/logo.svg"
 import { EXTENSION_ENABLE } from "src/config/storage.config"
+import useFirebaseUser from "src/firebase/useFirebaseUser"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
+import { deleteAllDatabases } from "./utils/indexed-db.utils"
+
 const IndexPopup = () => {
   const [state, setState] = useStorage<boolean | null>(EXTENSION_ENABLE, true)
+
+  const { onLogout } = useFirebaseUser()
+
+  const onReset = () => {
+    setState(false)
+    onLogout()
+    deleteAllDatabases()
+    const evaluations = document.getElementsByClassName(
+      `recruit-brain-profile-evaluation`
+    )
+    for (let i = 0; i < evaluations.length; i++) {
+      const element = evaluations[i]
+      element.remove()
+    }
+  }
 
   return (
     <Box
@@ -46,6 +62,9 @@ const IndexPopup = () => {
           OFF
         </ToggleButton>
       </ToggleButtonGroup>
+      <Button color="primary" variant="contained" onClick={onReset}>
+        Reset
+      </Button>
       <Typography variant="caption" display={"block"}>
         support@recruitbrain.co
       </Typography>
