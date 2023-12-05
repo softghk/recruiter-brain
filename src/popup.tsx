@@ -20,7 +20,6 @@ const IndexPopup = () => {
   const { onLogout } = useFirebaseUser()
 
   const onReset = () => {
-    setState(false)
     onLogout()
     deleteAllDatabases()
     const evaluations = document.getElementsByClassName(
