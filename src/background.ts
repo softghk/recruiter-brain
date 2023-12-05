@@ -20,7 +20,8 @@ const ActionTypes = {
   RESUME_JOB: "resume-job",
   STOP_JOB: "stop-job",
   TASK_DATA_RECEIVED: "task-data-received",
-  GET_JOB_DETAILS: "get-job-details"
+  GET_JOB_DETAILS: "get-job-details",
+  CLOSE_TAB: "close-tab"
 }
 
 // Job and Task Statuses
@@ -531,7 +532,7 @@ async function injectedCode(jobData) {
   }
   function closeThisTab() {
     chrome.runtime.sendMessage({
-      action: "close-tab"
+      action: ActionTypes.CLOSE_TAB
     })
   }
   addOverlay()
@@ -662,11 +663,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       storage.get(JOB_DESCRIPTION).then((response) => {
         sendResponse({ data: response })
       })
-  }
-
-  if (request.action === "close-tab" && sender.tab) {
-    console.log("background task complete, closing tab")
-    chrome.tabs.remove(sender.tab.id)
+    case ActionTypes.CLOSE_TAB:
+      chrome.tabs.remove(sender.tab.id)
+      break
   }
 
   if (sender.tab && request.taskId !== undefined) {
