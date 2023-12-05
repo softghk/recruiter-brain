@@ -128,6 +128,8 @@ const makeAPICallAndSaveData = async (data, jobData) => {
     profileId: data.personal.id,
     evaluation: profileEvaluation,
     evaluationRating: -1
+  }).then(() => {
+    notifyContentScript("itemAddedToIndexedDb")
   })
   markTaskAsComplete(taskId, jobId)
 }
@@ -415,7 +417,7 @@ async function injectedCode(jobData) {
     }
   }
 
-  // addOverlay()
+  addOverlay()
   // wait for profile list
   await waitForElement2("a[data-live-test-link-to-profile-link]")
   // open first profile in list
