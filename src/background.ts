@@ -7,6 +7,7 @@ import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
 import {
+  deleteAllFromIndexedDB,
   deleteDataFromIndexedDB,
   getDataFromIndexedDB,
   saveDataToIndexedDB
@@ -540,6 +541,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       storage.get(JOB_DESCRIPTION).then((response) => {
         sendResponse({ data: response })
       })
+      break
+    case "delete-db":
+      deleteAllFromIndexedDB({ projectId: request.data }).then((response) =>
+        sendResponse({ data: response })
+      )
+      break
   }
 
   if (sender.tab && request.taskId !== undefined) {

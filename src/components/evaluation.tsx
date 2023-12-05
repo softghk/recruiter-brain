@@ -54,7 +54,13 @@ const EvaluateComponent = () => {
     } else {
       setDescription({ ...description, [projectId]: JobInitialSetting })
     }
-    deleteAllFromIndexedDB({ projectId })
+    chrome.runtime.sendMessage(
+      { action: "delete-db", data: projectId },
+      (response) => {
+        console.log("DELETE DB")
+      }
+    )
+    // deleteAllFromIndexedDB({ projectId })
     const evaluations = document.getElementsByClassName(
       `recruit-brain-profile-evaluation`
     )
