@@ -138,8 +138,8 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
               dangerouslySetInnerHTML={{ __html: formattedExplanation }}
               sx={{
                 display: expanded ? "block" : "-webkit-box",
-                "-webkit-box-orient": "vertical",
-                "-webkit-line-clamp": "3",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: "3",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 flexGrow: 1

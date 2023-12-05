@@ -31,7 +31,10 @@ const Home = () => {
 
   return (
     <MinimalProvider>
-      <Modal open={extensionVisible} onClose={toggleModal}>
+      <Modal
+        open={extensionVisible}
+        onClose={toggleModal}
+        width={user && !isLoading ? 800 : 400}>
         {isLoading && <LoadingComponent />}
         {!user && !isLoading && <Login />}
         {user && !isLoading && <DashboardComponent />}

@@ -13,17 +13,37 @@ export {}
 
 injectEvaluationResults()
 
+let mainObserver = null
 let previousURL = ""
 
-window.addEventListener("DOMNodeInserted", function () {
-  const currentURL = window.location.href
-  if (currentURL !== previousURL) {
-    console.log("URL changed to:", currentURL)
-    previousURL = currentURL
-    injectMainComponent()
-    insertEvaluationComponent()
+const injectComponents = () => {
+  if (mainObserver) mainObserver.disconnect()
+
+  const targetNode = document.getElementsByTagName("body")[0]
+
+  const config = { attributes: false, childList: true, subtree: true }
+
+  const callback = (mutationList, observer) => {
+    for (const mutation of mutationList) {
+      if (mutation.type === "childList" || mutation.type === "subtree") {
+        const currentURL = window.location.href
+        if (currentURL !== previousURL) {
+          console.log("URL changed to:", currentURL)
+          previousURL = currentURL
+          injectMainComponent()
+          insertEvaluationComponent()
+        }
+      } else if (mutation.type === "attributes") {
+        console.log(`The ${mutation.attributeName} attribute was modified.`)
+      }
+    }
   }
-})
+
+  mainObserver = new MutationObserver(callback)
+  mainObserver.observe(targetNode, config)
+}
+
+injectComponents()
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action) {
@@ -168,7 +188,7 @@ async function handleMutation(mutation) {
           chrome.runtime.onMessage.addListener(listenerFunction)
         }
       } catch (error) {
-        console.error("Error get-job-details from backgrounds script:", error)
+        // console.error("Error get-job-details from backgrounds script:", error)
       }
     }
   }
