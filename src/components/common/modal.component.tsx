@@ -27,7 +27,7 @@ export default function Modal({
   width?: number
 }) {
   return (
-    <MuiModal open={open} disablePortal disableScrollLock>
+    <MuiModal open={open} disablePortal disableScrollLock onClose={onClose}>
       <Box
         sx={{
           padding: 2,
