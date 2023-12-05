@@ -6,7 +6,7 @@ export function saveDataToIndexedDB({
   evaluation,
   evaluationRating
 }): Promise<void> {
-  console.log("saveDataToIndexedDB")
+  // console.log("saveDataToIndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
   const dbVersion = 5 // Increment this version when changes are made to the database structure
@@ -19,6 +19,7 @@ export function saveDataToIndexedDB({
     openRequest.onupgradeneeded = (event) => {
       const db = event.target.result
       if (!db.objectStoreNames.contains(storeName)) {
+        console.log("SUCCESSFULLY CREATED DB")
         db.createObjectStore(storeName, {
           keyPath: "id",
           autoIncrement: true
@@ -28,6 +29,7 @@ export function saveDataToIndexedDB({
 
     // Handle successful database opening
     openRequest.onsuccess = async (event) => {
+      console.log("SUCCESSFUL DB CONNECTION")
       const db = event.target.result
       const tx = db.transaction(storeName, "readwrite")
       const store = tx.objectStore(storeName)
