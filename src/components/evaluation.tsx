@@ -10,6 +10,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
 import { EXTENSION_ENABLE, JOB_DESCRIPTION } from "~src/config/storage.config"
+import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
 import { deleteAllFromIndexedDB } from "~src/utils/indexed-db.utils"
@@ -31,6 +32,7 @@ const buttonStyle = {
 const EvaluateComponent = () => {
   const [extensionEnabled] = useStorage(EXTENSION_ENABLE)
   const [open, setOpen] = useState({ eval: false, setting: false })
+  const { user } = useFirebaseUser()
 
   const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
 
@@ -88,7 +90,7 @@ const EvaluateComponent = () => {
     })
   }
 
-  if (!extensionEnabled) return <></>
+  if (!extensionEnabled || !user) return <></>
 
   return (
     <>
