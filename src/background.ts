@@ -360,14 +360,17 @@ async function injectedCode(jobData) {
     textDiv.style.marginTop = "20px" // Add spacing above the text
     textDiv.textContent = "Please wait..."
     textDiv.innerHTML = `<h2><strong>Please wait while we process your request.</strong></h2>
+    <div style="padding:30px;visibility: visible;" id="brain-loading">
+      <p>KEEP THIS TAB OPEN. PLEASE WAIT.</p>
+    </div>
 
-    <div style="padding:20px;">
-  <ul>
-    <li>Do not close this tab.</li>
-    <li>Once the process is complete, this tab will close automatically.</li>
-    <li>You can use the browser as usual in the meantime.</li>
-  </ul>
-  </div>
+    <div style="padding:20px;visibility: hidden;" id="brain-info">
+      <ul>
+        <li>Do not close this tab.</li>
+        <li>Once the process is complete, this tab will close automatically.</li>
+        <li>You can use the browser as usual in the meantime.</li>
+      </ul>
+    </div>
   
   <p><b>Recommended: Keep this tab open for faster completion.</b></p>
 `
@@ -540,6 +543,8 @@ async function injectedCode(jobData) {
   await waitForElement2("a[data-live-test-link-to-profile-link]")
   // open first profile in list
   document.querySelector("a[data-live-test-link-to-profile-link]").click()
+  document.querySelector("#brain-loading").style.visibility = "hidden"
+  document.querySelector("#brain-info").style.visibility = "visible"
 
   // tell background script that page is loaded
   chrome.runtime.sendMessage({ done: true })
@@ -663,6 +668,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       storage.get(JOB_DESCRIPTION).then((response) => {
         sendResponse({ data: response })
       })
+      break
     case ActionTypes.CLOSE_TAB:
       chrome.tabs.remove(sender.tab.id)
       break
