@@ -13,8 +13,6 @@ import { waitForElement2 } from "./utils/wait-for-element.utils"
 
 export {}
 
-injectEvaluationResults()
-
 let mainObserver = null
 let previousURL = ""
 
@@ -34,6 +32,7 @@ const injectComponents = () => {
           previousURL = currentURL
           injectMainComponent()
           insertEvaluationComponent()
+          injectEvaluationResults()
         }
       } else if (mutation.type === "attributes") {
         console.log(`The ${mutation.attributeName} attribute was modified.`)
@@ -164,7 +163,10 @@ async function handleMutation(mutation) {
           )
           injectDataIntoDom(element, evaluationData[0])
         } else {
-          //console.log("No evaluation data found, setting up listener...", element)
+          console.log(
+            "No evaluation data found, setting up listener...",
+            element
+          )
           const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
               const jobData: any = await getJobData()
