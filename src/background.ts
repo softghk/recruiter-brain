@@ -550,6 +550,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createDatabase({ projectId: request.data }).then((response) => {
         sendResponse()
       })
+      break
     case "delete-db":
       console.log("DELETE DB ACTION DISPATCHED")
       deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
