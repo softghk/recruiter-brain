@@ -1,35 +1,54 @@
+import { auth } from "src/firebase/firebaseClient"
+
+import { insertEvaluationComponent } from "./components/evaluation"
+import { injectMainComponent } from "./components/main"
 import {
   htmlClassInvisibleProfile,
   htmlClassVisibleProfile
 } from "./utils/constants.utils"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
-import { injectControlPanel } from "./utils/inject-control-panel.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
 export {}
 
+injectEvaluationResults()
+
+let mainObserver = null
 let previousURL = ""
 
-window.addEventListener("DOMNodeInserted", function () {
-  const currentURL = window.location.href
-  if (currentURL !== previousURL) {
-    console.log("URL changed to:", currentURL)
-    previousURL = currentURL
-    injectControlPanel()
-    autoInject()
-  }
-})
+const injectComponents = () => {
+  if (mainObserver) mainObserver.disconnect()
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.action) {
-    console.log("content.js received message:", request.action)
-  }
-  return true
-})
+  const targetNode = document.getElementsByTagName("body")[0]
 
-async function autoInject() {
+  const config = { attributes: false, childList: true, subtree: true }
+
+  const callback = (mutationList, observer) => {
+    for (const mutation of mutationList) {
+      if (mutation.type === "childList" || mutation.type === "subtree") {
+        const currentURL = window.location.href
+        if (currentURL !== previousURL) {
+          console.log("URL changed to:", currentURL)
+          previousURL = currentURL
+          injectMainComponent()
+          insertEvaluationComponent()
+          injectEvaluationResults()
+        }
+      } else if (mutation.type === "attributes") {
+        console.log(`The ${mutation.attributeName} attribute was modified.`)
+      }
+    }
+  }
+
+  mainObserver = new MutationObserver(callback)
+  mainObserver.observe(targetNode, config)
+}
+
+injectComponents()
+
+async function injectEvaluationResults() {
   const listElementSelector = "ol.profile-list"
   const parentSelector = ".page-layout__workspace"
 
@@ -97,11 +116,25 @@ async function autoInject() {
   observeListElement()
 }
 
+const getJobData = () => {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action: "get-job-details" }, (response) => {
+      if (response.data) {
+        resolve(response.data)
+      } else {
+        reject("No data found for job details")
+      }
+    })
+  })
+}
+
 async function handleMutation(mutation) {
   if (mutation.type === "attributes" && mutation.target.tagName === "LI") {
     const element = mutation.target
     const currentClass = element.getAttribute("class")
     const oldClass = mutation.oldValue
+
+    const getElements = () => mutation.target
 
     const isOldClassInvisible = oldClass === htmlClassInvisibleProfile
     const isCurrentClassVisible = currentClass === htmlClassVisibleProfile
@@ -113,18 +146,7 @@ async function handleMutation(mutation) {
         const profileId = element
           .querySelector("a")
           .href.match(/profile\/(.*?)\?/)[1]
-        const jobData: any = await new Promise((resolve, reject) => {
-          chrome.runtime.sendMessage(
-            { action: "get-job-details" },
-            (response) => {
-              if (response.data) {
-                resolve(response.data)
-              } else {
-                reject("No data found for job details")
-              }
-            }
-          )
-        })
+        const jobData: any = await getJobData()
 
         if (!jobData?.[projectId]) return
         const jobDescription = jobData?.[projectId].description || ""
@@ -143,28 +165,34 @@ async function handleMutation(mutation) {
           )
           injectDataIntoDom(element, evaluationData[0])
         } else {
-          //console.log("No evaluation data found, setting up listener...", element)
+          console.log(
+            "No evaluation data found, setting up listener...",
+            element
+          )
           const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
-              console.log(
-                "Received itemAddedToIndexedDb message. Trying to fetch data again."
-              )
+              const jobData: any = await getJobData()
+              const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
+              const jobDescription = jobData?.[projectId].description || ""
+              const jobDescriptionId = generateMD5(jobDescription)
+
               const newData = await requestDataFromIndexedDB(
                 projectId,
                 jobDescriptionId,
                 profileId
               )
               if (Array.isArray(newData) && newData.length) {
-                injectDataIntoDom(element, newData[0])
+                console.log("INJECT DATA INTO DOM")
+                injectDataIntoDom(getElements(), newData[0])
                 chrome.runtime.onMessage.removeListener(listenerFunction)
               }
             }
-            return true
+            sendResponse()
           }
           chrome.runtime.onMessage.addListener(listenerFunction)
         }
       } catch (error) {
-        console.error("Error get-job-details from backgrounds script:", error)
+        // console.error("Error get-job-details from backgrounds script:", error)
       }
     }
   }
@@ -185,3 +213,29 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
     }
   })
 }
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  switch (request.action) {
+    case "reset-all":
+      auth.signOut()
+      break
+    case "delete-db":
+      console.log("delete db from background")
+      const evaluations = document.getElementsByClassName(
+        `recruit-brain-profile-evaluation`
+      )
+      for (let i = 0; i < evaluations.length; i++) {
+        const element = evaluations[i]
+        element.remove()
+      }
+      window.location.reload()
+      sendResponse()
+      break
+    default:
+      sendResponse()
+      break
+  }
+  if (request.action) {
+    console.log("content.js received message:", request.action)
+  }
+})

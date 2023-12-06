@@ -1,23 +1,15 @@
-import {
-  Box,
-  Button,
-  Card,
-  Modal,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material"
+import { Box, Button, Card, Stack, TextField, Typography } from "@mui/material"
 import ActivatedHelpImage from "data-base64:~assets/activated-help.png"
 import React, { useEffect, useMemo, useState } from "react"
+import Modal from "src/components/common/modal.component"
 
 import { JobInitialSetting, type JobSettings } from "~src/types"
 
-import ModalHeaderComponent from "./modal-header.component"
-import ResetJDModal from "./resetjd-modal.component"
+import ResetJDModal from "./reset-jd.component"
 
 const parseLines = (value) => value.replace(/(\\n)/g, "\n")
 
-const EvaluateModal = ({
+const JDSettingsModal = ({
   open,
   onClose,
   onFinish,
@@ -84,7 +76,7 @@ const EvaluateModal = ({
         </Stack>
       </Card>
 
-      <Box>
+      <Box sx={{ marginTop: 2 }}>
         {data.title !== "" || data.description !== "" ? (
           <Button variant="outlined" onClick={() => setResetModal(true)}>
             Reset
@@ -129,30 +121,11 @@ const EvaluateModal = ({
           setResetModal(false)
         }}
       />
-      <Modal open={open} disablePortal disableScrollLock sx={{ zIndex: 1500 }}>
-        <Box
-          sx={{
-            padding: 5,
-            position: "absolute",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "white",
-            boxShadow: 24,
-            top: "50%",
-            left: "50%",
-            borderRadius: 2,
-            width: 800,
-            maxHeight: "100%",
-            overflow: "hidden",
-            display: "flex"
-          }}>
-          <Stack direction={"column"} gap={2}>
-            <ModalHeaderComponent onClose={onFinishActivate} />
-            {!activated ? renderJDInput() : renderCompleted()}
-          </Stack>
-        </Box>
+      <Modal open={open} onClose={onClose} width={800}>
+        {!activated ? renderJDInput() : renderCompleted()}
       </Modal>
     </>
   )
 }
 
-export default EvaluateModal
+export default JDSettingsModal

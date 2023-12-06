@@ -19,7 +19,6 @@ import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
 import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-radial-bar"
 import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
-import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import {
   getEvaluationData,
   rateCandidateEvaluation
@@ -67,7 +66,6 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   const [expanded, setExpanded] = useState(false)
   const [state] = useStorage<boolean>(EXTENSION_ENABLE)
 
-  const { user } = useFirebaseUser()
   const [auth] = useStorage(AUTH_STATE)
   const formattedExplanation = explanation.replace(/\n/g, "<br>")
 
@@ -94,7 +92,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     )
   }
 
-  if (!user || !auth?.isAuth || !state) return null
+  if (!auth?.isAuth || !state) return null
 
   return (
     <MinimalProvider>
@@ -145,8 +143,8 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
               dangerouslySetInnerHTML={{ __html: formattedExplanation }}
               sx={{
                 display: expanded ? "block" : "-webkit-box",
-                "-webkit-box-orient": "vertical",
-                "-webkit-line-clamp": "3",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: "3",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 flexGrow: 1
@@ -201,6 +199,7 @@ const profileContainer = (profileEvaluation) => {
 
   const container = document.createElement("div")
   container.setAttribute("id", `recruit-brain-profile-${profileId}`)
+  container.setAttribute("class", `recruit-brain-profile-evaluation`)
   const shadowContainer = container.attachShadow({ mode: "open" })
   const shadowRootElement = document.createElement("div")
 

@@ -6,6 +6,14 @@ import { Storage } from "@plasmohq/storage"
 import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
+import {
+  deleteAllDatabases,
+  deleteAllFromIndexedDB,
+  deleteDataFromIndexedDB,
+  getDataFromIndexedDB,
+  saveDataToIndexedDB
+} from "./utils/indexed-db.utils"
+import { sendMessageToContentScript } from "./utils/message.utils"
 import { notifyContentScript } from "./utils/notify-content-script.utils"
 
 const storage = new Storage()
@@ -35,6 +43,7 @@ const JobStatus = {
 // Current job and its tasks
 let currentJob = null
 let tasks = []
+let workingTabId = null
 
 const openTabAndInjectCode = (jobData) => {
   // Get the currently active tab
@@ -44,6 +53,7 @@ const openTabAndInjectCode = (jobData) => {
 
       // Create a new tab as active
       chrome.tabs.create({ url: currentJob.href, active: true }, (newTab) => {
+        workingTabId = newTab.id
         // Inject code into the newly opened tab
         chrome.scripting.executeScript({
           target: { tabId: newTab.id },
@@ -128,113 +138,10 @@ const makeAPICallAndSaveData = async (data, jobData) => {
     profileId: data.personal.id,
     evaluation: profileEvaluation,
     evaluationRating: -1
+  }).then(() => {
+    notifyContentScript("itemAddedToIndexedDb")
   })
   markTaskAsComplete(taskId, jobId)
-}
-
-// Save data to IndexedDB
-function saveDataToIndexedDB({
-  projectId,
-  jobDescriptionId,
-  profileId,
-  evaluation,
-  evaluationRating
-}) {
-  console.log("saveDataToIndexedDB")
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  const storeName = projectId
-  const dbVersion = 5 // Increment this version when changes are made to the database structure
-
-  // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName, dbVersion)
-
-  return new Promise((resolve, reject) => {
-    // Handle database upgrade
-    openRequest.onupgradeneeded = (event) => {
-      const db = event.target.result
-      if (!db.objectStoreNames.contains(storeName)) {
-        db.createObjectStore(storeName, {
-          keyPath: "id",
-          autoIncrement: true
-        })
-      }
-    }
-
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      const db = event.target.result
-      const tx = db.transaction(storeName, "readwrite")
-      const store = tx.objectStore(storeName)
-      const data = {
-        projectId,
-        jobDescriptionId,
-        profileId,
-        evaluation,
-        evaluationRating
-      }
-
-      const addRequest = store.add(data)
-
-      addRequest.onsuccess = () => {
-        console.log("Data saved to IndexedDB", data)
-        notifyContentScript("itemAddedToIndexedDb")
-      }
-
-      addRequest.onerror = () => {
-        console.error("Error saving data to IndexedDB")
-      }
-
-      // Close the transaction
-      tx.oncomplete = () => db.close()
-      resolve()
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
-}
-
-async function deleteDataFromIndexedDB({ id, projectId }) {
-  console.log("Delete Data from IndexedDB")
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  const storeName = projectId
-
-  // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName)
-
-  return new Promise((resolve, reject) => {
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      const db = event.target.result
-      const tx = db.transaction(storeName, "readwrite")
-      console.log("storeName", storeName)
-      const store = tx.objectStore(storeName)
-
-      const deleteRequest = store.delete(id)
-
-      deleteRequest.onsuccess = () => {
-        console.log("Data deleted from IndexedDB: ", id)
-        resolve(id)
-      }
-
-      deleteRequest.onerror = () => {
-        console.error("Error deleting data from IndexedDB")
-        reject()
-      }
-
-      // Close the transaction
-      tx.oncomplete = () => db.close()
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
 }
 
 // Mark the current task as complete
@@ -451,16 +358,16 @@ async function injectedCode(jobData) {
     const education = []
 
     // Extract personal information
-    const personalElement = document.querySelector(
+    const personalElement = document?.querySelector(
       ".artdeco-entity-lockup__content.lockup__content.ember-view"
     )
-    personal.name = personalElement.querySelector(
+    personal.name = personalElement?.querySelector(
       ".artdeco-entity-lockup__title.ember-view"
     ).innerText
-    personal.currentPosition = personalElement.querySelector(
+    personal.currentPosition = personalElement?.querySelector(
       ".artdeco-entity-lockup__subtitle.ember-view > span"
     ).innerText
-    const locationElement = document.querySelector(
+    const locationElement = document?.querySelector(
       "div[data-test-row-lockup-location][data-live-test-row-lockup-location]"
     )
     personal.location = locationElement.innerText.trim().replace(/·\s*/, "")
@@ -492,6 +399,7 @@ async function injectedCode(jobData) {
         positions.push(extractPositionDetails(el))
       }
     })
+    console.log("extracting data===============")
 
     const skillElements = document.querySelectorAll(".skill-entity__wrapper")
     skillElements.forEach((el) => {
@@ -500,31 +408,36 @@ async function injectedCode(jobData) {
         ?.innerText.trim()
       skills.push(skillName)
     })
+    console.log("extracting data===============2")
 
     const educationElements = document.querySelectorAll(
       ".background-entity.education-item"
     )
-    educationElements.forEach((el) => {
-      const schoolName = el
-        .querySelector("[data-test-education-entity-school-name]")
-        ?.innerText.trim()
-      const degreeName = el
-        .querySelector("[data-test-education-entity-degree-name]")
-        ?.innerText.trim()
-      const fieldOfStudy = el
-        .querySelector("[data-test-education-entity-field-of-study]")
-        ?.innerText.trim()
-      const dates = el
-        .querySelector("[data-test-education-entity-dates]")
-        ?.innerText.trim()
 
-      education.push({
-        schoolName: schoolName,
-        degreeName: degreeName,
-        fieldOfStudy: fieldOfStudy,
-        dates: dates
+    if (educationElements) {
+      educationElements.forEach((el) => {
+        const schoolName = el
+          .querySelector("[data-test-education-entity-school-name]")
+          ?.innerText.trim()
+        const degreeName = el
+          .querySelector("[data-test-education-entity-degree-name]")
+          ?.innerText.trim()
+        const fieldOfStudy = el
+          .querySelector("[data-test-education-entity-field-of-study]")
+          ?.innerText.trim()
+        const dates = el
+          .querySelector("[data-test-education-entity-dates]")
+          ?.innerText.trim()
+
+        education.push({
+          schoolName: schoolName,
+          degreeName: degreeName,
+          fieldOfStudy: fieldOfStudy,
+          dates: dates
+        })
       })
-    })
+    }
+    console.log("extracting data===============3")
 
     return {
       personal: personal,
@@ -557,7 +470,7 @@ async function injectedCode(jobData) {
     console.time("CompleteTime")
     await new Promise((resolve) => setTimeout(resolve, 3500))
     // extract data when ready
-    await waitForElement2(".background-card")
+    await waitForElement2(".experience-card")
     console.timeEnd("Step1Time")
 
     // Find all buttons with 'data-test-expandable-button' attribute and click each one
@@ -573,7 +486,7 @@ async function injectedCode(jobData) {
     console.timeEnd("Step2Time")
 
     // Wait for 100ms after all buttons have been clicked
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 700))
 
     console.log("extracting data")
     console.time("Step3Time")
@@ -597,7 +510,7 @@ async function injectedCode(jobData) {
     const nextButton = document.querySelector("a[data-test-pagination-next]")
     nextButton.click()
     await waitForContainerChanges(".profile__container")
-    await waitForElement2(".expandable-list-profile-core__title")
+    await waitForElement2("[data-test-expandable-list-title]")
     console.timeEnd("Step4Time")
     console.timeEnd("CompleteTime")
     console.log("run end")
@@ -630,17 +543,13 @@ const resumeJob = () => {
 
 // Stop the job
 const stopJob = () => {
-  if (currentJob) {
-    currentJob.status = JobStatus.FAILED
-    tasks.forEach((task) => {
-      if (task.status === JobStatus.PENDING) {
-        task.status = JobStatus.FAILED
-      }
-    })
-  }
+  chrome.tabs.remove(workingTabId, function () {
+    currentJob = null
+    tasks = []
+    workingTabId = null
+    console.log("tab closed")
+  })
 }
-
-// Retrieve data from plasmohq storage
 
 // Listener for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -661,6 +570,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ status: "Job resumed" })
       break
     case ActionTypes.STOP_JOB:
+      console.log("STOP JOB message received")
       stopJob()
       sendResponse({ status: "Job stopped" })
       break
@@ -671,6 +581,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break
     case ActionTypes.CLOSE_TAB:
       chrome.tabs.remove(sender.tab.id)
+      break
+      break
+    case "delete-db":
+      console.log("DELETE DB ACTION DISPATCHED")
+      deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
+        console.log("got response after delete db")
+        sendMessageToContentScript("delete-db")
+        sendResponse({ data: response })
+      })
+      break
+    case "delete-db-all":
+      console.log("DELEATE ALL DATABASE")
+      deleteAllDatabases().then(() => {
+        console.log("got response after delete all db")
+        storage.removeAll()
+        sendMessageToContentScript("delete-db")
+        sendMessageToContentScript("reset-all")
+        sendResponse({ data: "" })
+      })
       break
   }
 
@@ -684,57 +613,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true // Indicate that the response is asynchronous
 })
 
-// TODO: Implement persistent storage for tasks and job status
-
-function getDataFromIndexedDB({ projectId, jobDescriptionId, profileId }) {
-  return new Promise((resolve, reject) => {
-    const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-    const storeName = projectId
-
-    // Open the database
-    const openRequest = indexedDB.open(dbName)
-
-    openRequest.onsuccess = (event) => {
-      const db = event.target.result
-
-      try {
-        const tx = db.transaction(storeName, "readonly")
-        const store = tx.objectStore(storeName)
-        const request = store.getAll()
-
-        request.onsuccess = () => {
-          const data = request.result
-          // Filter the data based on the criteria
-          const filteredData = data.filter(
-            (item) =>
-              item.projectId === projectId &&
-              item.jobDescriptionId === jobDescriptionId &&
-              item.profileId === profileId
-          )
-          resolve(filteredData)
-        }
-
-        request.onerror = () => {
-          reject("Error in retrieving data from IndexedDB")
-        }
-      } catch (error) {
-        // Handle case where object store does not exist
-        if (error.name === "NotFoundError") {
-          resolve(null) // Return null if the store does not exist
-        } else {
-          reject("Transaction failed", error)
-        }
-      }
-    }
-
-    openRequest.onerror = (event) => {
-      reject("Error opening IndexedDB", event.target.errorCode)
-    }
-  })
-}
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getDataFromIndexedDB") {
+    console.log("RECEIVED REQUEST: getDataFromIndexedDB")
     getDataFromIndexedDB(request.payload)
       .then((data) => sendResponse({ success: true, data }))
       .catch((error) => sendResponse({ success: false, error }))
@@ -744,7 +625,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "updateDataFromIndexedDB") {
     const data = request.payload
     deleteDataFromIndexedDB(data).then(() => {
-      saveDataToIndexedDB(data)
+      saveDataToIndexedDB(data).then(() => {
+        notifyContentScript("itemAddedToIndexedDb")
+      })
     })
   }
 })

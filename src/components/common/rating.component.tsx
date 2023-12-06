@@ -3,7 +3,7 @@ import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied"
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined"
 import SentimentVeryDissatisfiedIcon from "@mui/icons-material/SentimentVeryDissatisfied"
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied"
-import { Box, Container } from "@mui/material"
+import { Box } from "@mui/material"
 import Rating from "@mui/material/Rating"
 import { styled } from "@mui/material/styles"
 import PropTypes from "prop-types"
@@ -47,14 +47,23 @@ IconContainer.propTypes = {
   value: PropTypes.number.isRequired
 }
 
-export default function RadioRating() {
+export default function RadioRating({
+  defaultValue,
+  value,
+  onChange
+}: {
+  defaultValue?: number
+  value?: number
+  onChange?: any
+}) {
   return (
     <Box display="flex" justifyContent="center" alignItems="center">
       <StyledRating
         name="highlight-selected-only"
-        defaultValue={2}
+        defaultValue={defaultValue}
         IconContainerComponent={IconContainer}
         getLabelText={(value) => customIcons[value].label}
+        onChange={onChange}
         highlightSelectedOnly
       />
     </Box>

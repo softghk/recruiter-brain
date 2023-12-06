@@ -1,20 +1,31 @@
 import {
   Box,
-  Stack,
-  SvgIcon,
-  Switch,
+  Button,
   ToggleButton,
   ToggleButtonGroup,
   Typography
 } from "@mui/material"
-import React, { useState } from "react"
+import React from "react"
 import Logo from "react:~assets/logo.svg"
 import { EXTENSION_ENABLE } from "src/config/storage.config"
+import useFirebaseUser from "src/firebase/useFirebaseUser"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
 const IndexPopup = () => {
   const [state, setState] = useStorage<boolean | null>(EXTENSION_ENABLE, true)
+
+  const { onLogout } = useFirebaseUser()
+
+  const onReset = () => {
+    onLogout()
+    chrome.runtime.sendMessage(
+      { action: "delete-db-all", data: "" },
+      (response) => {
+        console.log("DELETE DB")
+      }
+    )
+  }
 
   return (
     <Box
@@ -29,7 +40,7 @@ const IndexPopup = () => {
         <Logo />
       </Box>
       <ToggleButtonGroup
-        value={state}
+        value={state || false}
         onChange={(e, val) => (val !== null ? setState(val) : null)}
         exclusive
         aria-label="On/Off">
@@ -46,6 +57,11 @@ const IndexPopup = () => {
           OFF
         </ToggleButton>
       </ToggleButtonGroup>
+      {/*
+      <Button color="primary" variant="contained" onClick={onReset}>
+        Reset
+      </Button>
+      */}
       <Typography variant="caption" display={"block"}>
         support@recruitbrain.co
       </Typography>

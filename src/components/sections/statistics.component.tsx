@@ -7,8 +7,8 @@ import { getStatisticData } from "src/utils/api-service.utils"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
-export const DashboardComponent = () => {
-  const { onLogout } = useFirebaseUser()
+const DashboardComponent = () => {
+  const { user, onLogout } = useFirebaseUser()
   const [visible] = useStorage(EXTENSION_VISIBLE)
   const [data, setData] = useState([
     {
@@ -24,16 +24,15 @@ export const DashboardComponent = () => {
   ])
 
   useEffect(() => {
-    if (!visible) return
+    if (!visible || !user) return
     getStatisticData().then((response: any) => {
-      console.log("response", response)
       setData(response)
     })
-  }, [visible])
+  }, [visible, user])
 
   return (
     <Stack spacing={2}>
-      <Grid container width={800} spacing={2}>
+      <Grid container width={768} spacing={2}>
         <Grid item xs={6}>
           <EcommerceSalesOverview data={data} title="Daily Usage Stats" />
         </Grid>
@@ -49,3 +48,5 @@ export const DashboardComponent = () => {
     </Stack>
   )
 }
+
+export default DashboardComponent

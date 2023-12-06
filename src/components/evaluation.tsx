@@ -1,29 +1,42 @@
+import createCache from "@emotion/cache"
+import { CacheProvider } from "@emotion/react"
 import { Button, IconButton, Stack, SvgIcon } from "@mui/material"
 import { Box } from "@mui/system"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
+import ReactDOM from "react-dom/client"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
 import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
-import { JOB_DESCRIPTION } from "~src/config/storage.config"
+import { EXTENSION_ENABLE, JOB_DESCRIPTION } from "~src/config/storage.config"
+import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
+import { deleteAllFromIndexedDB } from "~src/utils/indexed-db.utils"
+import { waitForElement } from "~src/utils/wait-for-element.utils"
 
-import EvaluateModal from "./evaluate.modal"
-import InjectorComponent from "./injector.component"
-import ScanningProgress from "./scanning-progress.component"
-import SettingsModal from "./settings.modal"
+import { injectScanningProgress } from "./progress.component"
+import EvaluationSettingsModal from "./sections/evaluation-settings.component"
+import JDSettingsModal from "./sections/jd-settings.component"
+
+const buttonStyle = {
+  color: "#d30000",
+  borderColor: "#d30000",
+  borderRadius: 3,
+  fontSize: "16px",
+  paddingX: 1.5,
+  paddingY: "2px"
+}
 
 const EvaluateComponent = () => {
+  const [extensionEnabled] = useStorage(EXTENSION_ENABLE)
   const [open, setOpen] = useState({ eval: false, setting: false })
-  const [evaluateStarted, setEvaluateStarted] = useState(false)
+  const { user } = useFirebaseUser()
 
   const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
 
   const [description, setDescription] = useStorage(JOB_DESCRIPTION)
-
-  //  it works fine now. maybe cache problem.
 
   const currentJD: JobSettings = useMemo(
     () => description?.[projectId] || JobInitialSetting,
@@ -36,10 +49,28 @@ const EvaluateComponent = () => {
   }
 
   const onResetJD = () => {
-    if (!description) setDescription({})
-    else {
+    if (!description) {
+      setDescription({})
+    } else {
       setDescription({ ...description, [projectId]: JobInitialSetting })
     }
+    chrome.runtime.sendMessage(
+      { action: "delete-db", data: projectId },
+      (response) => {
+        console.log("DELETE DB")
+      }
+    )
+    // deleteAllFromIndexedDB({ projectId })
+    const evaluations = document.getElementsByClassName(
+      `recruit-brain-profile-evaluation`
+    )
+    for (let i = 0; i < evaluations.length; i++) {
+      const element = evaluations[i]
+      element.remove()
+    }
+
+    // reload page (easy fix but not good)
+    window.location.reload()
   }
 
   const onChangeSettings = (jd) => {
@@ -48,7 +79,8 @@ const EvaluateComponent = () => {
 
   const onEvaluate = (evaluationSettings) => {
     setOpen({ eval: false, setting: false })
-    console.log("Evaluation Started")
+
+    injectScanningProgress()
 
     const href = window.location.href
 
@@ -65,45 +97,20 @@ const EvaluateComponent = () => {
         jobDescription: evaluationSettings.description || ""
       }
     })
-
-    setEvaluateStarted(true)
   }
 
-  const onPauseScanning = () => {
-    chrome.runtime.sendMessage({ action: "pause-job" })
-  }
-  const onStopScanning = () => {
-    chrome.runtime.sendMessage({ action: "stop-job" })
-  }
-
-  const onCloseProgress = () => {
-    setEvaluateStarted(false)
-    const element = document.getElementById("recruiter-brain-progress")
-    if (element) element.remove()
-  }
+  if (!extensionEnabled || !user) return <></>
 
   return (
     <>
-      {evaluateStarted && (
-        <InjectorComponent
-          injectComponentId={"recruiter-brain-progress"}
-          direction="prepend"
-          querySelectorTargetElement={".page-layout__workspace"}>
-          <ScanningProgress
-            onPause={onPauseScanning}
-            onStop={onStopScanning}
-            onClose={onCloseProgress}
-          />
-        </InjectorComponent>
-      )}
-      <EvaluateModal
+      <JDSettingsModal
         data={currentJD}
         open={open.eval}
         onClose={() => setOpen({ ...open, eval: false })}
         onFinish={onSaveJDToStore}
         onReset={onResetJD}
       />
-      <SettingsModal
+      <EvaluationSettingsModal
         data={currentJD}
         open={open.setting}
         onEvaluate={onEvaluate}
@@ -155,27 +162,13 @@ const EvaluateComponent = () => {
           }}>
           <Button
             variant="outlined"
-            sx={{
-              color: "#d30000",
-              borderColor: "#d30000",
-              borderRadius: 3,
-              fontSize: "16px",
-              paddingX: 1.5,
-              paddingY: "2px"
-            }}
+            sx={buttonStyle}
             onClick={() => setOpen({ eval: false, setting: true })}>
             Evaluate Profiles
           </Button>
           <Button
             variant="outlined"
-            sx={{
-              color: "#d30000",
-              borderColor: "#d30000",
-              borderRadius: 3,
-              fontSize: "16px",
-              paddingX: 1.5,
-              paddingY: "2px"
-            }}
+            sx={buttonStyle}
             onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
           </Button>
@@ -183,6 +176,44 @@ const EvaluateComponent = () => {
       )}
     </>
   )
+}
+
+export const insertEvaluationComponent = async () => {
+  const querySelectorTargetElement = ".sourcing-channels__post-job-link"
+  const injectComponentId = "recruit-brain-injector"
+  await new Promise((resolve) => {
+    waitForElement(querySelectorTargetElement, resolve)
+  })
+
+  const targetElement = document.querySelector(querySelectorTargetElement)
+  const injectComponent = document.getElementById(injectComponentId)
+
+  if (targetElement && !injectComponent) {
+    const container = document.createElement("div")
+    container.setAttribute("id", injectComponentId)
+    targetElement.after(container)
+    const shadowContainer = container.attachShadow({ mode: "open" })
+
+    const emotionRoot = document.createElement("style")
+    const shadowRootElement = document.createElement("div")
+    shadowContainer.appendChild(emotionRoot)
+    shadowContainer.appendChild(shadowRootElement)
+    const root = ReactDOM.createRoot(shadowRootElement)
+
+    const cache = createCache({
+      key: "css",
+      prepend: true,
+      container: emotionRoot
+    })
+
+    root.render(
+      <CacheProvider value={cache}>
+        <MinimalProvider>
+          <EvaluateComponent />
+        </MinimalProvider>
+      </CacheProvider>
+    )
+  }
 }
 
 export default EvaluateComponent
