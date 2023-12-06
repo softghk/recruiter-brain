@@ -132,6 +132,8 @@ async function handleMutation(mutation) {
     const currentClass = element.getAttribute("class")
     const oldClass = mutation.oldValue
 
+    const getElements = () => mutation.target
+
     const isOldClassInvisible = oldClass === htmlClassInvisibleProfile
     const isCurrentClassVisible = currentClass === htmlClassVisibleProfile
     const isProfileVisible = isOldClassInvisible && isCurrentClassVisible
@@ -179,7 +181,7 @@ async function handleMutation(mutation) {
               )
               if (Array.isArray(newData) && newData.length) {
                 console.log("INJECT DATA INTO DOM")
-                injectDataIntoDom(element, newData[0])
+                injectDataIntoDom(getElements(), newData[0])
                 chrome.runtime.onMessage.removeListener(listenerFunction)
               }
             }
