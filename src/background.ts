@@ -574,6 +574,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getDataFromIndexedDB") {
+    console.log("RECEIVED REQUEST: getDataFromIndexedDB")
     getDataFromIndexedDB(request.payload)
       .then((data) => sendResponse({ success: true, data }))
       .catch((error) => sendResponse({ success: false, error }))
