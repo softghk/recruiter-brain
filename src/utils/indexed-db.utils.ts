@@ -198,6 +198,7 @@ export function getDataFromIndexedDB({
         request.onsuccess = () => {
           const data = request.result
           // Filter the data based on the criteria
+          console.log(data)
           const filteredData = data.filter(
             (item) =>
               item.projectId === projectId &&
@@ -213,6 +214,7 @@ export function getDataFromIndexedDB({
       } catch (error) {
         // Handle case where object store does not exist
         if (error.name === "NotFoundError") {
+          console.log("NOT FOUND ERROR")
           resolve(null) // Return null if the store does not exist
         } else {
           reject("Transaction failed", error)
