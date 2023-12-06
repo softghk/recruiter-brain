@@ -7,6 +7,7 @@ import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
 import {
+  createDatabase,
   deleteAllDatabases,
   deleteAllFromIndexedDB,
   deleteDataFromIndexedDB,
@@ -545,6 +546,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ data: response })
       })
       break
+    case "create-db":
+      createDatabase({ projectId: request.data }).then((response) => {
+        sendResponse()
+      })
     case "delete-db":
       console.log("DELETE DB ACTION DISPATCHED")
       deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {

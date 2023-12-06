@@ -1,3 +1,40 @@
+export function createDatabase({ projectId }): Promise<void> {
+  console.log("create database")
+  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+  const storeName = projectId
+  const dbVersion = 5 // Increment this version when changes are made to the database structure
+
+  // Open or create a database with an updated version
+  const openRequest = indexedDB.open(dbName, dbVersion)
+
+  return new Promise((resolve, reject) => {
+    // Handle database upgrade
+    openRequest.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(storeName)) {
+        console.log("SUCCESSFULLY CREATED DB")
+        db.createObjectStore(storeName, {
+          keyPath: "id",
+          autoIncrement: true
+        })
+      }
+      resolve()
+    }
+
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      console.log("SUCCESSFUL DB CONNECTION")
+      resolve()
+    }
+
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
+}
+
 // Save data to IndexedDB
 export function saveDataToIndexedDB({
   projectId,
