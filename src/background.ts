@@ -533,6 +533,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ status: "Job resumed" })
       break
     case ActionTypes.STOP_JOB:
+      console.log("STOP JOB message received")
       stopJob()
       sendResponse({ status: "Job stopped" })
       break

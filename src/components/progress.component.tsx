@@ -123,11 +123,17 @@ export const injectScanningProgress = async () => {
     root.render(
       <CacheProvider value={cache}>
         <MinimalProvider>
-          <ScanningProgress onClose={removeProgress} />
+          <ScanningProgress onClose={removeProgress} onStop={sendStopMessage} />
         </MinimalProvider>
       </CacheProvider>
     )
   }
+}
+
+function sendStopMessage() {
+  chrome.runtime.sendMessage({ action: "stop-job" }, (response) => {
+    console.log("Current job status:", response)
+  })
 }
 
 export const removeScanningProgress = () => {
