@@ -58,7 +58,7 @@ const ScanningProgress = ({
           variant="determinate"
           sx={{ width: "100%" }}
         />
-        {total > 0 && completed === total ? (
+        {(total > 0 && completed === total) || total === 0 ? (
           <IconButton
             size="small"
             onClick={onClose}

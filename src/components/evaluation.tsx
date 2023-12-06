@@ -2,7 +2,7 @@ import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
 import { Button, IconButton, Stack, SvgIcon } from "@mui/material"
 import { Box } from "@mui/system"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import ReactDOM from "react-dom/client"
 
 import { useStorage } from "@plasmohq/storage/hook"
