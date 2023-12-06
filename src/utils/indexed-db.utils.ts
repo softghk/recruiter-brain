@@ -184,9 +184,6 @@ export function getDataFromIndexedDB({
   profileId
 }) {
   return new Promise((resolve, reject) => {
-    const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-    const storeName = projectId
-
     // Open the database
     const openRequest = indexedDB.open(dbName)
 
@@ -201,7 +198,6 @@ export function getDataFromIndexedDB({
         request.onsuccess = () => {
           const data = request.result
           // Filter the data based on the criteria
-          console.log(data)
           const filteredData = data.filter(
             (item) =>
               item.projectId === projectId &&
