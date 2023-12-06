@@ -446,11 +446,7 @@ async function injectedCode(jobData) {
       education: education
     }
   }
-  function closeThisTab() {
-    chrome.runtime.sendMessage({
-      action: ActionTypes.CLOSE_TAB
-    })
-  }
+
   addOverlay()
   // wait for profile list
   await waitForElement2("a[data-live-test-link-to-profile-link]")
@@ -516,7 +512,9 @@ async function injectedCode(jobData) {
     console.log("run end")
   }
   console.timeEnd("CompleteJobTime")
-  closeThisTab()
+  chrome.runtime.sendMessage({
+    action: "close-tab"
+  })
 }
 
 // Mock data for API call
