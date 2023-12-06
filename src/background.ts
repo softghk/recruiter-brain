@@ -66,7 +66,7 @@ const openTabAndInjectCode = (jobData) => {
           (message, sender, sendResponse) => {
             if (message && message.done) {
               // Switch back to the previously active tab when the content script signals it's done
-              // chrome.tabs.update(currentActiveTab.id, { active: true })
+              chrome.tabs.update(currentActiveTab.id, { active: true })
             }
           }
         )
@@ -580,8 +580,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
       break
     case ActionTypes.CLOSE_TAB:
-      chrome.tabs.remove(sender.tab.id)
-      break
+      console.log("close tab", sender)
+      chrome.tabs.remove(sender.tab.id, () => {})
       break
     case "delete-db":
       console.log("DELETE DB ACTION DISPATCHED")

@@ -1,9 +1,9 @@
 {
-  "name": "recruit-chrome",
-  "displayName": "Recruit chrome",
-  "version": "0.0.1",
-  "description": "A basic Plasmo extension.",
-  "author": "Eduard Hilgenberg",
+  "name": "recruiter-brain",
+  "displayName": "RecruiterBRAIN",
+  "version": "1.0.1",
+  "description": "RecruiterBRAIN Beta",
+  "author": "E",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
