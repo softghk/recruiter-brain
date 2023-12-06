@@ -565,7 +565,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log("got response after delete all db")
         storage.removeAll()
         sendMessageToContentScript("delete-db")
-        sendMessageToContentScript("sign-out")
+        sendMessageToContentScript("reset-all")
         sendResponse({ data: "" })
       })
       break

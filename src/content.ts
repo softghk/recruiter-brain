@@ -214,7 +214,8 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   switch (request.action) {
-    case "sign-out":
+    case "reset-all":
+      injectComponents()
       auth.signOut()
       break
     case "delete-db":
