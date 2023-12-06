@@ -220,6 +220,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         const element = evaluations[i]
         element.remove()
       }
+      window.location.reload()
       sendResponse()
       break
     default:

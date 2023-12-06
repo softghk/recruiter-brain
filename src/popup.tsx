@@ -20,21 +20,13 @@ const IndexPopup = () => {
   const { onLogout } = useFirebaseUser()
 
   const onReset = () => {
+    onLogout()
     chrome.runtime.sendMessage(
       { action: "delete-db-all", data: "" },
       (response) => {
         console.log("DELETE DB")
       }
     )
-    // onLogout()
-    // deleteAllDatabases()
-    // const evaluations = document.getElementsByClassName(
-    //   `recruit-brain-profile-evaluation`
-    // )
-    // for (let i = 0; i < evaluations.length; i++) {
-    //   const element = evaluations[i]
-    //   element.remove()
-    // }
   }
 
   return (

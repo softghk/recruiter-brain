@@ -563,6 +563,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.log("DELEATE ALL DATABASE")
       deleteAllDatabases().then(() => {
         console.log("got response after delete all db")
+        storage.removeAll()
         sendMessageToContentScript("delete-db")
         sendResponse({ data: "" })
       })
