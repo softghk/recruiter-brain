@@ -26,7 +26,7 @@ export function createDatabase({ projectId }): Promise<void> {
       console.log("SUCCESSFUL DB CONNECTION")
       const db = event.target.result
       if (!db.objectStoreNames.contains(storeName)) {
-        console.log("SUCCESSFULLY CREATED DB, ")
+        console.log("SUCCESSFULLY CREATED DB: ", storeName)
         db.createObjectStore(storeName, {
           keyPath: "id",
           autoIncrement: true
