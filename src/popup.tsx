@@ -12,8 +12,6 @@ import useFirebaseUser from "src/firebase/useFirebaseUser"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
-import { deleteAllDatabases } from "./utils/indexed-db.utils"
-
 const IndexPopup = () => {
   const [state, setState] = useStorage<boolean | null>(EXTENSION_ENABLE, true)
 
@@ -42,7 +40,7 @@ const IndexPopup = () => {
         <Logo />
       </Box>
       <ToggleButtonGroup
-        value={state}
+        value={state || false}
         onChange={(e, val) => (val !== null ? setState(val) : null)}
         exclusive
         aria-label="On/Off">

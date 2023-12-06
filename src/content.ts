@@ -8,7 +8,6 @@ import {
 } from "./utils/constants.utils"
 import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
 import { generateMD5 } from "./utils/hash.utils"
-import { deleteAllDatabases } from "./utils/indexed-db.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
