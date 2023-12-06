@@ -20,16 +20,12 @@ const IndexPopup = () => {
   const { onLogout } = useFirebaseUser()
 
   const onReset = () => {
-    // chrome.runtime.sendMessage({
-    //   action: "reset-evaluations",
-    //   response: (response) => {
-    //     console.log(response)
-    //   }
-    // })
-    chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-      var activeTab = tabs[0]
-      chrome.tabs.sendMessage(activeTab.id, { action: "reset-evaluations" })
-    })
+    chrome.runtime.sendMessage(
+      { action: "delete-db-all", data: "" },
+      (response) => {
+        console.log("DELETE DB")
+      }
+    )
     // onLogout()
     // deleteAllDatabases()
     // const evaluations = document.getElementsByClassName(

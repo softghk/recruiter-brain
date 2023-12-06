@@ -7,11 +7,13 @@ import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
 import {
+  deleteAllDatabases,
   deleteAllFromIndexedDB,
   deleteDataFromIndexedDB,
   getDataFromIndexedDB,
   saveDataToIndexedDB
 } from "./utils/indexed-db.utils"
+import { sendMessageToContentScript } from "./utils/message.utils"
 import { notifyContentScript } from "./utils/notify-content-script.utils"
 
 const storage = new Storage()
@@ -543,9 +545,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
       break
     case "delete-db":
-      deleteAllFromIndexedDB({ projectId: request.data }).then((response) =>
+      console.log("DELETE DB ACTION DISPATCHED")
+      deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
+        console.log("got response after delete db")
+        sendMessageToContentScript("delete-db")
         sendResponse({ data: response })
-      )
+      })
+      break
+    case "delete-db-all":
+      console.log("DELEATE ALL DATABASE")
+      deleteAllDatabases().then(() => {
+        console.log("got response after delete all db")
+        sendMessageToContentScript("delete-db")
+        sendResponse({ data: "" })
+      })
       break
   }
 

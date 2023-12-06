@@ -106,7 +106,6 @@ export async function deleteDataFromIndexedDB({ id, projectId }) {
 }
 
 export async function deleteAllFromIndexedDB({ projectId }) {
-  console.log("Delete All Data from IndexedDB")
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
   const storeName = projectId
 
@@ -116,25 +115,28 @@ export async function deleteAllFromIndexedDB({ projectId }) {
   return new Promise((resolve, reject) => {
     // Handle successful database opening
     openRequest.onsuccess = async (event) => {
-      const db = event.target.result
-      const tx = db.transaction(storeName, "readwrite")
-      console.log("storeName", storeName)
-      const store = tx.objectStore(storeName)
+      try {
+        const db = event.target.result
+        const tx = db.transaction(storeName, "readwrite")
+        console.log("storeName", storeName)
+        const store = tx.objectStore(storeName)
 
-      const deleteRequest = store.clear()
+        const deleteRequest = store.clear()
 
-      deleteRequest.onsuccess = () => {
-        console.log("All Data deleted from IndexedDB: ", projectId)
+        deleteRequest.onsuccess = () => {
+          console.log("All Data deleted from IndexedDB: ", projectId)
+          resolve(projectId)
+        }
+
+        deleteRequest.onerror = () => {
+          console.error("Error deleting data from IndexedDB")
+          resolve(projectId)
+        }
+
+        tx.oncomplete = () => db.close()
+      } catch (error) {
         resolve(projectId)
       }
-
-      deleteRequest.onerror = () => {
-        console.error("Error deleting data from IndexedDB")
-        reject()
-      }
-
-      // Close the transaction
-      tx.oncomplete = () => db.close()
     }
 
     // Handle errors in opening the database
@@ -145,9 +147,32 @@ export async function deleteAllFromIndexedDB({ projectId }) {
   })
 }
 
-export function deleteAllDatabases() {
+export function deleteAllDatabases(): Promise<void> {
   const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  indexedDB.deleteDatabase(dbName)
+  var request = indexedDB.open(dbName /* version */)
+
+  return new Promise((resolve, reject) => {
+    request.onerror = function (event) {
+      resolve()
+    }
+
+    request.onsuccess = function (event) {
+      const db = event.target.result
+
+      // Get a list of existing object stores
+      var objectStoreNames = db.objectStoreNames
+
+      // Convert objectStoreNames to an array (since it's a DOMStringList)
+      var stores = Array.from(objectStoreNames)
+
+      // Delete each object store
+      stores.forEach(function (storeName) {
+        db.deleteObjectStore(storeName)
+        console.log("Deleted object store: " + storeName)
+      })
+      resolve()
+    }
+  })
 }
 
 export function getDataFromIndexedDB({

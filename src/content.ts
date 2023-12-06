@@ -206,8 +206,8 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   switch (request.action) {
-    case "reset-evaluations":
-      deleteAllDatabases()
+    case "delete-db":
+      console.log("delete db from background")
       const evaluations = document.getElementsByClassName(
         `recruit-brain-profile-evaluation`
       )
@@ -215,6 +215,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         const element = evaluations[i]
         element.remove()
       }
+      sendResponse()
       break
   }
   if (request.action) {
