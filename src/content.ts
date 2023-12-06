@@ -13,6 +13,8 @@ import { waitForElement2 } from "./utils/wait-for-element.utils"
 
 export {}
 
+injectEvaluationResults()
+
 let mainObserver = null
 let previousURL = ""
 
@@ -215,7 +217,6 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   switch (request.action) {
     case "reset-all":
-      injectComponents()
       auth.signOut()
       break
     case "delete-db":

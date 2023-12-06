@@ -57,9 +57,11 @@ const IndexPopup = () => {
           OFF
         </ToggleButton>
       </ToggleButtonGroup>
+      {/*
       <Button color="primary" variant="contained" onClick={onReset}>
         Reset
       </Button>
+      */}
       <Typography variant="caption" display={"block"}>
         support@recruitbrain.co
       </Typography>
