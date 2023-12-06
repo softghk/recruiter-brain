@@ -212,9 +212,11 @@ async function getEvaluationData(projectId, jobDescriptionId, profileId) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   switch (request.action) {
+    case "sign-out":
+      auth.signOut()
+      break
     case "delete-db":
       console.log("delete db from background")
-      auth.signOut()
       const evaluations = document.getElementsByClassName(
         `recruit-brain-profile-evaluation`
       )
