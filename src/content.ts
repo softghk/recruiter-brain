@@ -166,9 +166,6 @@ async function handleMutation(mutation) {
           //console.log("No evaluation data found, setting up listener...", element)
           const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
-              console.log(
-                "Received itemAddedToIndexedDb message. Trying to fetch data again."
-              )
               const jobData: any = await getJobData()
               const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
               const jobDescription = jobData?.[projectId].description || ""

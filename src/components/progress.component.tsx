@@ -67,9 +67,9 @@ const ScanningProgress = ({
           </IconButton>
         ) : (
           <>
-            <Button variant="contained" onClick={onPause}>
+            {/* <Button variant="contained" onClick={onPause}>
               Pause
-            </Button>
+            </Button> */}
             <Button variant="contained" color="error" onClick={onStop}>
               Stop
             </Button>

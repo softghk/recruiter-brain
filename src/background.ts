@@ -42,6 +42,7 @@ const JobStatus = {
 // Current job and its tasks
 let currentJob = null
 let tasks = []
+let workingTabId = null
 
 const openTabAndInjectCode = (jobData) => {
   // Get the currently active tab
@@ -51,6 +52,7 @@ const openTabAndInjectCode = (jobData) => {
 
       // Create a new tab as active
       chrome.tabs.create({ url: currentJob.href, active: true }, (newTab) => {
+        workingTabId = newTab.id
         // Inject code into the newly opened tab
         chrome.scripting.executeScript({
           target: { tabId: newTab.id },
@@ -507,14 +509,9 @@ const resumeJob = () => {
 
 // Stop the job
 const stopJob = () => {
-  if (currentJob) {
-    currentJob.status = JobStatus.FAILED
-    tasks.forEach((task) => {
-      if (task.status === JobStatus.PENDING) {
-        task.status = JobStatus.FAILED
-      }
-    })
-  }
+  chrome.tabs.remove(workingTabId, function () {
+    console.log("tab closed")
+  })
 }
 
 // Listener for messages from content scripts

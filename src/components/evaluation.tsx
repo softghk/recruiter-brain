@@ -68,6 +68,9 @@ const EvaluateComponent = () => {
       const element = evaluations[i]
       element.remove()
     }
+
+    // reload page (easy fix but not good)
+    window.location.reload()
   }
 
   const onChangeSettings = (jd) => {
