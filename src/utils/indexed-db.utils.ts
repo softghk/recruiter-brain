@@ -1,47 +1,6 @@
-export function createDatabase({ projectId }): Promise<void> {
-  console.log("create database")
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  const storeName = projectId
-  const dbVersion = 5 // Increment this version when changes are made to the database structure
-
-  // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName, dbVersion)
-
-  return new Promise((resolve, reject) => {
-    // Handle database upgrade
-    openRequest.onupgradeneeded = (event) => {
-      const db = event.target.result
-      if (!db.objectStoreNames.contains(storeName)) {
-        console.log("SUCCESSFULLY CREATED DB, ")
-        db.createObjectStore(storeName, {
-          keyPath: "id",
-          autoIncrement: true
-        })
-      }
-      resolve()
-    }
-
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      console.log("SUCCESSFUL DB CONNECTION")
-      const db = event.target.result
-      if (!db.objectStoreNames.contains(storeName)) {
-        console.log("SUCCESSFULLY CREATED DB: ", storeName)
-        db.createObjectStore(storeName, {
-          keyPath: "id",
-          autoIncrement: true
-        })
-      }
-      resolve()
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
-}
+const storeName = "evaluation"
+const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
+const dbVersion = 5 // Increment this version when changes are made to the database structure
 
 // Save data to IndexedDB
 export function saveDataToIndexedDB({
@@ -51,11 +10,6 @@ export function saveDataToIndexedDB({
   evaluation,
   evaluationRating
 }): Promise<void> {
-  // console.log("saveDataToIndexedDB")
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  const storeName = projectId
-  const dbVersion = 5 // Increment this version when changes are made to the database structure
-
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
 
@@ -64,7 +18,6 @@ export function saveDataToIndexedDB({
     openRequest.onupgradeneeded = (event) => {
       const db = event.target.result
       if (!db.objectStoreNames.contains(storeName)) {
-        console.log("SUCCESSFULLY CREATED DB")
         db.createObjectStore(storeName, {
           keyPath: "id",
           autoIncrement: true
@@ -74,7 +27,6 @@ export function saveDataToIndexedDB({
 
     // Handle successful database opening
     openRequest.onsuccess = async (event) => {
-      console.log("SUCCESSFUL DB CONNECTION")
       const db = event.target.result
       const tx = db.transaction(storeName, "readwrite")
       const store = tx.objectStore(storeName)
@@ -112,8 +64,6 @@ export function saveDataToIndexedDB({
 
 export async function deleteDataFromIndexedDB({ id, projectId }) {
   console.log("Delete Data from IndexedDB")
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  const storeName = projectId
 
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName)
@@ -151,10 +101,46 @@ export async function deleteDataFromIndexedDB({ id, projectId }) {
 }
 
 export async function deleteAllFromIndexedDB({ projectId }) {
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  const storeName = projectId
+  const openRequest = indexedDB.open(dbName)
 
-  // Open or create a database with an updated version
+  return new Promise((resolve, reject) => {
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      try {
+        const db = event.target.result
+        const tx = db.transaction(storeName, "readwrite")
+        console.log("storeName", storeName)
+        const store = tx.objectStore(storeName)
+
+        const request = store.getAll()
+
+        request.onsuccess = () => {
+          const data = request.result
+          data
+            .filter((item) => item.projectId === projectId)
+            .map((item) => store.delete(item.id))
+          resolve(projectId)
+        }
+
+        request.onerror = () => {
+          reject("Error in retrieving data from IndexedDB")
+        }
+
+        tx.oncomplete = () => db.close()
+      } catch (error) {
+        resolve(projectId)
+      }
+    }
+
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
+}
+
+export function deleteAllDatabases(): Promise<void> {
   const openRequest = indexedDB.open(dbName)
 
   return new Promise((resolve, reject) => {
@@ -188,34 +174,6 @@ export async function deleteAllFromIndexedDB({ projectId }) {
     openRequest.onerror = (event) => {
       console.error("Error opening IndexedDB", event.target.errorCode)
       reject()
-    }
-  })
-}
-
-export function deleteAllDatabases(): Promise<void> {
-  const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-  var request = indexedDB.open(dbName /* version */)
-
-  return new Promise((resolve, reject) => {
-    request.onerror = function (event) {
-      resolve()
-    }
-
-    request.onsuccess = function (event) {
-      const db = event.target.result
-
-      // Get a list of existing object stores
-      var objectStoreNames = db.objectStoreNames
-
-      // Convert objectStoreNames to an array (since it's a DOMStringList)
-      var stores = Array.from(objectStoreNames)
-
-      // Delete each object store
-      stores.forEach(function (storeName) {
-        db.deleteObjectStore(storeName)
-        console.log("Deleted object store: " + storeName)
-      })
-      resolve()
     }
   })
 }

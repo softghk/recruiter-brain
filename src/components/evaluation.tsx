@@ -44,13 +44,6 @@ const EvaluateComponent = () => {
   )
 
   const onSaveJDToStore = (data: JobSettings) => {
-    console.log("on save jd to store called")
-    chrome.runtime.sendMessage(
-      { action: "create-db", data: projectId },
-      (response) => {
-        console.log("CREATED DB")
-      }
-    )
     if (!description) setDescription({ [projectId]: data })
     else setDescription({ ...description, [projectId]: data })
   }
