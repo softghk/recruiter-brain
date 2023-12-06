@@ -339,16 +339,16 @@ async function injectedCode(jobData) {
     const education = []
 
     // Extract personal information
-    const personalElement = document.querySelector(
+    const personalElement = document?.querySelector(
       ".artdeco-entity-lockup__content.lockup__content.ember-view"
     )
-    personal.name = personalElement.querySelector(
+    personal.name = personalElement?.querySelector(
       ".artdeco-entity-lockup__title.ember-view"
     ).innerText
-    personal.currentPosition = personalElement.querySelector(
+    personal.currentPosition = personalElement?.querySelector(
       ".artdeco-entity-lockup__subtitle.ember-view > span"
     ).innerText
-    const locationElement = document.querySelector(
+    const locationElement = document?.querySelector(
       "div[data-test-row-lockup-location][data-live-test-row-lockup-location]"
     )
     personal.location = locationElement.innerText.trim().replace(/·\s*/, "")
@@ -380,6 +380,7 @@ async function injectedCode(jobData) {
         positions.push(extractPositionDetails(el))
       }
     })
+    console.log("extracting data===============")
 
     const skillElements = document.querySelectorAll(".skill-entity__wrapper")
     skillElements.forEach((el) => {
@@ -388,31 +389,36 @@ async function injectedCode(jobData) {
         ?.innerText.trim()
       skills.push(skillName)
     })
+    console.log("extracting data===============2")
 
     const educationElements = document.querySelectorAll(
       ".background-entity.education-item"
     )
-    educationElements.forEach((el) => {
-      const schoolName = el
-        .querySelector("[data-test-education-entity-school-name]")
-        ?.innerText.trim()
-      const degreeName = el
-        .querySelector("[data-test-education-entity-degree-name]")
-        ?.innerText.trim()
-      const fieldOfStudy = el
-        .querySelector("[data-test-education-entity-field-of-study]")
-        ?.innerText.trim()
-      const dates = el
-        .querySelector("[data-test-education-entity-dates]")
-        ?.innerText.trim()
 
-      education.push({
-        schoolName: schoolName,
-        degreeName: degreeName,
-        fieldOfStudy: fieldOfStudy,
-        dates: dates
+    if (educationElements) {
+      educationElements.forEach((el) => {
+        const schoolName = el
+          .querySelector("[data-test-education-entity-school-name]")
+          ?.innerText.trim()
+        const degreeName = el
+          .querySelector("[data-test-education-entity-degree-name]")
+          ?.innerText.trim()
+        const fieldOfStudy = el
+          .querySelector("[data-test-education-entity-field-of-study]")
+          ?.innerText.trim()
+        const dates = el
+          .querySelector("[data-test-education-entity-dates]")
+          ?.innerText.trim()
+
+        education.push({
+          schoolName: schoolName,
+          degreeName: degreeName,
+          fieldOfStudy: fieldOfStudy,
+          dates: dates
+        })
       })
-    })
+    }
+    console.log("extracting data===============3")
 
     return {
       personal: personal,
@@ -438,7 +444,7 @@ async function injectedCode(jobData) {
     console.time("CompleteTime")
     await new Promise((resolve) => setTimeout(resolve, 4000))
     // extract data when ready
-    await waitForElement2(".background-card")
+    await waitForElement2(".experience-card")
     console.timeEnd("Step1Time")
 
     // Find all buttons with 'data-test-expandable-button' attribute and click each one
@@ -454,7 +460,7 @@ async function injectedCode(jobData) {
     console.timeEnd("Step2Time")
 
     // Wait for 100ms after all buttons have been clicked
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 700))
 
     console.log("extracting data")
     console.time("Step3Time")
@@ -478,7 +484,7 @@ async function injectedCode(jobData) {
     const nextButton = document.querySelector("a[data-test-pagination-next]")
     nextButton.click()
     await waitForContainerChanges(".profile__container")
-    await waitForElement2(".expandable-list-profile-core__title")
+    await waitForElement2("[data-test-expandable-list-title]")
     console.timeEnd("Step4Time")
     console.timeEnd("CompleteTime")
     console.log("run end")
