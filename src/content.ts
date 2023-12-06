@@ -114,6 +114,18 @@ async function injectEvaluationResults() {
   observeListElement()
 }
 
+const getJobData = () => {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action: "get-job-details" }, (response) => {
+      if (response.data) {
+        resolve(response.data)
+      } else {
+        reject("No data found for job details")
+      }
+    })
+  })
+}
+
 async function handleMutation(mutation) {
   if (mutation.type === "attributes" && mutation.target.tagName === "LI") {
     const element = mutation.target
@@ -130,18 +142,7 @@ async function handleMutation(mutation) {
         const profileId = element
           .querySelector("a")
           .href.match(/profile\/(.*?)\?/)[1]
-        const jobData: any = await new Promise((resolve, reject) => {
-          chrome.runtime.sendMessage(
-            { action: "get-job-details" },
-            (response) => {
-              if (response.data) {
-                resolve(response.data)
-              } else {
-                reject("No data found for job details")
-              }
-            }
-          )
-        })
+        const jobData: any = await getJobData()
 
         if (!jobData?.[projectId]) return
         const jobDescription = jobData?.[projectId].description || ""
@@ -166,6 +167,11 @@ async function handleMutation(mutation) {
               console.log(
                 "Received itemAddedToIndexedDb message. Trying to fetch data again."
               )
+              const jobData: any = await getJobData()
+              const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
+              const jobDescription = jobData?.[projectId].description || ""
+              const jobDescriptionId = generateMD5(jobDescription)
+
               const newData = await requestDataFromIndexedDB(
                 projectId,
                 jobDescriptionId,
