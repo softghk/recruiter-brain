@@ -177,7 +177,7 @@ async function handleMutation(mutation) {
                 chrome.runtime.onMessage.removeListener(listenerFunction)
               }
             }
-            return true
+            sendResponse()
           }
           chrome.runtime.onMessage.addListener(listenerFunction)
         }
@@ -217,9 +217,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
       sendResponse()
       break
+    default:
+      sendResponse()
+      break
   }
   if (request.action) {
     console.log("content.js received message:", request.action)
   }
-  return true
 })
