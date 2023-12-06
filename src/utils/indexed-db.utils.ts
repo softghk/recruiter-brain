@@ -155,18 +155,18 @@ export function deleteAllDatabases(): Promise<void> {
         const deleteRequest = store.clear()
 
         deleteRequest.onsuccess = () => {
-          console.log("All Data deleted from IndexedDB: ", projectId)
-          resolve(projectId)
+          console.log("All Data deleted from IndexedDB")
+          resolve()
         }
 
         deleteRequest.onerror = () => {
           console.error("Error deleting data from IndexedDB")
-          resolve(projectId)
+          resolve()
         }
 
         tx.oncomplete = () => db.close()
       } catch (error) {
-        resolve(projectId)
+        resolve()
       }
     }
 
