@@ -510,6 +510,9 @@ const resumeJob = () => {
 // Stop the job
 const stopJob = () => {
   chrome.tabs.remove(workingTabId, function () {
+    currentJob = null
+    tasks = []
+    workingTabId = null
     console.log("tab closed")
   })
 }
