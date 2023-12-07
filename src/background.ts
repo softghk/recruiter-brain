@@ -5,7 +5,7 @@ import { Storage } from "@plasmohq/storage"
 
 import { evaluateProfileApi } from "~utils/api-service.utils"
 
-import { JOB_DESCRIPTION } from "./config/storage.config"
+import { JOB_DESCRIPTION, JOB_RUNNING } from "./config/storage.config"
 import {
   createDatabase,
   deleteAllDatabases,
@@ -543,6 +543,7 @@ const resumeJob = () => {
 
 // Stop the job
 const stopJob = () => {
+  storage.set(JOB_RUNNING, false)
   chrome.tabs.remove(workingTabId, function () {
     currentJob = null
     tasks = []

@@ -9,7 +9,11 @@ import { useStorage } from "@plasmohq/storage/hook"
 
 import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
-import { EXTENSION_ENABLE, JOB_DESCRIPTION } from "~src/config/storage.config"
+import {
+  EXTENSION_ENABLE,
+  JOB_DESCRIPTION,
+  JOB_RUNNING
+} from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
@@ -31,6 +35,7 @@ const buttonStyle = {
 
 const EvaluateComponent = ({ mainStyle }) => {
   const [extensionEnabled] = useStorage(EXTENSION_ENABLE, true)
+  const [isJobRunning, setIsJobRunning] = useStorage(JOB_RUNNING, false)
   const [open, setOpen] = useState({ eval: false, setting: false })
   const { user } = useFirebaseUser()
 
@@ -79,6 +84,7 @@ const EvaluateComponent = ({ mainStyle }) => {
 
   const onEvaluate = (evaluationSettings) => {
     setOpen({ eval: false, setting: false })
+    setIsJobRunning(true)
 
     injectScanningProgress()
 
@@ -159,12 +165,14 @@ const EvaluateComponent = ({ mainStyle }) => {
           <Button
             variant="outlined"
             sx={buttonStyle}
+            disabled={isJobRunning}
             onClick={() => setOpen({ eval: false, setting: true })}>
             Evaluate Profiles
           </Button>
           <Button
             variant="outlined"
             sx={buttonStyle}
+            disabled={isJobRunning}
             onClick={() => setOpen({ eval: true, setting: false })}>
             <Iconify icon={"material-symbols:settings"} />
           </Button>
