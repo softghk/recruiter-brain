@@ -38,12 +38,15 @@ const injectComponents = () => {
           console.log("URL changed to:", currentURL)
           previousURL = currentURL
           injectMainComponent()
-          insertEvaluationComponent(".sourcing-channels__post-job-link")
-          insertEvaluationComponent(
-            ".candidate-filtering-bar__container",
-            "appendChild",
-            { margin: 0 }
-          )
+          insertEvaluationComponent({
+            querySelectorTargetElement: ".sourcing-channels__post-job-link",
+            position: "after"
+          })
+          insertEvaluationComponent({
+            querySelectorTargetElement: ".candidate-filtering-bar__container",
+            position: "appendChild",
+            style: { marginTop: 0, marginLeft: 1 }
+          })
           injectEvaluationResults()
         }
       } else if (mutation.type === "attributes") {

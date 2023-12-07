@@ -29,7 +29,7 @@ const buttonStyle = {
   paddingY: "2px"
 }
 
-const EvaluateComponent = () => {
+const EvaluateComponent = ({ mainStyle }) => {
   const [extensionEnabled] = useStorage(EXTENSION_ENABLE)
   const [open, setOpen] = useState({ eval: false, setting: false })
   const { user } = useFirebaseUser()
@@ -121,9 +121,7 @@ const EvaluateComponent = () => {
       {currentJD.title === "" || currentJD.description === "" ? (
         <Button
           sx={{
-            marginTop: -1,
-            marginLeft: -1,
-            marginRight: 1,
+            ...mainStyle,
             color: "#d30000",
             borderColor: "#d30000",
             borderRadius: 3,
@@ -156,9 +154,7 @@ const EvaluateComponent = () => {
           sx={{
             display: "flex",
             gap: 2,
-            marginTop: -1,
-            marginLeft: -1,
-            marginRight: 1
+            ...mainStyle
           }}>
           <Button
             variant="outlined"
@@ -178,8 +174,15 @@ const EvaluateComponent = () => {
   )
 }
 
-export const insertEvaluationComponent = async () => {
-  const querySelectorTargetElement = ".sourcing-channels__post-job-link"
+export const insertEvaluationComponent = async ({
+  querySelectorTargetElement,
+  style,
+  position = "after"
+}: {
+  querySelectorTargetElement: string
+  style?: any
+  position?: "after" | "prepend" | "appendChild"
+}) => {
   const injectComponentId = "recruit-brain-injector"
   await new Promise((resolve) => {
     waitForElement(querySelectorTargetElement, resolve)
@@ -191,7 +194,7 @@ export const insertEvaluationComponent = async () => {
   if (targetElement && !injectComponent) {
     const container = document.createElement("div")
     container.setAttribute("id", injectComponentId)
-    targetElement.after(container)
+    targetElement[position](container)
     const shadowContainer = container.attachShadow({ mode: "open" })
 
     const emotionRoot = document.createElement("style")
@@ -206,10 +209,17 @@ export const insertEvaluationComponent = async () => {
       container: emotionRoot
     })
 
+    const mainStyle = {
+      marginTop: -1,
+      marginLeft: -1,
+      marginRight: 1,
+      ...style
+    }
+
     root.render(
       <CacheProvider value={cache}>
         <MinimalProvider>
-          <EvaluateComponent />
+          <EvaluateComponent mainStyle={mainStyle} />
         </MinimalProvider>
       </CacheProvider>
     )
