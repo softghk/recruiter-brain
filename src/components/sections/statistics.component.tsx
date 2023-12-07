@@ -1,15 +1,18 @@
 import EcommerceSalesOverview from "@minimal/sections/overview/e-commerce/ecommerce-sales-overview"
 import { Button, Grid, Stack } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { EXTENSION_VISIBLE } from "src/config/storage.config"
+import { AUTH_STATE, EXTENSION_VISIBLE } from "src/config/storage.config"
 import useFirebaseUser from "src/firebase/useFirebaseUser"
 import { getStatisticData } from "src/utils/api-service.utils"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
+import type { AuthState } from "~src/types"
+
 const DashboardComponent = () => {
   const { user, onLogout } = useFirebaseUser()
   const [visible] = useStorage(EXTENSION_VISIBLE)
+  const [auth] = useStorage<AuthState>(AUTH_STATE)
   const [data, setData] = useState([
     {
       label: "PROFILES EVALUATED",
@@ -23,12 +26,13 @@ const DashboardComponent = () => {
     }
   ])
 
+  console.log(auth, user)
   useEffect(() => {
-    if (!visible || !user) return
+    if (!visible || !user || !auth?.isAuth) return
     getStatisticData().then((response: any) => {
       setData(response)
     })
-  }, [visible, user])
+  }, [visible, user, auth])
 
   return (
     <Stack spacing={2}>
