@@ -163,7 +163,7 @@ const markTaskAsComplete = (taskId, jobId) => {
   }
 
   function areAllComplete(arr) {
-    return arr.every((item) => item.status === "complete")
+    return arr.every((item) => item?.status === "complete")
   }
 }
 
