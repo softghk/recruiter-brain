@@ -54,8 +54,7 @@ export function createDatabase(): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: "createDatabase",
-        payload: data
+        action: "createDatabase"
       })
       .then((response) => {
         if (response.success) {
