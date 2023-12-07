@@ -37,12 +37,12 @@ const DashboardComponent = () => {
   return (
     <Stack spacing={2}>
       <Grid container width={768} spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <EcommerceSalesOverview data={data} title="Daily Usage Stats" />
         </Grid>
-        <Grid item xs={6}>
+        {/* <Grid item xs={6}>
           <EcommerceSalesOverview data={data} title="Daily Usage Stats" />
-        </Grid>
+        </Grid> */}
       </Grid>
       <Stack direction={"row"} justifyContent={"flex-end"}>
         <Button color="primary" onClick={onLogout}>
