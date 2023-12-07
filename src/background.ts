@@ -89,35 +89,6 @@ const evaluateProfiles = (jobData) => {
   openTabAndInjectCode({ ...jobData, jobId: jobId })
 }
 
-// Process the next task
-const processNextTask = () => {
-  const task = tasks.find((t) => t.status === JobStatus.PENDING)
-  console.log("processNextTask", task)
-  if (!task) {
-    currentJob.status = JobStatus.COMPLETE
-    return
-  }
-
-  task.status = JobStatus.COMPLETE
-
-  // Mock task processing
-  setTimeout(() => {
-    console.log("Processing task", task.id)
-    // Mock API call
-    console.log("Sending mock API call with data:", {
-      ...mockData,
-      jobId: currentJob.projectId
-    })
-
-    setTimeout(() => {
-      console.log("API call complete", currentJob.projectId)
-    }, 5000)
-
-    // Process the next task
-    processNextTask()
-  }, 1000)
-}
-
 // Mock API call with a timeout, then save data to IndexedDB
 const makeAPICallAndSaveData = async (data, jobData) => {
   const taskId = jobData.taskId
@@ -154,7 +125,6 @@ const markTaskAsComplete = (taskId, jobId) => {
       task.status = JobStatus.COMPLETE
       // Check if all tasks are complete and update job status if necessary
       // ... additional logic ...
-      // processNextTask() // Process the next task, if any
     }
   }
 
@@ -519,28 +489,6 @@ async function injectedCode(jobData) {
   stopJob()
 }
 
-// Mock data for API call
-const mockData = {
-  profileName: "John Doe",
-  experience: "5 years",
-  skills: ["JavaScript", "React"]
-}
-
-// Pause the job
-const pauseJob = () => {
-  if (currentJob) {
-    currentJob.status = JobStatus.PAUSED
-  }
-}
-
-// Resume the job
-const resumeJob = () => {
-  if (currentJob && currentJob.status === JobStatus.PAUSED) {
-    currentJob.status = JobStatus.PENDING
-    processNextTask()
-  }
-}
-
 // Stop the job
 const stopJob = () => {
   storage.set(JOB_RUNNING, false)
@@ -561,14 +509,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break
     case ActionTypes.GET_STATUS:
       sendResponse({ currentJob, tasks })
-      break
-    case ActionTypes.PAUSE_JOB:
-      pauseJob()
-      sendResponse({ status: "Job paused" })
-      break
-    case ActionTypes.RESUME_JOB:
-      resumeJob()
-      sendResponse({ status: "Job resumed" })
       break
     case ActionTypes.STOP_JOB:
       console.log("STOP JOB message received")
