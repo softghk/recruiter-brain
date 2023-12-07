@@ -630,3 +630,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })
   }
 })
+
+chrome.runtime.onInstalled.addListener(function (object) {
+  let externalUrl = "https://www.linkedin.com/talent/hire/"
+
+  if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    chrome.tabs.create({ url: externalUrl }, function (tab) {})
+  }
+})
