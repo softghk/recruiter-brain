@@ -3,7 +3,11 @@ import { CacheProvider } from "@emotion/react"
 import { Grid, Stack } from "@mui/material"
 import React, { useState } from "react"
 import ReactDOM from "react-dom/client"
-import { AUTH_STATE, EXTENSION_ENABLE } from "src/config/storage.config"
+import {
+  AUTH_STATE,
+  CANDIDATE_RATING,
+  EXTENSION_ENABLE
+} from "src/config/storage.config"
 import {
   getEvaluationData,
   rateCandidateEvaluation
@@ -13,19 +17,23 @@ import { updateDataFromIndexedDB } from "src/utils/storage.utils"
 import { useStorage } from "@plasmohq/storage/hook"
 
 import { MinimalProvider } from "~@minimal/Provider"
+import { CandidateInitialRating } from "~src/types"
 
 import EvaluationDetail from "../common/evaluation-detail.component"
 import OverallView from "../common/evaluation-overall.component"
 import TrendingComponent from "../common/trending.component"
 
 const ProfileEvaluation = ({ data }: { data: any }) => {
-  const { id, profileId, evaluationRating, evaluation } = data
+  const { id, profileId, projectId, evaluationRating, evaluation } = data
   const { rating, explanation } = evaluation
 
   const [expanded, setExpanded] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const [state] = useStorage<boolean>(EXTENSION_ENABLE, true)
+  const [avgRatings] = useStorage(CANDIDATE_RATING)
+  console.log("avgRatings", avgRatings)
+  const averageRating = avgRatings?.[projectId] || CandidateInitialRating
   const [auth] = useStorage(AUTH_STATE)
 
   const onRefreshEvaluation = async () => {
@@ -56,21 +64,34 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
       <Grid item xs={4}>
         <Stack gap={3}>
           <TrendingComponent
-            percent={10}
+            percent={
+              (rating.experience - averageRating.experience) *
+              (100 / rating.experience)
+            }
             rating={rating.experience}
             title={"Experience"}
           />
           <TrendingComponent
-            percent={10}
+            percent={
+              (rating.education - averageRating.education) *
+              (100 / rating.education)
+            }
             rating={rating.education}
             title={"Qualification"}
           />
           <TrendingComponent
-            percent={10}
+            percent={
+              (rating.skills - averageRating.skills) * (100 / rating.skills)
+            }
             rating={rating.skills}
             title={"Skills"}
           />
-          <OverallView rating={rating} />
+          <OverallView
+            rating={rating.overall}
+            percent={
+              (rating.overall - averageRating.overall) * (100 / rating.overall)
+            }
+          />
         </Stack>
       </Grid>
       <Grid item xs={8}>
@@ -89,27 +110,40 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     <Grid container spacing={3}>
       <Grid item xs={4}>
         <TrendingComponent
-          percent={10}
+          percent={
+            (rating.experience - averageRating.experience) *
+            (100 / rating.experience)
+          }
           rating={rating.experience}
           title={"Experience"}
         />
       </Grid>
       <Grid item xs={4}>
         <TrendingComponent
-          percent={10}
+          percent={
+            (rating.education - averageRating.education) *
+            (100 / rating.education)
+          }
           rating={rating.education}
           title={"Qualification"}
         />
       </Grid>
       <Grid item xs={4}>
         <TrendingComponent
-          percent={10}
+          percent={
+            (rating.skills - averageRating.skills) * (100 / rating.skills)
+          }
           rating={rating.skills}
           title={"Skills"}
         />
       </Grid>
       <Grid item xs={4}>
-        <OverallView rating={rating} />
+        <OverallView
+          rating={rating.overall}
+          percent={
+            (rating.overall - averageRating.overall) * (100 / rating.overall)
+          }
+        />
       </Grid>
       <Grid item xs={8}>
         <EvaluationDetail

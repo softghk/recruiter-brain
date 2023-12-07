@@ -31,3 +31,17 @@ export const JobInitialSetting: JobSettings = {
   searchLimit: 0,
   autoAdd: false
 }
+
+export type CandidateRating = {
+  experience: number
+  education: number
+  skills: number
+  overall: number
+}
+
+export const CandidateInitialRating: CandidateRating = {
+  experience: 0,
+  education: 0,
+  skills: 0,
+  overall: 0
+}

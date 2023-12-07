@@ -1,22 +1,33 @@
-import { Card, LinearProgress, Stack, Typography } from "@mui/material"
+import { Card, Stack, Typography } from "@mui/material"
+import LinearProgress, {
+  linearProgressClasses
+} from "@mui/material/LinearProgress"
+import { styled } from "@mui/material/styles"
 import React from "react"
 
 import EvaluationCompare from "./evaluation-compare"
 
+const CustomLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  [`& .${linearProgressClasses.bar}`]: {
+    backgroundColor: "#22C55E"
+  }
+}))
+
 const TrendingComponent = ({ title, rating, percent }) => {
+  console.log(rating)
   return (
     <Card sx={{ padding: 3 }}>
       <Stack gap={2}>
         <Stack direction={"row"} justifyContent={"space-between"}>
           <Typography variant="subtitle2">{title}</Typography>
-          <Stack direction={"row"}>
+          <Stack direction={"row"} gap={0.5}>
             <Typography variant="subtitle2">{rating} / 10</Typography>
             <Typography variant="body2" color={"gray"}>
               ({rating * 10}%)
             </Typography>
           </Stack>
         </Stack>
-        <LinearProgress
+        <CustomLinearProgress
           value={rating * 10}
           variant="determinate"
           sx={{ width: "100%" }}

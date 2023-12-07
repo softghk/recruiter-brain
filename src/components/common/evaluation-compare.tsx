@@ -1,16 +1,21 @@
 import { Box, Stack, Typography } from "@mui/material"
 import { alpha, useTheme } from "@mui/material/styles"
-import React from "react"
+import React, { useMemo } from "react"
 
 import Iconify from "~@minimal/components/iconify"
 import { fPercent } from "~@minimal/utils/format-number"
 
 const EvaluationCompare = ({ percent }) => {
   const theme = useTheme()
+  const icon = useMemo(() => {
+    if (percent < 0) return "eva:trending-down-fill"
+    if (percent > 0) return "eva:trending-up-fill"
+    return "ic:baseline-trending-flat"
+  }, [percent])
   return (
     <Stack direction="row" alignItems="center">
       <Iconify
-        icon={percent < 0 ? "eva:trending-down-fill" : "eva:trending-up-fill"}
+        icon={icon}
         sx={{
           mr: 1,
           p: 0.5,
@@ -29,7 +34,7 @@ const EvaluationCompare = ({ percent }) => {
       <Typography variant="subtitle2" component="div" noWrap>
         {percent > 0 && "+"}
 
-        {fPercent(percent)}
+        {fPercent(percent) || "0%"}
 
         <Box
           component="span"
