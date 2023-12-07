@@ -1,3 +1,4 @@
+import type { PlasmoCSConfig } from "plasmo"
 import { auth } from "src/firebase/firebaseClient"
 
 import { insertEvaluationComponent } from "./components/evaluation"
@@ -12,6 +13,10 @@ import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
 export {}
+
+export const config: PlasmoCSConfig = {
+  matches: ["https://www.linkedin.com/talent/hire/*"]
+}
 
 injectEvaluationResults()
 
@@ -33,7 +38,12 @@ const injectComponents = () => {
           console.log("URL changed to:", currentURL)
           previousURL = currentURL
           injectMainComponent()
-          insertEvaluationComponent()
+          insertEvaluationComponent(".sourcing-channels__post-job-link")
+          insertEvaluationComponent(
+            ".candidate-filtering-bar__container",
+            "appendChild",
+            { margin: 0 }
+          )
           injectEvaluationResults()
         }
       } else if (mutation.type === "attributes") {
