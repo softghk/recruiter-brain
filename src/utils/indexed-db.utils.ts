@@ -3,6 +3,7 @@ const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
 const dbVersion = 5 // Increment this version when changes are made to the database structure
 
 export function createDatabase(): Promise<void> {
+  console.log("Create Database Started")
   // Open or create a database with an updated version
   const openRequest = indexedDB.open(dbName, dbVersion)
 
@@ -15,6 +16,7 @@ export function createDatabase(): Promise<void> {
           keyPath: "id",
           autoIncrement: true
         })
+        console.log("DB CREATED SUCCESSFULLY")
       }
     }
 
