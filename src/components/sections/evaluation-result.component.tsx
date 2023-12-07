@@ -174,7 +174,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
             getLabelText={(ratingValue) => customIcons[ratingValue].label}
             IconContainerComponent={IconContainer}
           />
-          <IconButton
+          {/* <IconButton
             onClick={onRefreshEvaluation}
             size="small"
             style={{
@@ -187,7 +187,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
             ) : (
               <ReplayIcon sx={{ fontSize: 16, color: "black" }} />
             )}
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </Card>
     </MinimalProvider>
