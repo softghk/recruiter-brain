@@ -122,14 +122,14 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
             minHeight={0}
             maxHeight={160}
             marginTop={-5}>
-            <ChartRadialBar series={[rating * 10]} />
+            <ChartRadialBar series={[rating.overall * 10]} />
             <Stack
               direction={"column"}
               position={"absolute"}
               left={56}
               bottom={14}>
               <Typography variant="h5" textAlign={"center"}>
-                {rating} / 10
+                {rating.overall} / 10
               </Typography>
               <Typography variant="caption" color={"gray"}>
                 Candidate Rating
