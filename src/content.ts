@@ -5,6 +5,7 @@ import { Storage } from "@plasmohq/storage"
 
 import { insertEvaluationComponent } from "./components/evaluation"
 import { injectMainComponent } from "./components/main"
+import { injectScanningProgress } from "./components/progress.component"
 import { JOB_RUNNING } from "./config/storage.config"
 import {
   htmlClassInvisibleProfile,
@@ -42,8 +43,9 @@ const injectComponents = () => {
         if (currentURL !== previousURL) {
           console.log("URL changed to:", currentURL)
           previousURL = currentURL
-          storage.get(JOB_RUNNING).then((value) => {
-            console.log("IS JOB RUNNING: ", value)
+          storage.get(JOB_RUNNING).then((isRunning) => {
+            console.log("IS JOB RUNNING: ", isRunning)
+            if (isRunning) injectScanningProgress()
           })
           injectMainComponent()
           insertEvaluationComponent({
