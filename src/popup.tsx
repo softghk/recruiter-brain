@@ -63,7 +63,7 @@ const IndexPopup = () => {
       </Button>
       */}
       <Typography variant="caption" display={"block"}>
-        support@recruitbrain.co
+        info@recruiterbrain.com
       </Typography>
     </Box>
   )
