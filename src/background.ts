@@ -203,7 +203,7 @@ async function injectedCode(jobData) {
     })
   }
   function addOverlay() {
-    const logoSrc = "https://i.ibb.co/f4B31Pg/logo-light.png" // Replace with your logo image
+    const logoSrc = "https://i.ibb.co/DDZFTbv/logo.png" // Replace with your logo image
 
     // Create a div element for the overlay
     const overlay = document.createElement("div")
