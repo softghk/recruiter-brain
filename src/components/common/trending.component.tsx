@@ -14,7 +14,6 @@ const CustomLinearProgress = styled(LinearProgress)(({ theme }) => ({
 }))
 
 const TrendingComponent = ({ title, rating, percent }) => {
-  console.log(rating)
   return (
     <Card sx={{ padding: 3 }}>
       <Stack gap={2}>

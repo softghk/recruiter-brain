@@ -32,7 +32,6 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
   const [state] = useStorage<boolean>(EXTENSION_ENABLE, true)
   const [avgRatings] = useStorage(CANDIDATE_RATING)
-  console.log("avgRatings", avgRatings)
   const averageRating = avgRatings?.[projectId] || CandidateInitialRating
   const [auth] = useStorage(AUTH_STATE)
 
