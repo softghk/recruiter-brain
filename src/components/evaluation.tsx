@@ -29,7 +29,7 @@ const buttonStyle = {
 }
 
 const EvaluateComponent = ({ mainStyle }) => {
-  const [extensionEnabled] = useStorage(EXTENSION_ENABLE)
+  const [extensionEnabled] = useStorage(EXTENSION_ENABLE, true)
   const [open, setOpen] = useState({ eval: false, setting: false })
   const { user } = useFirebaseUser()
 

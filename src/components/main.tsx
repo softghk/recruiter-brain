@@ -17,7 +17,7 @@ import Login from "./sections/login.component"
 import DashboardComponent from "./sections/statistics.component"
 
 const Home = () => {
-  const [extensionEnabled] = useStorage(EXTENSION_ENABLE)
+  const [extensionEnabled] = useStorage(EXTENSION_ENABLE, true)
   const [extensionVisible, setExtensionVisible] = useStorage(
     EXTENSION_VISIBLE,
     true

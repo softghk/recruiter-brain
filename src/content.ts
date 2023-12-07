@@ -12,6 +12,8 @@ import { generateMD5 } from "./utils/hash.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
+console.log("content.js loaded")
+
 export {}
 
 export const config: PlasmoCSConfig = {

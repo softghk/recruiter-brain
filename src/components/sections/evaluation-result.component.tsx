@@ -64,7 +64,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   const { rating, explanation } = evaluation
 
   const [expanded, setExpanded] = useState(false)
-  const [state] = useStorage<boolean>(EXTENSION_ENABLE)
+  const [state] = useStorage<boolean>(EXTENSION_ENABLE, true)
 
   const [auth] = useStorage(AUTH_STATE)
   const formattedExplanation = explanation.replace(/\n/g, "<br>")

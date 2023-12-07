@@ -15,7 +15,13 @@ export async function evaluateProfileApi(
   const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
   const accessToken = firebaseAuth.accessToken
 
-  console.log("evaluateProfileApi profileUrl", profileId)
+  console.log(
+    "evaluateProfileApi profileUrl",
+    profileId,
+    jobDescriptionId,
+    profile,
+    jobDescription
+  )
 
   return new Promise((resolve, reject) => {
     fetch("http://localhost:3000/evaluation", {
