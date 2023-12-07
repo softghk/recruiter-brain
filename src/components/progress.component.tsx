@@ -118,6 +118,7 @@ export const injectScanningProgress = async () => {
     const removeProgress = () => {
       const element = document.getElementById(injectComponentId)
       if (element) element.remove()
+      sendStopMessage()
     }
 
     root.render(
