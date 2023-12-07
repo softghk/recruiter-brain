@@ -1,75 +1,32 @@
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
-import ReplayIcon from "@mui/icons-material/Replay"
-import {
-  Box,
-  Card,
-  CircularProgress,
-  IconButton,
-  Rating,
-  Stack,
-  Typography
-} from "@mui/material"
+import { Grid, Stack } from "@mui/material"
 import React, { useState } from "react"
 import ReactDOM from "react-dom/client"
-
-import { useStorage } from "@plasmohq/storage/hook"
-
-import Iconify from "~@minimal/components/iconify"
-import { MinimalProvider } from "~@minimal/Provider"
-import ChartRadialBar from "~@minimal/sections/_examples/extra/chart-view/chart-radial-bar"
-import { AUTH_STATE, EXTENSION_ENABLE } from "~src/config/storage.config"
+import { AUTH_STATE, EXTENSION_ENABLE } from "src/config/storage.config"
 import {
   getEvaluationData,
   rateCandidateEvaluation
-} from "~src/utils/api-service.utils"
-import { updateDataFromIndexedDB } from "~src/utils/storage.utils"
+} from "src/utils/api-service.utils"
+import { updateDataFromIndexedDB } from "src/utils/storage.utils"
 
-const customIcons: {
-  [index: string]: {
-    icon: React.ReactElement
-    label: string
-  }
-} = {
-  1: {
-    icon: <Iconify width={24} icon="ic:round-sentiment-very-dissatisfied" />,
-    label: "Very Dissatisfied"
-  },
-  2: {
-    icon: <Iconify width={24} icon="ic:round-sentiment-dissatisfied" />,
-    label: "Dissatisfied"
-  },
-  3: {
-    icon: <Iconify width={24} icon="ic:round-sentiment-neutral" />,
-    label: "Neutral"
-  },
-  4: {
-    icon: <Iconify width={24} icon="ic:round-sentiment-satisfied" />,
-    label: "Satisfied"
-  },
-  5: {
-    icon: <Iconify width={24} icon="ic:round-sentiment-very-satisfied" />,
-    label: "Very Satisfied"
-  }
-}
+import { useStorage } from "@plasmohq/storage/hook"
 
-function IconContainer(props: any) {
-  const { value, ...other } = props
+import { MinimalProvider } from "~@minimal/Provider"
 
-  return <span {...other}>{customIcons[value].icon}</span>
-}
+import EvaluationDetail from "../common/evaluation-detail.component"
+import OverallView from "../common/evaluation-overall.component"
+import TrendingComponent from "../common/trending.component"
 
 const ProfileEvaluation = ({ data }: { data: any }) => {
   const { id, profileId, evaluationRating, evaluation } = data
   const { rating, explanation } = evaluation
 
   const [expanded, setExpanded] = useState(false)
-  const [state] = useStorage<boolean>(EXTENSION_ENABLE, true)
-
-  const [auth] = useStorage(AUTH_STATE)
-  const formattedExplanation = explanation.replace(/\n/g, "<br>")
-
   const [loading, setLoading] = useState(false)
+
+  const [state] = useStorage<boolean>(EXTENSION_ENABLE, true)
+  const [auth] = useStorage(AUTH_STATE)
 
   const onRefreshEvaluation = async () => {
     setLoading(true)
@@ -94,102 +51,81 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
   if (!auth?.isAuth || !state) return null
 
+  const expandedLayout = () => (
+    <Grid container spacing={3}>
+      <Grid item xs={4}>
+        <Stack gap={3}>
+          <TrendingComponent
+            percent={10}
+            rating={rating.experience}
+            title={"Experience"}
+          />
+          <TrendingComponent
+            percent={10}
+            rating={rating.education}
+            title={"Qualification"}
+          />
+          <TrendingComponent
+            percent={10}
+            rating={rating.skills}
+            title={"Skills"}
+          />
+          <OverallView rating={rating} />
+        </Stack>
+      </Grid>
+      <Grid item xs={8}>
+        <EvaluationDetail
+          evaluationRating={evaluationRating}
+          explanation={explanation}
+          onChangeEvaluationRating={onChangeEvaluationRating}
+          expanded={expanded}
+          setExpanded={setExpanded}
+        />
+      </Grid>
+    </Grid>
+  )
+
+  const unexpandedLayout = () => (
+    <Grid container spacing={3}>
+      <Grid item xs={4}>
+        <TrendingComponent
+          percent={10}
+          rating={rating.experience}
+          title={"Experience"}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <TrendingComponent
+          percent={10}
+          rating={rating.education}
+          title={"Qualification"}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <TrendingComponent
+          percent={10}
+          rating={rating.skills}
+          title={"Skills"}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <OverallView rating={rating} />
+      </Grid>
+      <Grid item xs={8}>
+        <EvaluationDetail
+          evaluationRating={evaluationRating}
+          explanation={explanation}
+          onChangeEvaluationRating={onChangeEvaluationRating}
+          expanded={expanded}
+          setExpanded={setExpanded}
+        />
+      </Grid>
+    </Grid>
+  )
+
   return (
     <MinimalProvider>
-      <Card
-        elevation={8}
-        sx={{
-          paddingY: 5,
-          paddingX: 3,
-          marginTop: 2,
-          width: "100%"
-        }}>
-        <img
-          src="https://i.ibb.co/MVCGgq2/logo.png"
-          alt="Logo"
-          style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            width: 36,
-            height: "auto"
-          }}
-        />
-
-        <Stack direction={"row"} gap={2}>
-          <Box
-            position={"relative"}
-            minHeight={0}
-            maxHeight={160}
-            marginTop={-5}>
-            <ChartRadialBar series={[rating.overall * 10]} />
-            <Stack
-              direction={"column"}
-              position={"absolute"}
-              left={56}
-              bottom={14}>
-              <Typography variant="h5" textAlign={"center"}>
-                {rating.overall} / 10
-              </Typography>
-              <Typography variant="caption" color={"gray"}>
-                Candidate Rating
-              </Typography>
-            </Stack>
-          </Box>
-          <Stack gap={1}>
-            <Typography variant="h6">Profile Strength Indicator</Typography>
-            <Typography
-              variant="body2"
-              dangerouslySetInnerHTML={{ __html: formattedExplanation }}
-              sx={{
-                display: expanded ? "block" : "-webkit-box",
-                WebkitBoxOrient: "vertical",
-                WebkitLineClamp: "3",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                flexGrow: 1
-              }}
-            />
-            <Typography
-              variant="body2"
-              onClick={() => setExpanded(!expanded)}
-              sx={{
-                textDecoration: "underline",
-                cursor: "pointer"
-              }}>
-              {expanded ? "Show Less" : "Show More"}
-            </Typography>
-          </Stack>
-        </Stack>
-
-        <Stack
-          direction={"row"}
-          justifyContent={"flex-end"}
-          alignItems={"center"}
-          gap={2}>
-          <Rating
-            name="customized-icons"
-            defaultValue={evaluationRating}
-            onChange={onChangeEvaluationRating}
-            getLabelText={(ratingValue) => customIcons[ratingValue].label}
-            IconContainerComponent={IconContainer}
-          />
-          {/* <IconButton
-            onClick={onRefreshEvaluation}
-            size="small"
-            style={{
-              background: "#EDEFF2",
-              width: 24,
-              height: 24
-            }}>
-            {loading ? (
-              <CircularProgress size={16} />
-            ) : (
-              <ReplayIcon sx={{ fontSize: 16, color: "black" }} />
-            )}
-          </IconButton> */}
-        </Stack>
-      </Card>
+      {expanded ? expandedLayout() : unexpandedLayout()}
     </MinimalProvider>
   )
 }
