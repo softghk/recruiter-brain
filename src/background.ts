@@ -7,6 +7,7 @@ import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import { JOB_DESCRIPTION } from "./config/storage.config"
 import {
+  createDatabase,
   deleteAllDatabases,
   deleteAllFromIndexedDB,
   deleteDataFromIndexedDB,
@@ -628,6 +629,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         notifyContentScript("itemAddedToIndexedDb")
       })
     })
+  }
+
+  if (request.action === "createDatabase") {
+    createDatabase().then(() => sendResponse())
   }
 })
 

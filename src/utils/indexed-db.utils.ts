@@ -2,6 +2,35 @@ const storeName = "evaluation"
 const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
 const dbVersion = 5 // Increment this version when changes are made to the database structure
 
+export function createDatabase(): Promise<void> {
+  // Open or create a database with an updated version
+  const openRequest = indexedDB.open(dbName, dbVersion)
+
+  return new Promise((resolve, reject) => {
+    // Handle database upgrade
+    openRequest.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName, {
+          keyPath: "id",
+          autoIncrement: true
+        })
+      }
+    }
+
+    // Handle successful database opening
+    openRequest.onsuccess = async (event) => {
+      console.log("DB CONNECTION SUCCESSFUL")
+    }
+
+    // Handle errors in opening the database
+    openRequest.onerror = (event) => {
+      console.error("Error opening IndexedDB", event.target.errorCode)
+      reject()
+    }
+  })
+}
+
 // Save data to IndexedDB
 export function saveDataToIndexedDB({
   projectId,

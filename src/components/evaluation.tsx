@@ -13,6 +13,7 @@ import { EXTENSION_ENABLE, JOB_DESCRIPTION } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
+import { createDatabase } from "~src/utils/storage.utils"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
 
 import { injectScanningProgress } from "./progress.component"
@@ -45,6 +46,7 @@ const EvaluateComponent = ({ mainStyle }) => {
   const onSaveJDToStore = (data: JobSettings) => {
     if (!description) setDescription({ [projectId]: data })
     else setDescription({ ...description, [projectId]: data })
+    createDatabase()
   }
 
   const onResetJD = () => {
