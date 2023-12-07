@@ -515,6 +515,7 @@ async function injectedCode(jobData) {
   chrome.runtime.sendMessage({
     action: "close-tab"
   })
+  stopJob()
 }
 
 // Mock data for API call
