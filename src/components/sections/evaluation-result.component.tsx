@@ -168,12 +168,12 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           alignItems={"center"}
           gap={2}>
           <Rating
-            name="customized-icons"
+            name="size-medium"
             defaultValue={evaluationRating}
             onChange={onChangeEvaluationRating}
             getLabelText={(ratingValue) => customIcons[ratingValue].label}
-            IconContainerComponent={IconContainer}
           />
+
           {/* <IconButton
             onClick={onRefreshEvaluation}
             size="small"
