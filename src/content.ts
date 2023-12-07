@@ -1,8 +1,11 @@
 import type { PlasmoCSConfig } from "plasmo"
 import { auth } from "src/firebase/firebaseClient"
 
+import { Storage } from "@plasmohq/storage"
+
 import { insertEvaluationComponent } from "./components/evaluation"
 import { injectMainComponent } from "./components/main"
+import { JOB_RUNNING } from "./config/storage.config"
 import {
   htmlClassInvisibleProfile,
   htmlClassVisibleProfile
@@ -12,7 +15,7 @@ import { generateMD5 } from "./utils/hash.utils"
 import { requestDataFromIndexedDB } from "./utils/storage.utils"
 import { waitForElement2 } from "./utils/wait-for-element.utils"
 
-console.log("content.js loaded")
+const storage = new Storage()
 
 export {}
 
@@ -39,6 +42,9 @@ const injectComponents = () => {
         if (currentURL !== previousURL) {
           console.log("URL changed to:", currentURL)
           previousURL = currentURL
+          storage.get(JOB_RUNNING).then((value) => {
+            console.log("IS JOB RUNNING: ", value)
+          })
           injectMainComponent()
           insertEvaluationComponent({
             querySelectorTargetElement: ".sourcing-channels__post-job-link",
