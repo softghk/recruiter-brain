@@ -68,6 +68,15 @@ const EvaluationSettingsModal = ({
     onChangeJD && onChangeJD()
   }
 
+  const onSubmit = () => {
+    const result: JobSettings = {
+      ...temp,
+      searchLimit: Math.min(temp.searchLimit, maxProfileCount)
+    }
+    onChange && onChange(result)
+    onEvaluate && onEvaluate(result)
+  }
+
   return (
     <>
       <Menu
@@ -145,10 +154,7 @@ const EvaluationSettingsModal = ({
             variant="contained"
             color="primary"
             size="small"
-            onClick={() => {
-              onChange && onChange(temp)
-              onEvaluate && onEvaluate(temp)
-            }}>
+            onClick={onSubmit}>
             Start Evaluating Profiles
           </Button>
         </Box>
