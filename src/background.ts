@@ -5,7 +5,12 @@ import { Storage } from "@plasmohq/storage"
 
 import { evaluateProfileApi } from "~utils/api-service.utils"
 
-import { JOB_DESCRIPTION, JOB_RUNNING } from "./config/storage.config"
+import {
+  CANDIDATE_RATING,
+  JOB_DESCRIPTION,
+  JOB_RUNNING
+} from "./config/storage.config"
+import type { CandidateRating } from "./types"
 import {
   createDatabase,
   deleteAllDatabases,
@@ -110,8 +115,23 @@ const makeAPICallAndSaveData = async (data, jobData) => {
     profileId: data.personal.id,
     evaluation: profileEvaluation,
     evaluationRating: -1
-  }).then(() => {
+  }).then(async () => {
     notifyContentScript("itemAddedToIndexedDb")
+    const rating = await storage.get(CANDIDATE_RATING)
+    if (!rating[jobData.projectId]) {
+      rating[jobData.projectId] = profileEvaluation.rating
+      storage.set(CANDIDATE_RATING, rating)
+    } else {
+      const oldAvg: CandidateRating = rating[jobData.projectId]
+      const newAvg: CandidateRating = {
+        education: (oldAvg.education + profileEvaluation.rating.education) / 2,
+        experience:
+          (oldAvg.experience + profileEvaluation.rating.experience) / 2,
+        skills: (oldAvg.skills + profileEvaluation.rating.skills) / 2,
+        total: (oldAvg.total + profileEvaluation.rating.total) / 2
+      }
+      storage.set(CANDIDATE_RATING, { ...rating, [jobData.projectId]: newAvg })
+    }
   })
   markTaskAsComplete(taskId, jobId)
 }
@@ -519,6 +539,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break
     case "delete-db":
       console.log("DELETE DB ACTION DISPATCHED")
+      storage.get(CANDIDATE_RATING).then((response) => {
+        const newRating = { ...response }
+        delete newRating[request.data]
+        storage.set(CANDIDATE_RATING, newRating)
+      })
       deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
         console.log("got response after delete db")
         sendMessageToContentScript("delete-db")
