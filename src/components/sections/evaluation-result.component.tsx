@@ -65,6 +65,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
       <Grid item xs={4}>
         <Stack gap={3}>
           <TrendingComponent
+            weight={40}
             percent={
               (rating.experience - averageRating.experience) *
               (100 / rating.experience)
@@ -73,6 +74,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
             title={"Experience"}
           />
           <TrendingComponent
+            weight={20}
             percent={
               (rating.education - averageRating.education) *
               (100 / rating.education)
@@ -81,6 +83,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
             title={"Qualification"}
           />
           <TrendingComponent
+            weight={40}
             percent={
               (rating.skills - averageRating.skills) * (100 / rating.skills)
             }

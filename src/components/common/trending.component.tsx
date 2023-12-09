@@ -16,7 +16,7 @@ const CustomLinearProgress = styled(LinearProgress)(({ theme }) => ({
   }
 }))
 
-const TrendingComponent = ({ title, rating, percent }) => {
+const TrendingComponent = ({ title, rating, percent, weight = 0 }) => {
   return (
     <Card sx={{ padding: 3 }}>
       <Stack gap={2}>
@@ -25,7 +25,7 @@ const TrendingComponent = ({ title, rating, percent }) => {
           <Stack direction={"row"} gap={0.5}>
             <Typography variant="subtitle2">{rating} / 10</Typography>
             <Typography variant="body2" color={"gray"}>
-              ({rating * 10}%)
+              ({weight}%)
             </Typography>
           </Stack>
         </Stack>
