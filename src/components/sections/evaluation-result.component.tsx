@@ -59,7 +59,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   if (!auth?.isAuth || !state) return null
 
   const expandedLayout = () => (
-    <Grid container spacing={3}>
+    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
       <Grid item xs={4}>
         <Stack gap={3}>
           <TrendingComponent
@@ -106,7 +106,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   )
 
   const unexpandedLayout = () => (
-    <Grid container spacing={3}>
+    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
       <Grid item xs={4}>
         <TrendingComponent
           percent={
@@ -158,7 +158,8 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
   return (
     <MinimalProvider>
-      {expanded ? expandedLayout() : unexpandedLayout()}
+      {/* {expanded ? expandedLayout() : unexpandedLayout()} */}
+      {unexpandedLayout()}
     </MinimalProvider>
   )
 }

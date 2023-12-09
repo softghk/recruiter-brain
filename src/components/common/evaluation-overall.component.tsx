@@ -10,7 +10,17 @@ const OverallView = ({ rating, percent }) => {
     <Card sx={{ height: "100%", padding: 3 }}>
       <Stack gap={3}>
         <Typography variant="subtitle2">Overall Rating</Typography>
-        <Box position={"relative"} minHeight={0} maxHeight={160} marginTop={-5}>
+        <Box
+          position={"relative"}
+          sx={{
+            marginTop: -5,
+            maxHeight: 160,
+            minHeight: 0,
+            scale: {
+              md: "1",
+              xs: "0.8"
+            }
+          }}>
           <ChartRadialBar series={[rating * 10]} />
           <Stack
             direction={"column"}

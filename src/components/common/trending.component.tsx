@@ -10,6 +10,9 @@ import EvaluationCompare from "./evaluation-compare"
 const CustomLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`& .${linearProgressClasses.bar}`]: {
     backgroundColor: "#22C55E"
+  },
+  [`& .${linearProgressClasses.colorPrimary}`]: {
+    backgroundColor: "#d0ffe1"
   }
 }))
 
