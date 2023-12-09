@@ -10,6 +10,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import Iconify from "~@minimal/components/iconify"
 import { MinimalProvider } from "~@minimal/Provider"
 import {
+  CANDIDATE_RATING,
   EXTENSION_ENABLE,
   JOB_DESCRIPTION,
   JOB_RUNNING
@@ -20,7 +21,10 @@ import { generateMD5 } from "~src/utils/hash.utils"
 import { createDatabase } from "~src/utils/storage.utils"
 import { waitForElement } from "~src/utils/wait-for-element.utils"
 
-import { injectScanningProgress } from "./progress.component"
+import {
+  injectScanningProgress,
+  removeScanningProgress
+} from "./progress.component"
 import EvaluationSettingsModal from "./sections/evaluation-settings.component"
 import JDSettingsModal from "./sections/jd-settings.component"
 
@@ -35,6 +39,8 @@ const buttonStyle = {
 
 const EvaluateComponent = ({ mainStyle }) => {
   const [extensionEnabled] = useStorage(EXTENSION_ENABLE, true)
+  const [avgRatings, setAvgRatings] = useStorage(CANDIDATE_RATING)
+
   const [isJobRunning, setIsJobRunning] = useStorage(JOB_RUNNING, false)
   const [open, setOpen] = useState({ eval: false, setting: false })
   const { user } = useFirebaseUser()
@@ -60,6 +66,9 @@ const EvaluateComponent = ({ mainStyle }) => {
     } else {
       setDescription({ ...description, [projectId]: JobInitialSetting })
     }
+    const newRating = { ...avgRatings }
+    delete newRating[projectId]
+    setAvgRatings(newRating)
     chrome.runtime.sendMessage(
       { action: "delete-db", data: projectId },
       (response) => {
@@ -86,6 +95,7 @@ const EvaluateComponent = ({ mainStyle }) => {
     setOpen({ eval: false, setting: false })
     setIsJobRunning(true)
 
+    removeScanningProgress()
     injectScanningProgress()
 
     const href = window.location.href
