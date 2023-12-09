@@ -35,6 +35,8 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   const averageRating = avgRatings?.[projectId] || CandidateInitialRating
   const [auth] = useStorage(AUTH_STATE)
 
+  console.log(averageRating)
+
   const onRefreshEvaluation = async () => {
     setLoading(true)
     try {
