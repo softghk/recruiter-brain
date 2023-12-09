@@ -6,7 +6,7 @@ import { Storage } from "@plasmohq/storage"
 import { insertEvaluationComponent } from "./components/evaluation"
 import { injectMainComponent } from "./components/main"
 import { injectScanningProgress } from "./components/progress.component"
-import { JOB_RUNNING } from "./config/storage.config"
+import { CANDIDATE_RATING, JOB_RUNNING } from "./config/storage.config"
 import {
   htmlClassInvisibleProfile,
   htmlClassVisibleProfile
@@ -19,6 +19,10 @@ import { waitForElement2 } from "./utils/wait-for-element.utils"
 const storage = new Storage()
 
 export {}
+
+storage.get(CANDIDATE_RATING).then((response) => {
+  console.log("CANDIDATE_RATING", response)
+})
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.linkedin.com/talent/hire/*"]
