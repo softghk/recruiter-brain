@@ -24,7 +24,7 @@ import { notifyContentScript } from "./utils/notify-content-script.utils"
 
 const storage = new Storage()
 
-export {}
+export { }
 
 // Action types for clarity and typo prevention
 const ActionTypes = {
@@ -535,7 +535,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break
     case ActionTypes.CLOSE_TAB:
       console.log("close tab", sender)
-      chrome.tabs.remove(sender.tab.id, () => {})
+      chrome.tabs.remove(sender.tab.id, () => { })
       break
     case "delete-db":
       console.log("DELETE DB ACTION DISPATCHED")
@@ -596,10 +596,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 })
 
 chrome.runtime.onInstalled.addListener(function (object) {
+  createDatabase()
   let externalUrl = "https://www.linkedin.com/talent/hire/"
 
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    chrome.tabs.create({ url: externalUrl }, function (tab) {})
+    chrome.tabs.create({ url: externalUrl }, function (tab) { })
   }
 })
 
