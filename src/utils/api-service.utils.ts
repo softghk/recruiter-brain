@@ -24,7 +24,7 @@ export async function evaluateProfileApi(
   )
 
   return new Promise((resolve, reject) => {
-    fetch("http://localhost:3000/evaluation", {
+    fetch(`${process.env.PLASMO_PUBLIC_BACKEND_API}/evaluation`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,18 +63,21 @@ export async function rateCandidateEvaluation(
   const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
   const accessToken = firebaseAuth.accessToken
   return new Promise((resolve, reject) => {
-    fetch("http://localhost:3000/evaluation/evaluation-rating", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: accessToken
-      },
-      body: JSON.stringify({
-        profileId: profileId,
-        jobDescriptionId: jobDescriptionId,
-        evaluationRating: evaluationRating
-      })
-    })
+    fetch(
+      `${process.env.PLASMO_PUBLIC_BACKEND_API}/evaluation/evaluation-rating`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: accessToken
+        },
+        body: JSON.stringify({
+          profileId: profileId,
+          jobDescriptionId: jobDescriptionId,
+          evaluationRating: evaluationRating
+        })
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         console.log("rated evaluation for")
@@ -93,7 +96,7 @@ export async function getStatisticData() {
   return new Promise(async (resolve, reject) => {
     const data: AuthState = await storage.get(AUTH_STATE)
     axios
-      .get(`http://localhost:3000/evaluation/daily-stats`, {
+      .get(`${process.env.PLASMO_PUBLIC_BACKEND_API}/evaluation/daily-stats`, {
         headers: {
           Authorization: `${data.accessToken}`
         }

@@ -605,6 +605,8 @@ chrome.runtime.onInstalled.addListener(function (object) {
 
 chrome.tabs.onRemoved.addListener(function (tabId, info) {
   chrome.tabs.get(tabId, function (tab) {
-    if (tabId === workingTabId) stopJob()
+    if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
+      stopJob()
+    }
   })
 })
