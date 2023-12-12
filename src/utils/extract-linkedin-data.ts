@@ -82,9 +82,10 @@ export function extractLinkedInData() {
   personal.location = locationElement.innerText.trim().replace(/·\s*/, "")
   personal.id = window.location.href.match(/profile\/(.*?)\?/)[1]
   personal.url = window.location.href.split("?")[0]
+  console.log("extracted: personal")
 
   // Extract positions
-  const positionElements = document.querySelectorAll(".experience-card")
+  const positionElements = document.querySelectorAll(".experience-card li")
 
   positionElements.forEach((el) => {
     const isGrouped =
@@ -104,7 +105,7 @@ export function extractLinkedInData() {
       positions.push(extractPositionDetails(el))
     }
   })
-  console.log("extracting data===============")
+  console.log("extracted: positions")
 
   const skillElements = document.querySelectorAll(".skill-entity__wrapper")
   skillElements.forEach((el) => {
@@ -113,10 +114,10 @@ export function extractLinkedInData() {
     )?.innerText.trim()
     skills.push(skillName)
   })
-  console.log("extracting data===============2")
+  console.log("extracted: skills")
 
   const educationElements = document.querySelectorAll(
-    ".background-entity.education-item"
+    "[data-test-education-card] li"
   )
 
   if (educationElements) {
