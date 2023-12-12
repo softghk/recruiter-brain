@@ -86,7 +86,7 @@ async function injectEvaluationResults() {
   const observeListElement = () => {
     if (listObserver) {
       listObserver.disconnect() // Disconnect any existing observer
-      console.log("Previous list observer disconnected.")
+      // console.log("Previous list observer disconnected.")
     }
 
     const olElement = document.querySelector(listElementSelector)
@@ -105,7 +105,7 @@ async function injectEvaluationResults() {
       attributeFilter: ["class"],
       subtree: true
     })
-    console.log("OL element observer connected.")
+    // console.log("OL element observer connected.")
   }
 
   // Observe the parent element for the addition or removal of the OL element
@@ -140,7 +140,7 @@ async function injectEvaluationResults() {
 
   // Initial observation of the OL element
   await waitForElement(listElementSelector)
-  console.log("Initial OL is available")
+  // console.log("Initial OL is available")
   observeListElement()
 }
 
