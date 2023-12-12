@@ -3,18 +3,18 @@ import { auth } from "src/firebase/firebaseClient"
 
 import { Storage } from "@plasmohq/storage"
 
-import { insertEvaluationComponent } from "./components/evaluation"
-import { injectMainComponent } from "./components/main"
-import { injectScanningProgress } from "./components/progress.component"
-import { CANDIDATE_RATING, JOB_RUNNING } from "./config/storage.config"
+import { insertEvaluationComponent } from "../components/evaluation"
+import { injectMainComponent } from "../components/main"
+import { injectScanningProgress } from "../components/progress.component"
+import { CANDIDATE_RATING, JOB_RUNNING } from "../config/storage.config"
 import {
   htmlClassInvisibleProfile,
   htmlClassVisibleProfile
-} from "./utils/constants.utils"
-import { injectDataIntoDom } from "./utils/dom-manipulation.utils"
-import { generateMD5 } from "./utils/hash.utils"
-import { requestDataFromIndexedDB } from "./utils/storage.utils"
-import { waitForElement2 } from "./utils/wait-for-element.utils"
+} from "../utils/constants.utils"
+import { injectDataIntoDom } from "../utils/dom-manipulation.utils"
+import { generateMD5 } from "../utils/hash.utils"
+import { requestDataFromIndexedDB } from "../utils/storage.utils"
+import { waitForElement2 } from "../utils/wait-for-element.utils"
 
 const storage = new Storage()
 
