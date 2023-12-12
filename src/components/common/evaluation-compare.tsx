@@ -38,8 +38,8 @@ const EvaluationCompare = ({ percent }) => {
 
         <Box
           component="span"
-          sx={{ color: "text.secondary", typography: "body2" }}>
-          {" compared to average"}
+          sx={{ color: "text.secondary", typography: "caption" }}>
+          &nbsp;&nbsp;compared to average
         </Box>
       </Typography>
     </Stack>

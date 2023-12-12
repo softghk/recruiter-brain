@@ -60,7 +60,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
   const unexpandedLayout = () => (
     <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} maxWidth={900}>
-      <Grid item lg={4} xs={12}>
+      <Grid item lg={4} xs={12} sm={4} md={12}>
         <TrendingComponent
           percent={
             (rating.experience - averageRating.experience) *
@@ -68,9 +68,10 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           }
           rating={rating.experience}
           title={"Experience"}
+          weight={40}
         />
       </Grid>
-      <Grid item lg={4} xs={12}>
+      <Grid item lg={4} xs={12} sm={4} md={12}>
         <TrendingComponent
           percent={
             (rating.education - averageRating.education) *
@@ -78,18 +79,20 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           }
           rating={rating.education}
           title={"Qualification"}
+          weight={20}
         />
       </Grid>
-      <Grid item lg={4} xs={12}>
+      <Grid item lg={4} xs={12} sm={4} md={12}>
         <TrendingComponent
           percent={
             (rating.skills - averageRating.skills) * (100 / rating.skills)
           }
           rating={rating.skills}
           title={"Skills"}
+          weight={40}
         />
       </Grid>
-      <Grid item lg={4} xs={12}>
+      <Grid item lg={4} xs={12} sm={4} md={12}>
         <OverallView
           rating={rating.overall}
           percent={
@@ -97,7 +100,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           }
         />
       </Grid>
-      <Grid item lg={8} xs={12}>
+      <Grid item lg={8} xs={12} sm={8} md={12}>
         <EvaluationDetail
           evaluationRating={evaluationRating}
           explanation={explanation}

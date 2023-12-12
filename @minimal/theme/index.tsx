@@ -48,6 +48,15 @@ export default function ThemeProvider({ children }: Props) {
 
   const baseOption = useMemo(
     () => ({
+      breakpoints: {
+        values: {
+          xs: 0,
+          sm: 750,
+          md: 1024,
+          lg: 1080,
+          xl: 1920
+        }
+      },
       palette: palette("light"),
       shadows: shadows("light"),
       customShadows: customShadows("light"),
