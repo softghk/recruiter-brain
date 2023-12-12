@@ -1,4 +1,6 @@
-export function addOverlay() {
+import { waitForElement } from "./wait-for.utils"
+
+export async function addOverlay() {
   const logoSrc = "https://i.ibb.co/DDZFTbv/logo.png" // Replace with your logo image
 
   // Create a div element for the overlay
@@ -12,7 +14,7 @@ export function addOverlay() {
   overlay.style.display = "flex"
   overlay.style.justifyContent = "center"
   overlay.style.alignItems = "center"
-  overlay.style.zIndex = "9999" // Ensure it's above other content;
+  overlay.style.zIndex = "9999" // Ensure it's above other content
 
   // Create a container for the content
   const contentContainer = document.createElement("div")
@@ -32,18 +34,16 @@ export function addOverlay() {
   const textDiv = document.createElement("div")
   textDiv.style.color = "#333" // Customize text color
   textDiv.style.marginTop = "20px" // Add spacing above the text
-  textDiv.textContent = "Please wait..."
   textDiv.innerHTML = `<h3><strong>Please wait while we process your request.</strong></h3>
   <div style="padding:20px;" id="brain-info">
     <ul>
       <li>Do not close this tab.</li>
       <li>Once the process is complete, this tab will close automatically.</li>
       <li>You can use the browser as usual in the meantime.</li>
+      <li id="lastListItem"><b>Please wait for the indicator to turn green before changing tabs: </b></li>
       <li><b>Recommended: Keep this tab open for faster processing.</b></li>
     </ul>
-  </div>
-
-`
+  </div>`
 
   // Append the logo and textDiv to the content container
   contentContainer.appendChild(logo)
@@ -54,4 +54,21 @@ export function addOverlay() {
 
   // Append the overlay to the body of the page
   document.body.appendChild(overlay)
+
+  // Create a red circle element
+  const redCircle = document.createElement("span")
+  redCircle.style.height = "15px"
+  redCircle.style.width = "15px"
+  redCircle.style.backgroundColor = "red"
+  redCircle.style.borderRadius = "50%"
+  redCircle.style.display = "inline-block"
+  redCircle.style.marginRight = "5px"
+
+  // Get the last list item and add the red circle
+  const lastListItem = document.getElementById("lastListItem")
+  lastListItem.appendChild(redCircle)
+
+  // Wait for the element and change the red circle to green
+  await waitForElement("a[data-live-test-link-to-profile-link]")
+  redCircle.style.backgroundColor = "green"
 }
