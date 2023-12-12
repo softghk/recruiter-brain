@@ -187,16 +187,16 @@ async function handleMutation(mutation) {
         )
 
         if (Array.isArray(evaluationData) && evaluationData.length) {
-          console.log(
-            "Evaluation data found, injecting into DOM...",
-            evaluationData[0].profileId
-          )
+          // console.log(
+          //   "Evaluation data found, injecting into DOM...",
+          //   evaluationData[0].profileId
+          // )
           injectDataIntoDom(element, evaluationData[0])
         } else {
-          console.log(
-            "No evaluation data found, setting up listener...",
-            element
-          )
+          // console.log(
+          //   "No evaluation data found, setting up listener...",
+          //   element
+          // )
           const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
               const jobData: any = await getJobData()
