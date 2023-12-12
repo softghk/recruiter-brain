@@ -49,9 +49,7 @@ const EvaluationSettingsModal = ({
   useEffect(() => {
     const getResultCount = async () => {
       const querySelectorTargetElement = ".profile-list__header-info-text"
-      await new Promise((resolve) => {
-        waitForElement(querySelectorTargetElement, resolve)
-      })
+      await waitForElement(querySelectorTargetElement)
 
       const count = parseInt(
         document

@@ -1,30 +1,7 @@
 import { addOverlay } from "~src/utils/add-overlay"
+import { waitForElement } from "~src/utils/wait-for-element.utils"
 
 async function scrapingCode(jobData) {
-  async function waitForElement2(selector) {
-    return new Promise((resolve) => {
-      let element = document.querySelector(selector)
-      if (element) {
-        resolve(element)
-        return
-      }
-
-      let observer = new MutationObserver(function (mutations, me) {
-        let element = document.querySelector(selector)
-        if (element) {
-          resolve(element)
-          me.disconnect() // Stop observing
-          return
-        }
-      })
-
-      observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-      })
-    })
-  }
-
   // Function to wait for changes within a specific container using a timeout
   function waitForContainerChanges(containerSelector, timeout = 500) {
     return new Promise<void>((resolve) => {
@@ -235,7 +212,7 @@ async function scrapingCode(jobData) {
 
   addOverlay()
   // wait for profile list
-  await waitForElement2("a[data-live-test-link-to-profile-link]")
+  await waitForElement("a[data-live-test-link-to-profile-link]")
   // open first profile in list
   const profileLink = document.querySelector(
     "a[data-live-test-link-to-profile-link]"
@@ -257,13 +234,13 @@ async function scrapingCode(jobData) {
     console.time("CompleteTime")
     await new Promise((resolve) => setTimeout(resolve, 3500))
     // extract data when ready
-    await waitForElement2(".experience-card")
+    await waitForElement(".experience-card")
     console.timeEnd("Step1Time")
 
     // Find all buttons with 'data-test-expandable-button' attribute and click each one
     console.log("clicking buttons more")
     console.time("Step2Time")
-    await waitForElement2("button[data-test-expandable-button]")
+    await waitForElement("button[data-test-expandable-button]")
     var buttons = document.querySelectorAll(
       "button[data-test-expandable-button]"
     )
@@ -299,7 +276,7 @@ async function scrapingCode(jobData) {
     ) as HTMLAnchorElement
     nextButton.click()
     await waitForContainerChanges(".profile__container")
-    await waitForElement2("[data-test-expandable-list-title]")
+    await waitForElement("[data-test-expandable-list-title]")
     console.timeEnd("Step4Time")
     console.timeEnd("CompleteTime")
     console.log("run end")

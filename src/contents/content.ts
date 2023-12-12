@@ -3,6 +3,8 @@ import { auth } from "src/firebase/firebaseClient"
 
 import { Storage } from "@plasmohq/storage"
 
+import { waitForElement } from "~src/utils/wait-for-element.utils"
+
 import { insertEvaluationComponent } from "../components/evaluation"
 import { injectMainComponent } from "../components/main"
 import { injectScanningProgress } from "../components/progress.component"
@@ -14,7 +16,6 @@ import {
 import { injectDataIntoDom } from "../utils/dom-manipulation.utils"
 import { generateMD5 } from "../utils/hash.utils"
 import { requestDataFromIndexedDB } from "../utils/storage.utils"
-import { waitForElement2 } from "../utils/wait-for-element.utils"
 
 const storage = new Storage()
 
@@ -128,7 +129,7 @@ async function injectEvaluationResults() {
   })
 
   // Wait for the parent element before setting up the observer
-  await waitForElement2(parentSelector)
+  await waitForElement(parentSelector)
   const parentElement = document.querySelector(parentSelector)
   if (!parentElement) {
     console.error("Parent element not found:", parentSelector)
@@ -138,7 +139,7 @@ async function injectEvaluationResults() {
   parentObserver.observe(parentElement, { childList: true, subtree: true })
 
   // Initial observation of the OL element
-  await waitForElement2(listElementSelector)
+  await waitForElement(listElementSelector)
   console.log("Initial OL is available")
   observeListElement()
 }

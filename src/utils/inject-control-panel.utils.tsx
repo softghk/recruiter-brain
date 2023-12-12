@@ -8,15 +8,13 @@ import carouselThemeStyle from "data-text:slick-carousel/slick/slick-theme.css"
 import carouselStyle from "data-text:slick-carousel/slick/slick.css"
 import ReactDOM from "react-dom/client"
 
-import MainComponent from "../ui-components/main.component"
+import MainComponent from "../components/main"
 import { waitForElement } from "../utils/wait-for-element.utils"
 
 export async function injectControlPanel() {
   // const querySelectorTargetElement = ".artdeco-tabs"
   const querySelectorTargetElement = "body"
-  await new Promise((resolve) => {
-    waitForElement(querySelectorTargetElement, resolve)
-  })
+  await waitForElement(querySelectorTargetElement)
   const injectComponentId = "recruiter-brain-main-button"
 
   const targetElement = document.querySelector(querySelectorTargetElement)

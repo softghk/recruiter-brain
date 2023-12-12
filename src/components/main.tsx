@@ -56,9 +56,7 @@ const Home = () => {
 export const injectMainComponent = async () => {
   const querySelectorTargetElement = "body"
   const injectComponentId = "recruitbrain-main-component"
-  await new Promise((resolve) => {
-    waitForElement(querySelectorTargetElement, resolve)
-  })
+  await waitForElement(querySelectorTargetElement)
 
   const targetElement = document.querySelector(querySelectorTargetElement)
   const injectComponent = document.getElementById(injectComponentId)

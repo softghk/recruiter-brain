@@ -202,9 +202,7 @@ export const insertEvaluationComponent = async ({
   position?: "after" | "prepend" | "appendChild"
 }) => {
   const injectComponentId = "recruit-brain-injector"
-  await new Promise((resolve) => {
-    waitForElement(querySelectorTargetElement, resolve)
-  })
+  await waitForElement(querySelectorTargetElement)
 
   const targetElement = document.querySelector(querySelectorTargetElement)
   const injectComponent = document.getElementById(injectComponentId)

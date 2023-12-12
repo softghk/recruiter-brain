@@ -88,9 +88,7 @@ const ScanningProgress = ({
 export const injectScanningProgress = async () => {
   const querySelectorTargetElement = ".page-layout__workspace"
   const injectComponentId = "recruiter-brain-progress"
-  await new Promise((resolve) => {
-    waitForElement(querySelectorTargetElement, resolve)
-  })
+  await waitForElement(querySelectorTargetElement)
 
   const targetElement = document.querySelector(querySelectorTargetElement)
   const injectComponent = document.getElementById(injectComponentId)
