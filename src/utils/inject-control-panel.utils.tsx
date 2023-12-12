@@ -9,7 +9,7 @@ import carouselStyle from "data-text:slick-carousel/slick/slick.css"
 import ReactDOM from "react-dom/client"
 
 import MainComponent from "../components/main"
-import { waitForElement } from "../utils/wait-for-element.utils"
+import { waitForElement } from "./wait-for.utils"
 
 export async function injectControlPanel() {
   // const querySelectorTargetElement = ".artdeco-tabs"

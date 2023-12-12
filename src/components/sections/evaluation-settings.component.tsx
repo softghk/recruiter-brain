@@ -17,7 +17,7 @@ import {
 import React, { useEffect, useState } from "react"
 
 import type { JobSettings } from "~src/types"
-import { waitForElement } from "~src/utils/wait-for-element.utils"
+import { waitForElement } from "~src/utils/wait-for.utils"
 
 import Modal from "../common/modal.component"
 

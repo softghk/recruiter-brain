@@ -8,7 +8,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 
 import { MinimalProvider } from "~@minimal/Provider"
 import { EXTENSION_ENABLE, EXTENSION_VISIBLE } from "~src/config/storage.config"
-import { waitForElement } from "~src/utils/wait-for-element.utils"
+import { waitForElement } from "~src/utils/wait-for.utils"
 
 import FabButton from "./common/fab-button.component"
 import LoadingComponent from "./common/loading.component"

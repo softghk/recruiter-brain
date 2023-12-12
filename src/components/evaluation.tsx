@@ -19,7 +19,7 @@ import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
 import { createDatabase } from "~src/utils/storage.utils"
-import { waitForElement } from "~src/utils/wait-for-element.utils"
+import { waitForElement } from "~src/utils/wait-for.utils"
 
 import {
   injectScanningProgress,

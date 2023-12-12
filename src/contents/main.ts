@@ -3,7 +3,7 @@ import { auth } from "src/firebase/firebaseClient"
 
 import { Storage } from "@plasmohq/storage"
 
-import { waitForElement } from "~src/utils/wait-for-element.utils"
+import { waitForElement } from "~src/utils/wait-for.utils"
 
 import { insertEvaluationComponent } from "../components/evaluation"
 import { injectMainComponent } from "../components/main"

@@ -1,46 +1,11 @@
 import { addOverlay } from "~src/utils/add-overlay"
-import { waitForElement } from "~src/utils/wait-for-element.utils"
+import {
+  waitForContainerChanges,
+  waitForElement
+} from "~src/utils/wait-for.utils"
 
 async function scrapingCode(jobData) {
   // Function to wait for changes within a specific container using a timeout
-  function waitForContainerChanges(containerSelector, timeout = 500) {
-    return new Promise<void>((resolve) => {
-      const container = document.querySelector(containerSelector)
-
-      if (!container) {
-        resolve()
-        return
-      }
-
-      const startTime = Date.now()
-
-      const checkChanges = () => {
-        const observer = new MutationObserver(() => {
-          observer.disconnect()
-          resolve()
-        })
-
-        observer.observe(container, { childList: true })
-
-        setTimeout(() => {
-          observer.disconnect()
-          resolve()
-        }, timeout)
-      }
-
-      // Check for changes immediately and set up a timeout
-      checkChanges()
-
-      const intervalId = setInterval(() => {
-        if (Date.now() - startTime >= timeout) {
-          clearInterval(intervalId)
-          resolve()
-        } else {
-          checkChanges()
-        }
-      }, 300)
-    })
-  }
 
   function extractLinkedInData() {
     function extractPositionDetails(positionElement) {

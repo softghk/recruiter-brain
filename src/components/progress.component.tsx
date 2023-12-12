@@ -14,7 +14,7 @@ import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
 
 import { MinimalProvider } from "~@minimal/Provider"
-import { waitForElement } from "~src/utils/wait-for-element.utils"
+import { waitForElement } from "~src/utils/wait-for.utils"
 
 const StyledCloseIcon = styled(CloseIcon)(({}) => ({
   width: 20,
