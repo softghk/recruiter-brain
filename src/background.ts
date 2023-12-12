@@ -24,7 +24,7 @@ import { notifyContentScript } from "./utils/notify-content-script.utils"
 
 const storage = new Storage()
 
-export { }
+export {}
 
 // Action types for clarity and typo prevention
 const ActionTypes = {
@@ -128,6 +128,7 @@ const makeAPICallAndSaveData = async (data, jobData) => {
         experience:
           (oldAvg.experience + profileEvaluation.rating.experience) / 2,
         skills: (oldAvg.skills + profileEvaluation.rating.skills) / 2,
+        overall: (oldAvg.overall + profileEvaluation.rating.overall) / 2,
         total: (oldAvg.total + profileEvaluation.rating.total) / 2
       }
       storage.set(CANDIDATE_RATING, { ...rating, [jobData.projectId]: newAvg })
@@ -535,7 +536,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break
     case ActionTypes.CLOSE_TAB:
       console.log("close tab", sender)
-      chrome.tabs.remove(sender.tab.id, () => { })
+      chrome.tabs.remove(sender.tab.id, () => {})
       break
     case "delete-db":
       console.log("DELETE DB ACTION DISPATCHED")
@@ -600,7 +601,7 @@ chrome.runtime.onInstalled.addListener(function (object) {
   let externalUrl = "https://www.linkedin.com/talent/hire/"
 
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    chrome.tabs.create({ url: externalUrl }, function (tab) { })
+    chrome.tabs.create({ url: externalUrl }, function (tab) {})
   }
 })
 

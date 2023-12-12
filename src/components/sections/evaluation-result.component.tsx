@@ -1,6 +1,6 @@
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
-import { Grid, Stack } from "@mui/material"
+import { Box, Grid, Stack } from "@mui/material"
 import React, { useState } from "react"
 import ReactDOM from "react-dom/client"
 import {
@@ -35,8 +35,6 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
   const averageRating = avgRatings?.[projectId] || CandidateInitialRating
   const [auth] = useStorage(AUTH_STATE)
 
-  console.log(averageRating)
-
   const onRefreshEvaluation = async () => {
     setLoading(true)
     try {
@@ -60,59 +58,9 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
   if (!auth?.isAuth || !state) return null
 
-  const expandedLayout = () => (
-    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
-      <Grid item xs={4}>
-        <Stack gap={3}>
-          <TrendingComponent
-            weight={40}
-            percent={
-              (rating.experience - averageRating.experience) *
-              (100 / rating.experience)
-            }
-            rating={rating.experience}
-            title={"Experience"}
-          />
-          <TrendingComponent
-            weight={20}
-            percent={
-              (rating.education - averageRating.education) *
-              (100 / rating.education)
-            }
-            rating={rating.education}
-            title={"Qualification"}
-          />
-          <TrendingComponent
-            weight={40}
-            percent={
-              (rating.skills - averageRating.skills) * (100 / rating.skills)
-            }
-            rating={rating.skills}
-            title={"Skills"}
-          />
-          <OverallView
-            rating={rating.overall}
-            percent={
-              (rating.overall - averageRating.overall) * (100 / rating.overall)
-            }
-          />
-        </Stack>
-      </Grid>
-      <Grid item xs={8}>
-        <EvaluationDetail
-          evaluationRating={evaluationRating}
-          explanation={explanation}
-          onChangeEvaluationRating={onChangeEvaluationRating}
-          expanded={expanded}
-          setExpanded={setExpanded}
-        />
-      </Grid>
-    </Grid>
-  )
-
   const unexpandedLayout = () => (
-    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
-      <Grid item xs={4}>
+    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} maxWidth={900}>
+      <Grid item lg={4} xs={12}>
         <TrendingComponent
           percent={
             (rating.experience - averageRating.experience) *
@@ -122,7 +70,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           title={"Experience"}
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item lg={4} xs={12}>
         <TrendingComponent
           percent={
             (rating.education - averageRating.education) *
@@ -132,7 +80,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           title={"Qualification"}
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item lg={4} xs={12}>
         <TrendingComponent
           percent={
             (rating.skills - averageRating.skills) * (100 / rating.skills)
@@ -141,7 +89,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           title={"Skills"}
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item lg={4} xs={12}>
         <OverallView
           rating={rating.overall}
           percent={
@@ -149,7 +97,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
           }
         />
       </Grid>
-      <Grid item xs={8}>
+      <Grid item lg={8} xs={12}>
         <EvaluationDetail
           evaluationRating={evaluationRating}
           explanation={explanation}
@@ -196,6 +144,15 @@ const profileContainer = (profileEvaluation) => {
       <ProfileEvaluation data={profileEvaluation} />
     </CacheProvider>
   )
+
+  const globalStyleContainer = document.createElement("style")
+  globalStyleContainer.textContent = `
+    .row__top-section {
+      flex-direction: column !important;
+    }
+  `
+
+  document.head.appendChild(globalStyleContainer)
 
   return container
 }

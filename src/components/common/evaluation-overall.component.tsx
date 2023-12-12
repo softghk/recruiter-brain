@@ -11,29 +11,37 @@ const OverallView = ({ rating, percent }) => {
       <Stack gap={3}>
         <Typography variant="subtitle2">Overall Rating</Typography>
         <Box
-          position={"relative"}
           sx={{
-            marginTop: -5,
-            maxHeight: 160,
-            minHeight: 0,
-            scale: {
-              md: "1",
-              xs: "0.8"
-            }
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%"
           }}>
-          <ChartRadialBar series={[rating * 10]} />
-          <Stack
-            direction={"column"}
-            position={"absolute"}
-            left={56}
-            bottom={14}>
-            <Typography variant="h5" textAlign={"center"}>
-              {rating} / 10
-            </Typography>
-            <Typography variant="caption" color={"gray"}>
-              Candidate Rating
-            </Typography>
-          </Stack>
+          <Box
+            position={"relative"}
+            sx={{
+              marginTop: -5,
+              maxHeight: 160,
+              minHeight: 0,
+              scale: {
+                md: "1",
+                xs: "0.8"
+              }
+            }}>
+            <ChartRadialBar series={[rating * 10]} />
+            <Stack
+              direction={"column"}
+              position={"absolute"}
+              left={56}
+              bottom={14}>
+              <Typography variant="h5" textAlign={"center"}>
+                {rating} / 10
+              </Typography>
+              <Typography variant="caption" color={"gray"}>
+                Candidate Rating
+              </Typography>
+            </Stack>
+          </Box>
         </Box>
         <EvaluationCompare percent={percent} />
       </Stack>
