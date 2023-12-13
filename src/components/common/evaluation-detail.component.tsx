@@ -74,7 +74,7 @@ const EvaluationDetail = ({
           sx={{
             display: expanded ? "block" : "-webkit-box",
             WebkitBoxOrient: "vertical",
-            WebkitLineClamp: "3",
+            WebkitLineClamp: "4",
             overflow: "hidden",
             textOverflow: "ellipsis",
             flexGrow: 1
