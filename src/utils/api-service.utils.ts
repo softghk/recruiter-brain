@@ -90,15 +90,12 @@ export async function rateCandidateEvaluation(
   })
 }
 
-export async function getStatisticData() {
-  const firebaseAuth: AuthState = await storage.get(AUTH_STATE)
-  const accessToken = firebaseAuth.accessToken
+export async function getStatisticData({ accessToken }) {
   return new Promise(async (resolve, reject) => {
-    const data: AuthState = await storage.get(AUTH_STATE)
     axios
       .get(`${process.env.PLASMO_PUBLIC_BACKEND_API}/evaluation/daily-stats`, {
         headers: {
-          Authorization: `${data.accessToken}`
+          Authorization: accessToken
         }
       })
       .then((resp) => {

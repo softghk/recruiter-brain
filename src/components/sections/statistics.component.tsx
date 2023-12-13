@@ -29,9 +29,11 @@ const DashboardComponent = () => {
   console.log(auth, user)
   useEffect(() => {
     if (!visible || !user || !auth?.isAuth) return
-    getStatisticData().then((response: any) => {
-      setData(response)
-    })
+    getStatisticData({ accessToken: auth.accessToken }).then(
+      (response: any) => {
+        setData(response)
+      }
+    )
   }, [visible, user, auth])
 
   return (
