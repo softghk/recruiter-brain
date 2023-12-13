@@ -56,6 +56,8 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     )
   }
 
+  console.log(avgRatings)
+
   if (!auth?.isAuth || !state) return null
 
   const unexpandedLayout = () => (

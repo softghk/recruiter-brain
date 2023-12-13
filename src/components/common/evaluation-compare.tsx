@@ -12,6 +12,7 @@ const EvaluationCompare = ({ percent }) => {
     if (percent > 0) return "eva:trending-up-fill"
     return "ic:baseline-trending-flat"
   }, [percent])
+
   return (
     <Stack direction="row" alignItems="center">
       <Iconify
@@ -34,7 +35,7 @@ const EvaluationCompare = ({ percent }) => {
       <Typography variant="subtitle2" component="div" noWrap>
         {percent > 0 && "+"}
 
-        {fPercent(percent) || "0%"}
+        {fPercent(percent === -Infinity ? -100 : percent) || "0%"}
 
         <Box
           component="span"

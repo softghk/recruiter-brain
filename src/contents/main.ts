@@ -146,7 +146,7 @@ const getJobData = () => {
       if (response.data) {
         resolve(response.data)
       } else {
-        reject("No data found for job details")
+        resolve({})
       }
     })
   })
@@ -174,8 +174,8 @@ async function handleMutation(mutation) {
           .href.match(/profile\/(.*?)\?/)[1]
         const jobData: any = await getJobData()
 
-        if (!jobData?.[projectId]) return
-        const jobDescription = jobData?.[projectId].description || ""
+        // if (!jobData?.[projectId]) return
+        const jobDescription = jobData?.[projectId]?.description || ""
         const jobDescriptionId = generateMD5(jobDescription)
 
         const evaluationData = await getEvaluationData(
@@ -191,18 +191,20 @@ async function handleMutation(mutation) {
           // )
           injectDataIntoDom(element, evaluationData[0])
         } else {
-          // console.log(
-          //   "No evaluation data found, setting up listener...",
-          //   element
-          // )
+          console.log(
+            "No evaluation data found, setting up listener...",
+            element
+          )
           const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
               console.log("RECEIVED CORRECT MESSAGE: itemAddedToIndexedDB")
 
               const jobData: any = await getJobData()
               const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
-              const jobDescription = jobData?.[projectId].description || ""
+              const jobDescription = jobData?.[projectId]?.description || ""
               const jobDescriptionId = generateMD5(jobDescription)
+
+              if (jobDescription === "") return
 
               const newData = await requestDataFromIndexedDB(
                 projectId,
@@ -220,7 +222,7 @@ async function handleMutation(mutation) {
           chrome.runtime.onMessage.addListener(listenerFunction)
         }
       } catch (error) {
-        // console.error("Error get-job-details from backgrounds script:", error)
+        console.error("Error get-job-details from backgrounds script:", error)
       }
     }
   }
@@ -246,6 +248,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   switch (request.action) {
     case "reset-all":
       auth.signOut()
+      break
+    case "inject-evaluation-results":
+      injectEvaluationResults()
       break
     case "delete-db":
       console.log("delete db from background")

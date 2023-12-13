@@ -124,7 +124,11 @@ const makeAPICallAndSaveData = async (data, jobData) => {
   }).then(async () => {
     notifyContentScript("itemAddedToIndexedDb")
     const rating = await storage.get(CANDIDATE_RATING)
-    if (!rating[jobData.projectId]) {
+    if (!rating)
+      storage.set(CANDIDATE_RATING, {
+        [jobData.projectId]: profileEvaluation.rating
+      })
+    else if (!rating[jobData.projectId]) {
       rating[jobData.projectId] = profileEvaluation.rating
       storage.set(CANDIDATE_RATING, rating)
     } else {
@@ -180,6 +184,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
     case ActionTypes.EVALUATE_PROFILES:
       console.log("evaluateProfiles request.data", request.data)
+      // notifyContentScript("inject-evaluation-results")
       evaluateProfiles(request.data)
       break
     case ActionTypes.GET_STATUS:

@@ -79,9 +79,9 @@ async function scrapingCode(jobData) {
     console.log("run end")
   }
   console.timeEnd("CompleteJobTime")
-  // chrome.runtime.sendMessage({
-  //   action: "close-tab"
-  // })
+  chrome.runtime.sendMessage({
+    action: "close-tab"
+  })
 }
 
 if (window["isScraping"]) {
