@@ -1,13 +1,18 @@
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
 import useFirebaseUser from "src/firebase/useFirebaseUser"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
 import { MinimalProvider } from "~@minimal/Provider"
-import { EXTENSION_ENABLE, EXTENSION_VISIBLE } from "~src/config/storage.config"
+import {
+  AUTH_STATE,
+  EXTENSION_ENABLE,
+  EXTENSION_VISIBLE
+} from "~src/config/storage.config"
+import { AuthInitialState, type AuthState } from "~src/types"
 import { waitForElement } from "~src/utils/wait-for.utils"
 
 import FabButton from "./common/fab-button.component"
@@ -22,10 +27,26 @@ const Home = () => {
     EXTENSION_VISIBLE,
     true
   )
+  const [userInfo, setUserInfo] = useStorage<AuthState>(
+    AUTH_STATE,
+    AuthInitialState
+  )
 
   const toggleModal = () => setExtensionVisible(!extensionVisible)
 
   const { user, isLoading } = useFirebaseUser()
+
+  useEffect(() => {
+    if (user && !userInfo.isAuth)
+      user.getIdToken(true).then(async (token) => {
+        setUserInfo({
+          email: user.email,
+          accessToken: token,
+          refreshToken: user.refreshToken,
+          isAuth: true
+        })
+      })
+  }, [user])
 
   if (!extensionEnabled) return <></>
 
