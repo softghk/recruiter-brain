@@ -57,8 +57,8 @@ const Home = () => {
         onClose={toggleModal}
         width={user && !isLoading ? 800 : 400}>
         {isLoading && <LoadingComponent />}
-        {!user && !isLoading && <Login />}
-        {user && !isLoading && <DashboardComponent />}
+        {!userInfo.isAuth && !isLoading && <Login />}
+        {!userInfo.isAuth && !isLoading && <DashboardComponent />}
       </Modal>
       <FabButton
         sx={{
