@@ -28,12 +28,15 @@ const DashboardComponent = () => {
 
   console.log(auth, user)
   useEffect(() => {
-    if (!visible || !user || !auth?.isAuth) return
-    getStatisticData({ accessToken: auth.accessToken }).then(
-      (response: any) => {
-        setData(response)
-      }
-    )
+    if (!visible || !user) return
+
+    user.getIdToken(true).then(async (token) => {
+      getStatisticData({ accessToken: auth.accessToken }).then(
+        (response: any) => {
+          setData(response)
+        }
+      )
+    })
   }, [visible, user, auth])
 
   return (
