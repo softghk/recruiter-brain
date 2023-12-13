@@ -21,60 +21,12 @@ const storage = new Storage()
 
 export {}
 
-storage.get(CANDIDATE_RATING).then((response) => {
-  console.log("CANDIDATE_RATING", response)
-})
-
 export const config: PlasmoCSConfig = {
   matches: ["https://www.linkedin.com/talent/hire/*"]
 }
 
-injectEvaluationResults()
-
 let mainObserver = null
 let previousURL = ""
-
-const injectComponents = () => {
-  if (mainObserver) mainObserver.disconnect()
-
-  const targetNode = document.getElementsByTagName("body")[0]
-
-  const config = { attributes: false, childList: true, subtree: true }
-
-  const callback = (mutationList, observer) => {
-    for (const mutation of mutationList) {
-      if (mutation.type === "childList" || mutation.type === "subtree") {
-        const currentURL = window.location.href
-        if (currentURL !== previousURL) {
-          console.log("URL changed to:", currentURL)
-          previousURL = currentURL
-          storage.get(JOB_RUNNING).then((isRunning) => {
-            console.log("IS JOB RUNNING: ", isRunning)
-            if (isRunning) injectScanningProgress()
-          })
-          injectMainComponent()
-          insertEvaluationComponent({
-            querySelectorTargetElement: ".sourcing-channels__post-job-link",
-            position: "after"
-          })
-          insertEvaluationComponent({
-            querySelectorTargetElement: ".candidate-filtering-bar__container",
-            position: "appendChild",
-            style: { marginTop: 0, marginLeft: 1 }
-          })
-          injectEvaluationResults()
-        }
-      } else if (mutation.type === "attributes") {
-        console.log(`The ${mutation.attributeName} attribute was modified.`)
-      }
-    }
-  }
-
-  mainObserver = new MutationObserver(callback)
-  mainObserver.observe(targetNode, config)
-}
-
-injectComponents()
 
 async function injectEvaluationResults() {
   const listElementSelector = "ol.profile-list"
@@ -143,6 +95,50 @@ async function injectEvaluationResults() {
   // console.log("Initial OL is available")
   observeListElement()
 }
+
+const injectComponents = () => {
+  if (mainObserver) mainObserver.disconnect()
+
+  const targetNode = document.getElementsByTagName("body")[0]
+
+  const config = { attributes: false, childList: true, subtree: true }
+
+  const callback = (mutationList, observer) => {
+    for (const mutation of mutationList) {
+      if (
+        mutation.type === "childList" ||
+        mutation.type === "subtree" ||
+        mutation.type === "attributes"
+      ) {
+        const currentURL = window.location.href
+        if (currentURL !== previousURL) {
+          console.log("URL changed to:", currentURL)
+          previousURL = currentURL
+          storage.get(JOB_RUNNING).then((isRunning) => {
+            console.log("IS JOB RUNNING: ", isRunning)
+            if (isRunning) injectScanningProgress()
+          })
+          injectMainComponent()
+          insertEvaluationComponent({
+            querySelectorTargetElement: ".sourcing-channels__post-job-link",
+            position: "after"
+          })
+          insertEvaluationComponent({
+            querySelectorTargetElement: ".candidate-filtering-bar__container",
+            position: "appendChild",
+            style: { marginTop: 0, marginLeft: 1 }
+          })
+          injectEvaluationResults()
+        }
+      }
+    }
+  }
+
+  mainObserver = new MutationObserver(callback)
+  mainObserver.observe(targetNode, config)
+}
+
+injectComponents()
 
 const getJobData = () => {
   return new Promise((resolve, reject) => {
