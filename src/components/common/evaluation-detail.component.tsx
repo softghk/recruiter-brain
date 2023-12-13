@@ -82,12 +82,13 @@ const EvaluationDetail = ({
         />
         <Typography
           variant="body2"
+          fontWeight={550}
           onClick={() => setExpanded(!expanded)}
           sx={{
             textDecoration: "underline",
             cursor: "pointer"
           }}>
-          {expanded ? "Show Less" : "Show More"}
+          {expanded ? "show less" : "show more"}
         </Typography>
       </Stack>
 
