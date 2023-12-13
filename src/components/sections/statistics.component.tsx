@@ -11,7 +11,7 @@ import type { AuthState } from "~src/types"
 
 const DashboardComponent = () => {
   const { user, onLogout } = useFirebaseUser()
-  const [visible] = useStorage(EXTENSION_VISIBLE)
+  const [visible] = useStorage(EXTENSION_VISIBLE, true)
   const [auth] = useStorage<AuthState>(AUTH_STATE)
   const [data, setData] = useState([
     {
@@ -26,18 +26,17 @@ const DashboardComponent = () => {
     }
   ])
 
-  console.log(auth, user)
+  console.log(user)
   useEffect(() => {
-    if (!visible || !user) return
+    if (!user) return
 
+    console.log("user", user)
     user.getIdToken(true).then(async (token) => {
-      getStatisticData({ accessToken: auth.accessToken }).then(
-        (response: any) => {
-          setData(response)
-        }
-      )
+      getStatisticData({ accessToken: token }).then((response: any) => {
+        setData(response)
+      })
     })
-  }, [visible, user, auth])
+  }, [visible, user])
 
   return (
     <Stack spacing={2}>
