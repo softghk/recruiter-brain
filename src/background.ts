@@ -262,7 +262,9 @@ chrome.runtime.onInstalled.addListener(function (object) {
   let externalUrl = "https://www.linkedin.com/talent/hire/"
 
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    chrome.tabs.create({ url: externalUrl }, function (tab) {})
+    chrome.tabs.create({ url: externalUrl }, function (tab) {
+      chrome.runtime.reload()
+    })
   }
 })
 
