@@ -102,7 +102,6 @@ const EvaluationDetail = ({
           defaultValue={evaluationRating}
           onChange={onChangeEvaluationRating}
           getLabelText={(ratingValue) => customIcons[ratingValue].label}
-          IconContainerComponent={IconContainer}
         />
         {/* <IconButton
             onClick={onRefreshEvaluation}
