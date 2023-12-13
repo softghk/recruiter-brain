@@ -164,6 +164,8 @@ async function handleMutation(mutation) {
     const isCurrentClassVisible = currentClass === htmlClassVisibleProfile
     const isProfileVisible = isOldClassInvisible && isCurrentClassVisible
 
+    console.log("isProfileVisible: ", isProfileVisible)
+
     if (isProfileVisible) {
       try {
         const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
