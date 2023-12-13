@@ -58,7 +58,7 @@ const Home = () => {
         width={user && !isLoading ? 800 : 400}>
         {isLoading && <LoadingComponent />}
         {!userInfo.isAuth && !isLoading && <Login />}
-        {!userInfo.isAuth && !isLoading && <DashboardComponent />}
+        {userInfo.isAuth && !isLoading && <DashboardComponent />}
       </Modal>
       <FabButton
         sx={{
