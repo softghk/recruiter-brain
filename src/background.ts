@@ -239,7 +239,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("RECEIVED REQUEST: getDataFromIndexedDB")
     getDataFromIndexedDB(request.payload)
       .then((data) => sendResponse({ success: true, data }))
-      .catch((error) => sendResponse({ success: false, error }))
+      .catch((error) => sendResponse({ success: true, data: null }))
     return true // Indicates asynchronous response
   }
 
