@@ -38,7 +38,7 @@ async function injectEvaluationResults() {
   const observeListElement = () => {
     if (listObserver) {
       listObserver.disconnect() // Disconnect any existing observer
-      // console.log("Previous list observer disconnected.")
+      console.log("Previous list evaluation result observer disconnected.")
     }
 
     const olElement = document.querySelector(listElementSelector)
@@ -57,13 +57,13 @@ async function injectEvaluationResults() {
       attributeFilter: ["class"],
       subtree: true
     })
-    // console.log("OL element observer connected.")
+    console.log("profile evaluation observer connected.")
   }
 
   // Observe the parent element for the addition or removal of the OL element
   const parentObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (mutation.type === "childList") {
+      if (mutation.type === "childList" || mutation.type === "subtree") {
         const hasOlElement = Array.from(mutation.addedNodes)
           .concat(Array.from(mutation.removedNodes))
           .some(
