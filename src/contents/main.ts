@@ -199,6 +199,8 @@ async function handleMutation(mutation) {
           // )
           const listenerFunction = async (message, sender, sendResponse) => {
             if (message.action === "itemAddedToIndexedDb") {
+              console.log("RECEIVED CORRECT MESSAGE: itemAddedToIndexedDB")
+
               const jobData: any = await getJobData()
               const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
               const jobDescription = jobData?.[projectId].description || ""

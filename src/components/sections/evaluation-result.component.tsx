@@ -56,11 +56,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     )
   }
 
-  console.log("======== EVALUATION RENDER STARTED ========")
-
   if (!auth?.isAuth || !state) return null
-
-  console.log("======== EVALUATION RENDERING =======")
 
   const unexpandedLayout = () => (
     <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} maxWidth={900}>
