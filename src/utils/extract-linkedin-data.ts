@@ -59,7 +59,7 @@ export function extractLinkedInData() {
     return companyInfo
   }
 
-  const personal: any = {}
+  var personal: any = {}
   const positions = []
   const skills = []
   const education = []

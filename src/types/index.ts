@@ -18,6 +18,25 @@ export type UserCredential = {
   passwordConfirm?: string
 }
 
+export const ActionTypes = {
+  EVALUATE_PROFILES: "evaluate-profiles",
+  GET_STATUS: "get-status",
+  PAUSE_JOB: "pause-job",
+  RESUME_JOB: "resume-job",
+  STOP_JOB: "stop-job",
+  TASK_DATA_RECEIVED: "task-data-received",
+  GET_JOB_DETAILS: "get-job-details",
+  CLOSE_TAB: "close-tab"
+}
+
+export const JobStatus = {
+  PENDING: "pending",
+  COMPLETE: "complete",
+  FAILED: "failed",
+  PAUSED: "paused",
+  STOPPED: "stopped"
+}
+
 export type JobSettings = {
   title: string
   description: string

@@ -10,7 +10,7 @@ import {
   JOB_DESCRIPTION,
   JOB_RUNNING
 } from "./config/storage.config"
-import type { CandidateRating } from "./types"
+import { ActionTypes, JobStatus, type CandidateRating } from "./types"
 import {
   createDatabase,
   deleteAllDatabases,
@@ -24,43 +24,112 @@ import { notifyContentScript } from "./utils/notify-content-script.utils"
 
 const storage = new Storage()
 
-export {}
-
-// Action types for clarity and typo prevention
-const ActionTypes = {
-  EVALUATE_PROFILES: "evaluate-profiles",
-  GET_STATUS: "get-status",
-  PAUSE_JOB: "pause-job",
-  RESUME_JOB: "resume-job",
-  STOP_JOB: "stop-job",
-  TASK_DATA_RECEIVED: "task-data-received",
-  GET_JOB_DETAILS: "get-job-details",
-  CLOSE_TAB: "close-tab"
-}
-
-// Job and Task Statuses
-const JobStatus = {
-  PENDING: "pending",
-  COMPLETE: "complete",
-  FAILED: "failed",
-  PAUSED: "paused"
-}
-
 // Current job and its tasks
 let currentJob = null
 let tasks = []
 let workingTabId = null
 
+// Listener for messages from content scripts
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case ActionTypes.EVALUATE_PROFILES:
+      evaluateProfiles(request.data)
+      break
+    case ActionTypes.GET_STATUS:
+      sendResponse({ currentJob, tasks })
+      break
+    case ActionTypes.STOP_JOB:
+      stopJob()
+      sendResponse({ status: JobStatus.STOPPED })
+      break
+    case ActionTypes.GET_JOB_DETAILS:
+      storage.get(JOB_DESCRIPTION).then((response) => {
+        sendResponse({ data: response })
+      })
+      break
+    case ActionTypes.CLOSE_TAB:
+      chrome.tabs.remove(sender.tab.id, () => {})
+      break
+    case "delete-db":
+      console.log("DELETE DB ACTION DISPATCHED")
+      storage.get(CANDIDATE_RATING).then((response) => {
+        const newRating = { ...response }
+        delete newRating[request.data]
+        storage.set(CANDIDATE_RATING, newRating)
+      })
+      deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
+        console.log("got response after delete db")
+        sendMessageToContentScript("delete-db")
+        sendResponse({ data: response })
+      })
+      break
+    case "delete-db-all":
+      console.log("DELEATE ALL DATABASE")
+      deleteAllDatabases().then(() => {
+        console.log("got response after delete all db")
+        storage.removeAll()
+        sendMessageToContentScript("delete-db")
+        sendMessageToContentScript("reset-all")
+        sendResponse({ data: "" })
+      })
+      break
+  }
+
+  if (sender.tab && request.taskId !== undefined) {
+    makeAPICallAndSaveData(request.linkedInData, {
+      ...request.jobData,
+      taskId: request.taskId
+    })
+  }
+
+  if (request.action === "getDataFromIndexedDB") {
+    console.log("RECEIVED REQUEST: getDataFromIndexedDB")
+    getDataFromIndexedDB(request.payload)
+      .then((data) => sendResponse({ success: true, data }))
+      .catch((error) => sendResponse({ success: true, data: null }))
+    return true // Indicates asynchronous response
+  }
+
+  if (request.action === "updateDataFromIndexedDB") {
+    const data = request.payload
+    deleteDataFromIndexedDB(data).then(() => {
+      saveDataToIndexedDB(data).then(() => {
+        notifyContentScript("itemAddedToIndexedDb")
+      })
+    })
+  }
+
+  if (request.action === "createDatabase") {
+    createDatabase().then(() => sendResponse())
+  }
+
+  return true // Indicate that the response is asynchronous
+})
+
+chrome.runtime.onInstalled.addListener(function (object) {
+  createDatabase()
+  let externalUrl = "https://www.linkedin.com/talent/hire/"
+
+  if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    chrome.tabs.create({ url: externalUrl }, function (tab) {})
+  }
+})
+
+chrome.tabs.onRemoved.addListener(function (tabId, info) {
+  chrome.tabs.get(tabId, function (tab) {
+    if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
+      stopJob()
+    }
+  })
+})
+
 const openTabAndInjectCode = (jobData) => {
-  // Get the currently active tab
   chrome.tabs.query({ active: true, currentWindow: true }, (activeTabs) => {
     if (activeTabs.length > 0) {
       const currentActiveTab = activeTabs[0]
 
-      // Create a new tab as active
       chrome.tabs.create({ url: currentJob.href, active: true }, (newTab) => {
         workingTabId = newTab.id
-        // Inject code into the newly opened tab
         chrome.scripting.executeScript({
           target: { tabId: newTab.id },
           function: injectedCode,
@@ -107,7 +176,7 @@ const makeAPICallAndSaveData = async (data, jobData) => {
   const profileUrl = data.personal.url
   const profileId = profileUrl.match(/\/profile\/([^\/]+)$/)[1]
   const jobDescriptionId = jobData.jobDescriptionId
-  console.log("API Call000", data, jobData, profileId)
+
   const profileEvaluation = await evaluateProfileApi(
     profileId,
     jobDescriptionId,
@@ -179,102 +248,4 @@ const stopJob = () => {
   })
 }
 
-// Listener for messages from content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case ActionTypes.EVALUATE_PROFILES:
-      console.log("evaluateProfiles request.data", request.data)
-      // notifyContentScript("inject-evaluation-results")
-      evaluateProfiles(request.data)
-      break
-    case ActionTypes.GET_STATUS:
-      sendResponse({ currentJob, tasks })
-      break
-    case ActionTypes.STOP_JOB:
-      console.log("STOP JOB message received")
-      stopJob()
-      sendResponse({ status: "Job stopped" })
-      break
-    case ActionTypes.GET_JOB_DETAILS:
-      storage.get(JOB_DESCRIPTION).then((response) => {
-        sendResponse({ data: response })
-      })
-      break
-    case ActionTypes.CLOSE_TAB:
-      console.log("close tab", sender)
-      chrome.tabs.remove(sender.tab.id, () => {})
-      break
-    case "delete-db":
-      console.log("DELETE DB ACTION DISPATCHED")
-      storage.get(CANDIDATE_RATING).then((response) => {
-        const newRating = { ...response }
-        delete newRating[request.data]
-        storage.set(CANDIDATE_RATING, newRating)
-      })
-      deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
-        console.log("got response after delete db")
-        sendMessageToContentScript("delete-db")
-        sendResponse({ data: response })
-      })
-      break
-    case "delete-db-all":
-      console.log("DELEATE ALL DATABASE")
-      deleteAllDatabases().then(() => {
-        console.log("got response after delete all db")
-        storage.removeAll()
-        sendMessageToContentScript("delete-db")
-        sendMessageToContentScript("reset-all")
-        sendResponse({ data: "" })
-      })
-      break
-  }
-
-  if (sender.tab && request.taskId !== undefined) {
-    makeAPICallAndSaveData(request.linkedInData, {
-      ...request.jobData,
-      taskId: request.taskId
-    })
-  }
-
-  return true // Indicate that the response is asynchronous
-})
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "getDataFromIndexedDB") {
-    console.log("RECEIVED REQUEST: getDataFromIndexedDB")
-    getDataFromIndexedDB(request.payload)
-      .then((data) => sendResponse({ success: true, data }))
-      .catch((error) => sendResponse({ success: true, data: null }))
-    return true // Indicates asynchronous response
-  }
-
-  if (request.action === "updateDataFromIndexedDB") {
-    const data = request.payload
-    deleteDataFromIndexedDB(data).then(() => {
-      saveDataToIndexedDB(data).then(() => {
-        notifyContentScript("itemAddedToIndexedDb")
-      })
-    })
-  }
-
-  if (request.action === "createDatabase") {
-    createDatabase().then(() => sendResponse())
-  }
-})
-
-chrome.runtime.onInstalled.addListener(function (object) {
-  createDatabase()
-  let externalUrl = "https://www.linkedin.com/talent/hire/"
-
-  if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    chrome.tabs.create({ url: externalUrl }, function (tab) {})
-  }
-})
-
-chrome.tabs.onRemoved.addListener(function (tabId, info) {
-  chrome.tabs.get(tabId, function (tab) {
-    if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
-      stopJob()
-    }
-  })
-})
+export {}
