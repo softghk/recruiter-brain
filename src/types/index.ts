@@ -32,7 +32,8 @@ export const ActionTypes = {
   GET_DATA_FROM_INDEXED_DB: "get-data-from-indexed-db",
   UPDATE_DATA_FROM_INDEXED_DB: "update-data-from-indexed-db",
   CREATE_DATABASE: "createDatabase",
-  ITEM_ADDED_TO_INDEXED_DB: "item-added-to-indexed-db"
+  ITEM_ADDED_TO_INDEXED_DB: "item-added-to-indexed-db",
+  SWITCH_BACK_TO_MAIN_TAB: "switch-back-to-main-tab"
 }
 
 export const JobStatus = {

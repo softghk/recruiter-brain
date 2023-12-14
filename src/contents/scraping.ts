@@ -20,8 +20,8 @@ async function scrapingCode(jobData) {
     )
   }
 
-  // tell background script that page is loaded
-  // chrome.runtime.sendMessage({ done: true })
+  // now we can swtich back to main window
+  chrome.runtime.sendMessage({ action: ActionTypes.SWITCH_BACK_TO_MAIN_TAB })
 
   var run = 0
   console.time("CompleteJobTime")

@@ -36,7 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       handleEvaluateProfiles(request)
       break
     case ActionTypes.GET_STATUS:
-      handleGetStatus(sendResponse)
+      handleSendCurrentJobStatus(sendResponse)
       break
     case ActionTypes.STOP_JOB:
       handleStopJob(sendResponse)
@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       handleCloseTab(sender)
       break
     case ActionTypes.CLEAR_PROJECT_DATA:
-      handleClearProjectData(request, sendResponse)
+      handleProjectDataClearance(request, sendResponse)
       break
     case ActionTypes.DELETE_ALL_DATABASE:
       handleDeleteAllDatabases(sendResponse)
@@ -95,7 +95,7 @@ function handleEvaluateProfiles(request) {
   evaluateProfiles(request.data)
 }
 
-function handleGetStatus(sendResponse) {
+function handleSendCurrentJobStatus(sendResponse) {
   sendResponse({ currentJob, tasks })
 }
 
@@ -110,7 +110,7 @@ function handleGetJobDetails(request, sendResponse) {
   })
 }
 
-function handleClearProjectData(request, sendResponse) {
+function handleProjectDataClearance(request, sendResponse) {
   storage.get(CANDIDATE_RATING).then((response) => {
     const newRating = { ...response }
     delete newRating[request.data]
@@ -204,7 +204,7 @@ const initiateJobProcessing = async (jobData) => {
       })
 
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message && message.done) {
+        if (message.action === ActionTypes.SWITCH_BACK_TO_MAIN_TAB) {
           chrome.tabs.update(currentActiveTab.id, { active: true })
         }
       })
@@ -215,7 +215,7 @@ const initiateJobProcessing = async (jobData) => {
 }
 
 // Mock API call with a timeout, then save data to IndexedDB
-const makeAPICallAndSaveData = async (profileData, jobData) => {
+async function makeAPICallAndSaveData(profileData, jobData) {
   const taskId = jobData.taskId
   const jobId = jobData.jobId
   const profileUrl = profileData.personal.url
@@ -229,43 +229,41 @@ const makeAPICallAndSaveData = async (profileData, jobData) => {
     jobData.jobDescription
   )
   console.log("api response", profileEvaluation)
-  saveDataToIndexedDB({
+  await saveDataToIndexedDB({
     projectId: jobData.projectId,
     jobDescriptionId: jobData.jobDescriptionId,
     profileId: profileData.personal.id,
     evaluation: profileEvaluation,
     evaluationRating: -1
-  }).then(async () => {
-    notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
-
-    // shitty code & approach
-    const rating = await storage.get(CANDIDATE_RATING)
-    if (!rating)
-      storage.set(CANDIDATE_RATING, {
-        [jobData.projectId]: profileEvaluation.rating
-      })
-    else if (!rating[jobData.projectId]) {
-      rating[jobData.projectId] = profileEvaluation.rating
-      storage.set(CANDIDATE_RATING, rating)
-    } else {
-      const oldAvg: CandidateRating = rating[jobData.projectId]
-      const newAvg: CandidateRating = {
-        education: (oldAvg.education + profileEvaluation.rating.education) / 2,
-        experience:
-          (oldAvg.experience + profileEvaluation.rating.experience) / 2,
-        skills: (oldAvg.skills + profileEvaluation.rating.skills) / 2,
-        overall: (oldAvg.overall + profileEvaluation.rating.overall) / 2,
-        total: (oldAvg.total + profileEvaluation.rating.total) / 2
-      }
-      storage.set(CANDIDATE_RATING, { ...rating, [jobData.projectId]: newAvg })
-    }
   })
+  notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
+
+  // shitty code & approach
+  const rating = await storage.get(CANDIDATE_RATING)
+  if (!rating)
+    storage.set(CANDIDATE_RATING, {
+      [jobData.projectId]: profileEvaluation.rating
+    })
+  else if (!rating[jobData.projectId]) {
+    rating[jobData.projectId] = profileEvaluation.rating
+    storage.set(CANDIDATE_RATING, rating)
+  } else {
+    const oldAvg: CandidateRating = rating[jobData.projectId]
+    const newAvg: CandidateRating = {
+      education: (oldAvg.education + profileEvaluation.rating.education) / 2,
+      experience: (oldAvg.experience + profileEvaluation.rating.experience) / 2,
+      skills: (oldAvg.skills + profileEvaluation.rating.skills) / 2,
+      overall: (oldAvg.overall + profileEvaluation.rating.overall) / 2,
+      total: (oldAvg.total + profileEvaluation.rating.total) / 2
+    }
+    storage.set(CANDIDATE_RATING, { ...rating, [jobData.projectId]: newAvg })
+  }
+
   markTaskAsComplete(taskId, jobId)
 }
 
 // Mark the current task as complete
 const markTaskAsComplete = (taskId, jobId) => {
-  console.log("markTaskAsComplete", taskId, jobId)
   if (currentJob && currentJob.jobId === jobId) {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
