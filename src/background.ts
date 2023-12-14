@@ -30,7 +30,7 @@ const storage = new Storage()
 
 // Current job and its tasks
 let currentJob = null
-let tasks = []
+let tasks: Task[] = []
 let workingTabId = null
 
 // Listener for messages from content scripts
