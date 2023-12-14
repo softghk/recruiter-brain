@@ -170,7 +170,7 @@ function handleCreateDatabase(sendResponse) {
 }
 // END: Handle tasks received from content script
 
-const evaluateProfiles = (jobData: JobData) => {
+function evaluateProfiles(jobData: JobData) {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
   tasks = Array.from({ length: jobData.amount }, (_, i) => ({
@@ -274,7 +274,7 @@ async function updateCandidateRating(projectId, newRating) {
 }
 
 // Mark the current task as complete
-const markTaskAsComplete = (taskId: number, jobId: number): void => {
+function markTaskAsComplete(taskId: number, jobId: number) {
   if (currentJob && currentJob.jobId === jobId) {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
@@ -292,7 +292,7 @@ function areAllComplete(arr: Task[]): boolean {
 }
 
 // Stop the job
-const stopJob = () => {
+function stopJob() {
   storage.set(JOB_RUNNING, false)
   chrome.tabs.remove(workingTabId, function () {
     currentJob = null
