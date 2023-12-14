@@ -94,7 +94,7 @@ chrome.tabs.onRemoved.addListener(function (tabId, info) {
   })
 })
 
-// BEGIN: Handle task data received from content script
+// BEGIN: Handle tasks received from content script
 function handleEvaluateProfiles(request) {
   evaluateProfiles(request.data)
 }
@@ -168,7 +168,7 @@ function handleUpdateDataFromIndexedDB(request) {
 function handleCreateDatabase(sendResponse) {
   createDatabase().then(() => sendResponse())
 }
-// END: Handle task data received from content script
+// END: Handle tasks received from content script
 
 const evaluateProfiles = (jobData: JobData) => {
   const jobId = uuidv4()
