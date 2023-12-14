@@ -3,6 +3,7 @@ import { auth } from "src/firebase/firebaseClient"
 
 import { Storage } from "@plasmohq/storage"
 
+import { ActionTypes } from "~src/types"
 import { waitForElement } from "~src/utils/wait-for.utils"
 
 import { insertEvaluationComponent } from "../components/evaluation"
@@ -252,8 +253,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     case "inject-evaluation-results":
       injectEvaluationResults()
       break
-    case "delete-db":
-      console.log("delete db from background")
+    case ActionTypes.CLEAR_PROJECT_DATA:
+      console.log("delete project data from background db")
       const evaluations = document.getElementsByClassName(
         `recruit-brain-profile-evaluation`
       )

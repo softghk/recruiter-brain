@@ -26,7 +26,8 @@ export const ActionTypes = {
   STOP_JOB: "stop-job",
   TASK_DATA_RECEIVED: "task-data-received",
   GET_JOB_DETAILS: "get-job-details",
-  CLOSE_TAB: "close-tab"
+  CLOSE_TAB: "close-tab",
+  CLEAR_PROJECT_DATA: "clear-project-data"
 }
 
 export const JobStatus = {

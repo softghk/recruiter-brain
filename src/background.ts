@@ -50,8 +50,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case ActionTypes.CLOSE_TAB:
       chrome.tabs.remove(sender.tab.id, () => {})
       break
-    case "delete-db":
-      console.log("DELETE DB ACTION DISPATCHED")
+    case ActionTypes.CLEAR_PROJECT_DATA:
       storage.get(CANDIDATE_RATING).then((response) => {
         const newRating = { ...response }
         delete newRating[request.data]
@@ -123,41 +122,12 @@ chrome.tabs.onRemoved.addListener(function (tabId, info) {
   })
 })
 
-const openTabAndInjectCode = (jobData) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (activeTabs) => {
-    if (activeTabs.length > 0) {
-      const currentActiveTab = activeTabs[0]
-
-      chrome.tabs.create({ url: currentJob.href, active: true }, (newTab) => {
-        workingTabId = newTab.id
-        chrome.scripting.executeScript({
-          target: { tabId: newTab.id },
-          function: injectedCode,
-          args: [jobData]
-        })
-
-        // Listen for a message from the content script in the new tab
-        chrome.runtime.onMessage.addListener(
-          (message, sender, sendResponse) => {
-            if (message && message.done) {
-              // Switch back to the previously active tab when the content script signals it's done
-              chrome.tabs.update(currentActiveTab.id, { active: true })
-            }
-          }
-        )
-      })
-    }
-  })
-}
-
 function injectedCode(jobData) {
   console.log("injected code 2")
   window.jobData = jobData
   window.isScraping = true
 }
 
-// Handle job evaluation
-// this function is called from the content script
 const evaluateProfiles = (jobData) => {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
@@ -166,32 +136,66 @@ const evaluateProfiles = (jobData) => {
     status: JobStatus.PENDING
   }))
 
-  openTabAndInjectCode({ ...jobData, jobId: jobId })
+  initiateJobProcessing({ ...jobData, jobId: jobId })
+}
+
+const initiateJobProcessing = async (jobData) => {
+  try {
+    const activeTabs = await chrome.tabs.query({
+      active: true,
+      currentWindow: true
+    })
+    if (activeTabs.length > 0) {
+      const currentActiveTab = activeTabs[0]
+
+      const newTab = await chrome.tabs.create({
+        url: jobData.href,
+        active: true
+      })
+      workingTabId = newTab.id
+
+      await chrome.scripting.executeScript({
+        target: { tabId: newTab.id },
+        function: injectedCode,
+        args: [jobData]
+      })
+
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message && message.done) {
+          chrome.tabs.update(currentActiveTab.id, { active: true })
+        }
+      })
+    }
+  } catch (error) {
+    console.error("Error in initiateJobProcessing:", error)
+  }
 }
 
 // Mock API call with a timeout, then save data to IndexedDB
-const makeAPICallAndSaveData = async (data, jobData) => {
+const makeAPICallAndSaveData = async (profileData, jobData) => {
   const taskId = jobData.taskId
   const jobId = jobData.jobId
-  const profileUrl = data.personal.url
+  const profileUrl = profileData.personal.url
   const profileId = profileUrl.match(/\/profile\/([^\/]+)$/)[1]
   const jobDescriptionId = jobData.jobDescriptionId
 
   const profileEvaluation = await evaluateProfileApi(
     profileId,
     jobDescriptionId,
-    data,
+    profileData,
     jobData.jobDescription
   )
   console.log("api response", profileEvaluation)
   saveDataToIndexedDB({
     projectId: jobData.projectId,
     jobDescriptionId: jobData.jobDescriptionId,
-    profileId: data.personal.id,
+    profileId: profileData.personal.id,
     evaluation: profileEvaluation,
     evaluationRating: -1
   }).then(async () => {
     notifyContentScript("itemAddedToIndexedDb")
+
+    // shitty code & approach
     const rating = await storage.get(CANDIDATE_RATING)
     if (!rating)
       storage.set(CANDIDATE_RATING, {
@@ -223,8 +227,6 @@ const markTaskAsComplete = (taskId, jobId) => {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
       task.status = JobStatus.COMPLETE
-      // Check if all tasks are complete and update job status if necessary
-      // ... additional logic ...
     }
   }
 

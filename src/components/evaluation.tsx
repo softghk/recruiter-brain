@@ -16,7 +16,7 @@ import {
   JOB_RUNNING
 } from "~src/config/storage.config"
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
-import { JobInitialSetting, type JobSettings } from "~src/types"
+import { ActionTypes, JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
 import { createDatabase } from "~src/utils/storage.utils"
 import { waitForElement } from "~src/utils/wait-for.utils"
@@ -70,7 +70,7 @@ const EvaluateComponent = ({ mainStyle }) => {
     delete newRating[projectId]
     setAvgRatings(newRating)
     chrome.runtime.sendMessage(
-      { action: "delete-db", data: projectId },
+      { action: ActionTypes.CLEAR_PROJECT_DATA, data: projectId },
       (response) => {
         console.log("DELETE DB")
       }
