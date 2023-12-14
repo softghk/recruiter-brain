@@ -36,12 +36,29 @@ export const ActionTypes = {
   SWITCH_BACK_TO_MAIN_TAB: "switch-back-to-main-tab"
 }
 
-export const JobStatus = {
-  PENDING: "pending",
-  COMPLETE: "complete",
-  FAILED: "failed",
-  PAUSED: "paused",
-  STOPPED: "stopped"
+export interface JobData {
+  amount: number
+  href: string
+  jobDescription: string
+  jobDescriptionId: string
+  jobId: number
+  jobTitle: string
+  projectId: string
+  searchConextId: string
+  taskId: number
+}
+
+export interface Task {
+  id: number // or string, depending on your ID type
+  status: JobStatus
+}
+
+export enum JobStatus {
+  PENDING = "pending",
+  COMPLETE = "complete",
+  FAILED = "failed",
+  PAUSED = "paused",
+  STOPPED = "stopped"
 }
 
 export type JobSettings = {

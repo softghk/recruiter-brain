@@ -1,16 +1,20 @@
-// @ts-nocheck
 import { v4 as uuidv4 } from "uuid"
 
 import { Storage } from "@plasmohq/storage"
-
-import { evaluateProfileApi } from "~utils/api-service.utils"
 
 import {
   CANDIDATE_RATING,
   JOB_DESCRIPTION,
   JOB_RUNNING
 } from "./config/storage.config"
-import { ActionTypes, JobStatus, type CandidateRating } from "./types"
+import {
+  ActionTypes,
+  JobStatus,
+  type CandidateRating,
+  type JobData,
+  type Task
+} from "./types"
+import { evaluateProfileApi } from "./utils/api-service.utils"
 import {
   createDatabase,
   deleteAllDatabases,
@@ -112,6 +116,7 @@ function handleGetJobDetails(request, sendResponse) {
 
 function handleProjectDataClearance(request, sendResponse) {
   storage.get(CANDIDATE_RATING).then((response) => {
+    // @ts-ignore
     const newRating = { ...response }
     delete newRating[request.data]
     storage.set(CANDIDATE_RATING, newRating)
@@ -165,13 +170,7 @@ function handleCreateDatabase(sendResponse) {
 }
 // END: Handle task data received from content script
 
-function injectedCode(jobData) {
-  console.log("injected code 2")
-  window.jobData = jobData
-  window.isScraping = true
-}
-
-const evaluateProfiles = (jobData) => {
+const evaluateProfiles = (jobData: JobData) => {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
   tasks = Array.from({ length: jobData.amount }, (_, i) => ({
@@ -199,7 +198,11 @@ const initiateJobProcessing = async (jobData) => {
 
       await chrome.scripting.executeScript({
         target: { tabId: newTab.id },
-        function: injectedCode,
+        // @ts-ignore
+        function: (jobData) => {
+          window.jobData = jobData
+          window.isScraping = true
+        },
         args: [jobData]
       })
 
@@ -215,7 +218,8 @@ const initiateJobProcessing = async (jobData) => {
 }
 
 // Mock API call with a timeout, then save data to IndexedDB
-async function makeAPICallAndSaveData(profileData, jobData) {
+async function makeAPICallAndSaveData(profileData, jobData: JobData) {
+  console.log("jobData", jobData)
   const taskId = jobData.taskId
   const jobId = jobData.jobId
   const profileUrl = profileData.personal.url
@@ -238,32 +242,39 @@ async function makeAPICallAndSaveData(profileData, jobData) {
   })
   notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
 
-  // shitty code & approach
-  const rating = await storage.get(CANDIDATE_RATING)
-  if (!rating)
-    storage.set(CANDIDATE_RATING, {
-      [jobData.projectId]: profileEvaluation.rating
-    })
-  else if (!rating[jobData.projectId]) {
-    rating[jobData.projectId] = profileEvaluation.rating
-    storage.set(CANDIDATE_RATING, rating)
-  } else {
-    const oldAvg: CandidateRating = rating[jobData.projectId]
-    const newAvg: CandidateRating = {
-      education: (oldAvg.education + profileEvaluation.rating.education) / 2,
-      experience: (oldAvg.experience + profileEvaluation.rating.experience) / 2,
-      skills: (oldAvg.skills + profileEvaluation.rating.skills) / 2,
-      overall: (oldAvg.overall + profileEvaluation.rating.overall) / 2,
-      total: (oldAvg.total + profileEvaluation.rating.total) / 2
-    }
-    storage.set(CANDIDATE_RATING, { ...rating, [jobData.projectId]: newAvg })
-  }
+  // @ts-ignore
+  await updateCandidateRating(jobData.projectId, profileEvaluation.rating)
 
   markTaskAsComplete(taskId, jobId)
 }
 
+async function updateCandidateRating(projectId, newRating) {
+  const rating = await storage.get(CANDIDATE_RATING)
+  if (!rating)
+    storage.set(CANDIDATE_RATING, {
+      [projectId]: newRating
+    })
+  else if (!rating[projectId]) {
+    // @ts-ignore
+    rating[projectId] = newRating
+    storage.set(CANDIDATE_RATING, rating)
+  } else {
+    // @ts-ignore
+    const oldAvg: CandidateRating = rating[projectId]
+    const newAvg: CandidateRating = {
+      education: (oldAvg.education + newRating.education) / 2,
+      experience: (oldAvg.experience + newRating.experience) / 2,
+      skills: (oldAvg.skills + newRating.skills) / 2,
+      overall: (oldAvg.overall + newRating.overall) / 2,
+      // @ts-ignore
+      total: (oldAvg.total + newRating.total) / 2
+    }
+    storage.set(CANDIDATE_RATING, { ...newRating, [projectId]: newAvg })
+  }
+}
+
 // Mark the current task as complete
-const markTaskAsComplete = (taskId, jobId) => {
+const markTaskAsComplete = (taskId: number, jobId: number): void => {
   if (currentJob && currentJob.jobId === jobId) {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
@@ -271,13 +282,13 @@ const markTaskAsComplete = (taskId, jobId) => {
     }
   }
 
-  if (areAllComplete(tasks)) {
+  if (currentJob && areAllComplete(tasks)) {
     currentJob.status = JobStatus.COMPLETE
   }
+}
 
-  function areAllComplete(arr) {
-    return arr.every((item) => item?.status === "complete")
-  }
+function areAllComplete(arr: Task[]): boolean {
+  return arr.every((item) => item.status === JobStatus.COMPLETE)
 }
 
 // Stop the job
