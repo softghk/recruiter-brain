@@ -1,7 +1,7 @@
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
 import { Box, Grid, Stack } from "@mui/material"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
 import {
   AUTH_STATE,
@@ -12,28 +12,73 @@ import {
   getEvaluationData,
   rateCandidateEvaluation
 } from "src/utils/api-service.utils"
-import { updateDataFromIndexedDB } from "src/utils/storage.utils"
+import {
+  getEvaluationsAverageFromIndexedDB,
+  updateDataFromIndexedDB
+} from "src/utils/storage.utils"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
 import { MinimalProvider } from "~@minimal/Provider"
-import { CandidateInitialRating } from "~src/types"
+import { ActionTypes, CandidateInitialRating } from "~src/types"
 
 import EvaluationDetail from "../common/evaluation-detail.component"
 import OverallView from "../common/evaluation-overall.component"
 import TrendingComponent from "../common/trending.component"
 
 const ProfileEvaluation = ({ data }: { data: any }) => {
-  const { id, profileId, projectId, evaluationRating, evaluation } = data
+  const [averageRatings, setAverageRatings] = useState<any>(
+    CandidateInitialRating
+  )
+
+  const {
+    id,
+    profileId,
+    projectId,
+    jobDescriptionId,
+    evaluationRating,
+    evaluation
+  } = data
   const { rating, explanation } = evaluation
+
+  const [auth] = useStorage(AUTH_STATE)
 
   const [expanded, setExpanded] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const [state] = useStorage<boolean>(EXTENSION_ENABLE, true)
-  const [avgRatings] = useStorage(CANDIDATE_RATING)
-  const averageRating = avgRatings?.[projectId] || CandidateInitialRating
-  const [auth] = useStorage(AUTH_STATE)
+  // const [avgRatings] = useStorage(CANDIDATE_RATING)
+  // const averageRating = avgRatings?.[projectId] || CandidateInitialRating
+
+  useEffect(() => {
+    async function getAverages() {
+      try {
+        const recentAverageRatings = await getEvaluationsAverageFromIndexedDB(
+          projectId,
+          jobDescriptionId
+        )
+        setAverageRatings(recentAverageRatings)
+
+        chrome.runtime.onMessage.addListener(
+          async function (message, sender, sendResponse) {
+            if (message.action === ActionTypes.ITEM_ADDED_TO_INDEXED_DB) {
+              const recentAverageRatings =
+                await getEvaluationsAverageFromIndexedDB(
+                  projectId,
+                  jobDescriptionId
+                )
+              setAverageRatings(recentAverageRatings)
+              console.log("widget listening", recentAverageRatings)
+            }
+          }
+        )
+      } catch (error) {
+        console.log("ProfileEvaluation widget error - getting averages")
+      }
+    }
+
+    getAverages()
+  }, [])
 
   const onRefreshEvaluation = async () => {
     setLoading(true)
@@ -56,8 +101,6 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
     )
   }
 
-  console.log(avgRatings)
-
   if (!auth?.isAuth || !state) return null
 
   const unexpandedLayout = () => (
@@ -65,7 +108,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
       <Grid item lg={4} xs={12} sm={4} md={12}>
         <TrendingComponent
           percent={
-            (rating.experience - averageRating.experience) *
+            (rating.experience - averageRatings.experience) *
             (100 / rating.experience)
           }
           rating={rating.experience}
@@ -76,7 +119,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
       <Grid item lg={4} xs={12} sm={4} md={12}>
         <TrendingComponent
           percent={
-            (rating.education - averageRating.education) *
+            (rating.education - averageRatings.education) *
             (100 / rating.education)
           }
           rating={rating.education}
@@ -87,7 +130,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
       <Grid item lg={4} xs={12} sm={4} md={12}>
         <TrendingComponent
           percent={
-            (rating.skills - averageRating.skills) * (100 / rating.skills)
+            (rating.skills - averageRatings.skills) * (100 / rating.skills)
           }
           rating={rating.skills}
           title={"Skills"}
@@ -98,7 +141,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
         <OverallView
           rating={rating.overall}
           percent={
-            (rating.overall - averageRating.overall) * (100 / rating.overall)
+            (rating.overall - averageRatings.overall) * (100 / rating.overall)
           }
         />
       </Grid>

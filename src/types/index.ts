@@ -29,8 +29,10 @@ export const ActionTypes = {
   CLOSE_TAB: "close-tab",
   CLEAR_PROJECT_DATA: "clear-project-data",
   DELETE_ALL_DATABASE: "delete-all-dbs",
-  GET_DATA_FROM_INDEXED_DB: "get-data-from-indexed-db",
+  GET_EVALUATION_FROM_INDEXED_DB: "get-data-from-indexed-db",
   UPDATE_DATA_FROM_INDEXED_DB: "update-data-from-indexed-db",
+  GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB:
+    "get-evaluations-average-from-indexed-db",
   CREATE_DATABASE: "createDatabase",
   ITEM_ADDED_TO_INDEXED_DB: "item-added-to-indexed-db",
   SWITCH_BACK_TO_MAIN_TAB: "switch-back-to-main-tab"

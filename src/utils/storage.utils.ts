@@ -12,7 +12,7 @@ export const getStorageData = (key: string): Promise<any> => {
   })
 }
 
-export function requestDataFromIndexedDB(
+export function getEvaluationFromIndexedDB(
   projectId,
   jobDescriptionId,
   profileId
@@ -20,8 +20,29 @@ export function requestDataFromIndexedDB(
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: ActionTypes.GET_DATA_FROM_INDEXED_DB,
+        action: ActionTypes.GET_EVALUATION_FROM_INDEXED_DB,
         payload: { projectId, jobDescriptionId, profileId }
+      })
+      .then((response) => {
+        if (response.success) {
+          resolve(response.data)
+        } else {
+          console.error("Error retrieving data:", response.error)
+          reject(response.error)
+        }
+      })
+  })
+}
+
+export function getEvaluationsAverageFromIndexedDB(
+  projectId,
+  jobDescriptionId
+) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime
+      .sendMessage({
+        action: ActionTypes.GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB,
+        payload: { projectId, jobDescriptionId }
       })
       .then((response) => {
         if (response.success) {

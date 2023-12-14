@@ -209,7 +209,7 @@ export function deleteAllDatabases(): Promise<void> {
   })
 }
 
-export function getDataFromIndexedDB({
+export function getEvaluationFromIndexedDB({
   projectId,
   jobDescriptionId,
   profileId
@@ -234,6 +234,50 @@ export function getDataFromIndexedDB({
               item.projectId === projectId &&
               item.jobDescriptionId === jobDescriptionId &&
               item.profileId === profileId
+          )
+          resolve(filteredData)
+        }
+
+        request.onerror = () => {
+          reject("Error in retrieving data from IndexedDB")
+        }
+      } catch (error) {
+        // Handle case where object store does not exist
+        if (error.name === "NotFoundError") {
+          console.log("NOT FOUND ERROR")
+          resolve(null) // Return null if the store does not exist
+        } else {
+          reject("Transaction failed", error)
+        }
+      }
+    }
+
+    openRequest.onerror = (event) => {
+      reject(`Error opening IndexedDB: ${event.target.errorCode}`)
+    }
+  })
+}
+
+export function getEvaluationsFromIndexedDB({ projectId, jobDescriptionId }) {
+  return new Promise((resolve, reject) => {
+    // Open the database
+    const openRequest = indexedDB.open(dbName)
+
+    openRequest.onsuccess = (event) => {
+      const db = event.target.result
+
+      try {
+        const tx = db.transaction(storeName, "readonly")
+        const store = tx.objectStore(storeName)
+        const request = store.getAll()
+
+        request.onsuccess = () => {
+          const data = request.result
+          // Filter the data based on the criteria
+          const filteredData = data.filter(
+            (item) =>
+              item.projectId === projectId &&
+              item.jobDescriptionId === jobDescriptionId
           )
           resolve(filteredData)
         }

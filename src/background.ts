@@ -15,12 +15,14 @@ import {
   type Task
 } from "./types"
 import { evaluateProfileApi } from "./utils/api-service.utils"
+import { calculateAverageRatings } from "./utils/average.util"
 import {
   createDatabase,
   deleteAllDatabases,
   deleteAllFromIndexedDB,
   deleteDataFromIndexedDB,
-  getDataFromIndexedDB,
+  getEvaluationFromIndexedDB,
+  getEvaluationsFromIndexedDB,
   saveDataToIndexedDB
 } from "./utils/indexed-db.utils"
 import { sendMessageToContentScript } from "./utils/message.utils"
@@ -60,11 +62,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case ActionTypes.TASK_DATA_RECEIVED:
       handleTaskDataReceived(request)
       break
-    case ActionTypes.GET_DATA_FROM_INDEXED_DB:
-      handleGetDataFromIndexedDB(request, sendResponse)
-      return true // Indicates asynchronous response
+    case ActionTypes.GET_EVALUATION_FROM_INDEXED_DB:
+      handleGetEvaluationFromIndexedDB(request, sendResponse)
+      break
     case ActionTypes.UPDATE_DATA_FROM_INDEXED_DB:
       handleUpdateDataFromIndexedDB(request)
+      break
+    case ActionTypes.GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB:
+      console.log("background received message")
+      handleGetEvaluationsAverageFromIndexedDB(request, sendResponse)
       break
     case ActionTypes.CREATE_DATABASE:
       handleCreateDatabase(sendResponse)
@@ -149,8 +155,8 @@ function handleTaskDataReceived(request) {
   })
 }
 
-function handleGetDataFromIndexedDB(request, sendResponse) {
-  getDataFromIndexedDB(request.payload)
+function handleGetEvaluationFromIndexedDB(request, sendResponse) {
+  getEvaluationFromIndexedDB(request.payload)
     .then((data) => sendResponse({ success: true, data }))
     .catch((error) => sendResponse({ success: true, data: null }))
   return true // Indicates asynchronous response
@@ -163,6 +169,16 @@ function handleUpdateDataFromIndexedDB(request) {
       notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
     })
   })
+}
+
+async function handleGetEvaluationsAverageFromIndexedDB(request, sendResponse) {
+  const { projectId, jobDescriptionId } = request.payload
+  const evaluations = await getEvaluationsFromIndexedDB({
+    projectId,
+    jobDescriptionId
+  })
+  const averages = calculateAverageRatings(evaluations)
+  sendResponse({ success: true, data: averages })
 }
 
 function handleCreateDatabase(sendResponse) {

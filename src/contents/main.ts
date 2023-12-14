@@ -17,11 +17,32 @@ import {
 } from "../utils/constants.utils"
 import { injectDataIntoDom } from "../utils/dom-manipulation.utils"
 import { generateMD5 } from "../utils/hash.utils"
-import { requestDataFromIndexedDB } from "../utils/storage.utils"
+import {
+  getEvaluationFromIndexedDB,
+  getEvaluationsAverageFromIndexedDB
+} from "../utils/storage.utils"
 
 const storage = new Storage()
 
 export {}
+
+async function test() {
+  setInterval(async () => {
+    console.log("======")
+    const projectId = window.location.href.match(/\/(\d+)\//)?.[1]
+    const jobData: any = await getJobData()
+
+    // if (!jobData?.[projectId]) return
+    const jobDescription = jobData?.[projectId]?.description || ""
+    const jobDescriptionId = generateMD5(jobDescription)
+    const averages = await getEvaluationsAverageFromIndexedDB(
+      projectId,
+      jobDescriptionId
+    )
+    console.log("averages", averages)
+  }, 1000)
+}
+// test()
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.linkedin.com/talent/hire/*"]
@@ -208,7 +229,7 @@ async function handleMutation(mutation) {
 
               if (jobDescription === "") return
 
-              const newData = await requestDataFromIndexedDB(
+              const newData = await getEvaluationFromIndexedDB(
                 projectId,
                 jobDescriptionId,
                 profileId
@@ -233,7 +254,7 @@ async function handleMutation(mutation) {
 async function getEvaluationData(projectId, jobDescriptionId, profileId) {
   return new Promise(async (resolve, reject) => {
     try {
-      const evaluationData = await requestDataFromIndexedDB(
+      const evaluationData = await getEvaluationFromIndexedDB(
         projectId,
         jobDescriptionId,
         profileId
