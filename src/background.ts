@@ -197,7 +197,7 @@ function evaluateProfiles(jobData: JobData) {
   initiateJobProcessing({ ...jobData, jobId: jobId })
 }
 
-const initiateJobProcessing = async (jobData) => {
+async function initiateJobProcessing(jobData) {
   try {
     const activeTabs = await chrome.tabs.query({
       active: true,
@@ -258,35 +258,7 @@ async function makeAPICallAndSaveData(profileData, jobData: JobData) {
   })
   notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
 
-  // @ts-ignore
-  await updateCandidateRating(jobData.projectId, profileEvaluation.rating)
-
   markTaskAsComplete(taskId, jobId)
-}
-
-async function updateCandidateRating(projectId, newRating) {
-  const rating = await storage.get(CANDIDATE_RATING)
-  if (!rating)
-    storage.set(CANDIDATE_RATING, {
-      [projectId]: newRating
-    })
-  else if (!rating[projectId]) {
-    // @ts-ignore
-    rating[projectId] = newRating
-    storage.set(CANDIDATE_RATING, rating)
-  } else {
-    // @ts-ignore
-    const oldAvg: CandidateRating = rating[projectId]
-    const newAvg: CandidateRating = {
-      education: (oldAvg.education + newRating.education) / 2,
-      experience: (oldAvg.experience + newRating.experience) / 2,
-      skills: (oldAvg.skills + newRating.skills) / 2,
-      overall: (oldAvg.overall + newRating.overall) / 2,
-      // @ts-ignore
-      total: (oldAvg.total + newRating.total) / 2
-    }
-    storage.set(CANDIDATE_RATING, { ...newRating, [projectId]: newAvg })
-  }
 }
 
 // Mark the current task as complete
