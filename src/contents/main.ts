@@ -1,3 +1,4 @@
+import { m } from "framer-motion"
 import type { PlasmoCSConfig } from "plasmo"
 import { auth } from "src/firebase/firebaseClient"
 
@@ -197,8 +198,8 @@ async function handleMutation(mutation) {
             element
           )
           const listenerFunction = async (message, sender, sendResponse) => {
-            if (message.action === "itemAddedToIndexedDb") {
-              console.log("RECEIVED CORRECT MESSAGE: itemAddedToIndexedDB")
+            if (message.action === ActionTypes.ITEM_ADDED_TO_INDEXED_DB) {
+              console.log(`RECEIVED CORRECT MESSAGE: ${message.action}`)
 
               const jobData: any = await getJobData()
               const projectId = window.location.href.match(/\/(\d+)\//)?.[1]

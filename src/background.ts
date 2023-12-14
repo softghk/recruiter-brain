@@ -155,7 +155,7 @@ function handleUpdateDataFromIndexedDB(request) {
   const data = request.payload
   deleteDataFromIndexedDB(data).then(() => {
     saveDataToIndexedDB(data).then(() => {
-      notifyContentScript("itemAddedToIndexedDb")
+      notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
     })
   })
 }
@@ -236,7 +236,7 @@ const makeAPICallAndSaveData = async (profileData, jobData) => {
     evaluation: profileEvaluation,
     evaluationRating: -1
   }).then(async () => {
-    notifyContentScript("itemAddedToIndexedDb")
+    notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
 
     // shitty code & approach
     const rating = await storage.get(CANDIDATE_RATING)

@@ -31,7 +31,8 @@ export const ActionTypes = {
   DELETE_ALL_DATABASE: "delete-all-dbs",
   GET_DATA_FROM_INDEXED_DB: "get-data-from-indexed-db",
   UPDATE_DATA_FROM_INDEXED_DB: "update-data-from-indexed-db",
-  CREATE_DATABASE: "createDatabase"
+  CREATE_DATABASE: "createDatabase",
+  ITEM_ADDED_TO_INDEXED_DB: "item-added-to-indexed-db"
 }
 
 export const JobStatus = {
