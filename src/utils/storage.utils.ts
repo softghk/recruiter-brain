@@ -1,3 +1,5 @@
+import { ActionTypes } from "~src/types"
+
 // @ts-nocheck
 export const getStorageData = (key: string): Promise<any> => {
   return new Promise((resolve, reject) => {
@@ -18,7 +20,7 @@ export function requestDataFromIndexedDB(
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: "getDataFromIndexedDB",
+        action: ActionTypes.GET_DATA_FROM_INDEXED_DB,
         payload: { projectId, jobDescriptionId, profileId }
       })
       .then((response) => {
@@ -36,7 +38,7 @@ export function updateDataFromIndexedDB(data) {
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: "updateDataFromIndexedDB",
+        action: ActionTypes.UPDATE_DATA_FROM_INDEXED_DB,
         payload: data
       })
       .then((response) => {

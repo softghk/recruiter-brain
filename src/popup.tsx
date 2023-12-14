@@ -12,6 +12,8 @@ import useFirebaseUser from "src/firebase/useFirebaseUser"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
+import { ActionTypes } from "./types"
+
 const IndexPopup = () => {
   const [state, setState] = useStorage<boolean | null>(EXTENSION_ENABLE, true)
 
@@ -20,7 +22,7 @@ const IndexPopup = () => {
   const onReset = () => {
     onLogout()
     chrome.runtime.sendMessage(
-      { action: "delete-db-all", data: "" },
+      { action: ActionTypes.DELETE_ALL_DATABASE, data: "" },
       (response) => {
         console.log("DELETE DB")
       }

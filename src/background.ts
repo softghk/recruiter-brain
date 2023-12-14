@@ -33,73 +33,41 @@ let workingTabId = null
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
     case ActionTypes.EVALUATE_PROFILES:
-      evaluateProfiles(request.data)
+      handleEvaluateProfiles(request)
       break
     case ActionTypes.GET_STATUS:
-      sendResponse({ currentJob, tasks })
+      handleGetStatus(sendResponse)
       break
     case ActionTypes.STOP_JOB:
-      stopJob()
-      sendResponse({ status: JobStatus.STOPPED })
+      handleStopJob(sendResponse)
       break
     case ActionTypes.GET_JOB_DETAILS:
-      storage.get(JOB_DESCRIPTION).then((response) => {
-        sendResponse({ data: response })
-      })
+      handleGetJobDetails(request, sendResponse)
       break
     case ActionTypes.CLOSE_TAB:
-      chrome.tabs.remove(sender.tab.id, () => {})
+      handleCloseTab(sender)
       break
     case ActionTypes.CLEAR_PROJECT_DATA:
-      storage.get(CANDIDATE_RATING).then((response) => {
-        const newRating = { ...response }
-        delete newRating[request.data]
-        storage.set(CANDIDATE_RATING, newRating)
-      })
-      deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
-        console.log("got response after delete db")
-        sendMessageToContentScript("delete-db")
-        sendResponse({ data: response })
-      })
+      handleClearProjectData(request, sendResponse)
       break
-    case "delete-db-all":
-      console.log("DELEATE ALL DATABASE")
-      deleteAllDatabases().then(() => {
-        console.log("got response after delete all db")
-        storage.removeAll()
-        sendMessageToContentScript("delete-db")
-        sendMessageToContentScript("reset-all")
-        sendResponse({ data: "" })
-      })
+    case ActionTypes.DELETE_ALL_DATABASE:
+      handleDeleteAllDatabases(sendResponse)
       break
-  }
-
-  if (sender.tab && request.taskId !== undefined) {
-    makeAPICallAndSaveData(request.linkedInData, {
-      ...request.jobData,
-      taskId: request.taskId
-    })
-  }
-
-  if (request.action === "getDataFromIndexedDB") {
-    console.log("RECEIVED REQUEST: getDataFromIndexedDB")
-    getDataFromIndexedDB(request.payload)
-      .then((data) => sendResponse({ success: true, data }))
-      .catch((error) => sendResponse({ success: true, data: null }))
-    return true // Indicates asynchronous response
-  }
-
-  if (request.action === "updateDataFromIndexedDB") {
-    const data = request.payload
-    deleteDataFromIndexedDB(data).then(() => {
-      saveDataToIndexedDB(data).then(() => {
-        notifyContentScript("itemAddedToIndexedDb")
-      })
-    })
-  }
-
-  if (request.action === "createDatabase") {
-    createDatabase().then(() => sendResponse())
+    case ActionTypes.TASK_DATA_RECEIVED:
+      handleTaskDataReceived(request)
+      break
+    case ActionTypes.GET_DATA_FROM_INDEXED_DB:
+      handleGetDataFromIndexedDB(request, sendResponse)
+      return true // Indicates asynchronous response
+    case ActionTypes.UPDATE_DATA_FROM_INDEXED_DB:
+      handleUpdateDataFromIndexedDB(request)
+      break
+    case ActionTypes.CREATE_DATABASE:
+      handleCreateDatabase(sendResponse)
+      break
+    default:
+      console.log("action handling not implemented", request.action)
+      break
   }
 
   return true // Indicate that the response is asynchronous
@@ -121,6 +89,81 @@ chrome.tabs.onRemoved.addListener(function (tabId, info) {
     }
   })
 })
+
+// BEGIN: Handle task data received from content script
+function handleEvaluateProfiles(request) {
+  evaluateProfiles(request.data)
+}
+
+function handleGetStatus(sendResponse) {
+  sendResponse({ currentJob, tasks })
+}
+
+function handleStopJob(sendResponse) {
+  stopJob()
+  sendResponse({ status: JobStatus.STOPPED })
+}
+
+function handleGetJobDetails(request, sendResponse) {
+  storage.get(JOB_DESCRIPTION).then((response) => {
+    sendResponse({ data: response })
+  })
+}
+
+function handleClearProjectData(request, sendResponse) {
+  storage.get(CANDIDATE_RATING).then((response) => {
+    const newRating = { ...response }
+    delete newRating[request.data]
+    storage.set(CANDIDATE_RATING, newRating)
+  })
+  deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
+    console.log("got response after delete db")
+    sendMessageToContentScript("delete-db")
+    sendResponse({ data: response })
+  })
+}
+
+function handleCloseTab(sender) {
+  chrome.tabs.remove(sender.tab.id, () => {})
+}
+
+function handleDeleteAllDatabases(sendResponse) {
+  deleteAllDatabases().then(() => {
+    console.log("got response after delete all db")
+    storage.removeAll()
+    sendMessageToContentScript("delete-db")
+    sendMessageToContentScript("reset-all")
+    sendResponse({ data: "" })
+  })
+}
+
+function handleTaskDataReceived(request) {
+  makeAPICallAndSaveData(request.linkedInData, {
+    ...request.jobData,
+    taskId: request.taskId
+  })
+}
+
+function handleGetDataFromIndexedDB(request, sendResponse) {
+  getDataFromIndexedDB(request.payload)
+    .then((data) => sendResponse({ success: true, data }))
+    .catch((error) => sendResponse({ success: true, data: null }))
+  return true // Indicates asynchronous response
+}
+
+function handleUpdateDataFromIndexedDB(request) {
+  const data = request.payload
+  deleteDataFromIndexedDB(data).then(() => {
+    saveDataToIndexedDB(data).then(() => {
+      notifyContentScript("itemAddedToIndexedDb")
+    })
+  })
+}
+
+function handleCreateDatabase(sendResponse) {
+  createDatabase().then(() => sendResponse())
+}
+// END: Handle task data received from content script
 
 function injectedCode(jobData) {
   console.log("injected code 2")

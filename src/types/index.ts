@@ -27,7 +27,11 @@ export const ActionTypes = {
   TASK_DATA_RECEIVED: "task-data-received",
   GET_JOB_DETAILS: "get-job-details",
   CLOSE_TAB: "close-tab",
-  CLEAR_PROJECT_DATA: "clear-project-data"
+  CLEAR_PROJECT_DATA: "clear-project-data",
+  DELETE_ALL_DATABASE: "delete-all-dbs",
+  GET_DATA_FROM_INDEXED_DB: "get-data-from-indexed-db",
+  UPDATE_DATA_FROM_INDEXED_DB: "update-data-from-indexed-db",
+  CREATE_DATABASE: "createDatabase"
 }
 
 export const JobStatus = {

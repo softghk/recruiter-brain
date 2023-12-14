@@ -1,3 +1,4 @@
+import { ActionTypes } from "~src/types"
 import { addOverlay } from "~src/utils/add-overlay"
 import { extractLinkedInData } from "~src/utils/extract-linkedin-data"
 import {
@@ -58,6 +59,7 @@ async function scrapingCode(jobData) {
     // console.log("task, skills:", linkedInData?.skills?.length)
 
     chrome.runtime.sendMessage({
+      action: ActionTypes.TASK_DATA_RECEIVED,
       jobId: jobData.jobId,
       jobData: jobData,
       taskId: currentTaskId,
