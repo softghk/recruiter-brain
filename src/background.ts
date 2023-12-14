@@ -88,11 +88,7 @@ chrome.runtime.onInstalled.addListener(function (object) {
 
 chrome.tabs.onRemoved.addListener(function (tabId, info) {
   chrome.tabs.get(tabId, function (tab) {
-    const uncompletedTasks = tasks.filter(
-      (t) => t.status !== JobStatus.COMPLETE
-    )
-
-    if (tabId === workingTabId && uncompletedTasks.length === 0) {
+    if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
       stopJob()
     }
   })
