@@ -40,18 +40,27 @@ chrome.runtime.onInstalled.addListener(handleExtensionInstalled)
 chrome.tabs.onRemoved.addListener(handleTabRemoved)
 
 const actionHandlers = {
+  // Profile Evaluation
   [ActionTypes.EVALUATE_PROFILES]: handleProfileEvaluation,
+  [ActionTypes.GET_EVALUATION]: handleEvaluationRetrieval,
+  [ActionTypes.GET_EVALUATIONS_AVERAGE]: handleAverageEvaluationRequest,
+
+  // Handling
+  [ActionTypes.TASK_DATA_RECEIVED]: handleReceivedTaskData,
+  [ActionTypes.CLOSE_TAB]: handleTabCloseRequest,
+
+  // Job
   [ActionTypes.GET_STATUS]: handleJobStatusRequest,
   [ActionTypes.STOP_JOB]: handleJobStopRequest,
   [ActionTypes.GET_JOB_DETAILS]: handleJobDetailsRequest,
-  [ActionTypes.CLOSE_TAB]: handleTabCloseRequest,
+
+  // Project
   [ActionTypes.CLEAR_PROJECT_DATA]: handleProjectDataClearRequest,
+
+  // Database
+  [ActionTypes.CREATE_DATABASE]: handleDatabaseCreationRequest,
   [ActionTypes.DELETE_ALL_DATABASE]: handleDatabaseDeletionRequest,
-  [ActionTypes.TASK_DATA_RECEIVED]: handleReceivedTaskData,
-  [ActionTypes.GET_EVALUATION]: handleEvaluationRetrieval,
-  [ActionTypes.UPDATE_DATA]: handleDataUpdateRequest,
-  [ActionTypes.GET_EVALUATIONS_AVERAGE]: handleAverageEvaluationRequest,
-  [ActionTypes.CREATE_DATABASE]: handleDatabaseCreationRequest
+  [ActionTypes.UPDATE_DATA]: handleDataUpdateRequest
 }
 async function handleMessage(request, sender, sendResponse) {
   const handler = actionHandlers[request.action]
