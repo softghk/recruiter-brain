@@ -61,7 +61,7 @@ const ProfileEvaluation = ({ data }: { data: any }) => {
 
         chrome.runtime.onMessage.addListener(
           async function (message, sender, sendResponse) {
-            if (message.action === ActionTypes.ITEM_ADDED_TO_INDEXED_DB) {
+            if (message.action === ActionTypes.ITEM_ADDED) {
               const recentAverageRatings =
                 await getEvaluationsAverageFromIndexedDB(
                   projectId,

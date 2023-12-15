@@ -36,36 +36,38 @@ let tasks: Task[] = []
 let workingTabId = null
 
 chrome.runtime.onMessage.addListener(handleMessage)
-chrome.runtime.onInstalled.addListener(handleInstalled)
+chrome.runtime.onInstalled.addListener(handleExtensionInstalled)
 chrome.tabs.onRemoved.addListener(handleTabRemoved)
 
 const actionHandlers = {
-  [ActionTypes.EVALUATE_PROFILES]: handleEvaluateProfiles,
-  [ActionTypes.GET_STATUS]: handleSendCurrentJobStatus,
-  [ActionTypes.STOP_JOB]: handleStopJob,
-  [ActionTypes.GET_JOB_DETAILS]: handleGetJobDetails,
-  [ActionTypes.CLOSE_TAB]: handleCloseTab,
-  [ActionTypes.CLEAR_PROJECT_DATA]: handleProjectDataClearance,
-  [ActionTypes.DELETE_ALL_DATABASE]: handleDeleteAllDatabases,
-  [ActionTypes.TASK_DATA_RECEIVED]: handleTaskDataReceived,
-  [ActionTypes.GET_EVALUATION_FROM_INDEXED_DB]:
-    handleGetEvaluationFromIndexedDB,
-  [ActionTypes.UPDATE_DATA_FROM_INDEXED_DB]: handleUpdateDataFromIndexedDB,
-  [ActionTypes.GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB]:
-    handleGetEvaluationsAverageFromIndexedDB,
-  [ActionTypes.CREATE_DATABASE]: handleCreateDatabase
+  [ActionTypes.EVALUATE_PROFILES]: handleProfileEvaluation,
+  [ActionTypes.GET_STATUS]: handleJobStatusRequest,
+  [ActionTypes.STOP_JOB]: handleJobStopRequest,
+  [ActionTypes.GET_JOB_DETAILS]: handleJobDetailsRequest,
+  [ActionTypes.CLOSE_TAB]: handleTabCloseRequest,
+  [ActionTypes.CLEAR_PROJECT_DATA]: handleProjectDataClearRequest,
+  [ActionTypes.DELETE_ALL_DATABASE]: handleDatabaseDeletionRequest,
+  [ActionTypes.TASK_DATA_RECEIVED]: handleReceivedTaskData,
+  [ActionTypes.GET_EVALUATION]: handleEvaluationRetrieval,
+  [ActionTypes.UPDATE_DATA]: handleDataUpdateRequest,
+  [ActionTypes.GET_EVALUATIONS_AVERAGE]: handleAverageEvaluationRequest,
+  [ActionTypes.CREATE_DATABASE]: handleDatabaseCreationRequest
 }
 async function handleMessage(request, sender, sendResponse) {
   const handler = actionHandlers[request.action]
   if (handler) {
-    await handler(request, sender, sendResponse)
+    try {
+      await handler(request, sender, sendResponse)
+    } catch (error) {
+      console.error(`Error handling action ${request.action}: ${error}`)
+    }
   } else {
     console.log("action handling not implemented", request.action)
   }
   return true
 }
 
-function handleInstalled(object) {
+function handleExtensionInstalled(object) {
   createDatabase()
   const externalUrl = "https://www.linkedin.com/talent/hire/"
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
@@ -73,35 +75,39 @@ function handleInstalled(object) {
   }
 }
 
-function handleTabRemoved(tabId, info) {
-  chrome.tabs.get(tabId, async function (tab) {
-    if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
-      await stopJob()
-    }
-  })
+async function handleTabRemoved(tabId, info) {
+  try {
+    chrome.tabs.get(tabId, async function (tab) {
+      if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
+        await stopJob()
+      }
+    })
+  } catch (error) {
+    console.error(`Error in handleTabRemoved: ${error}`)
+  }
 }
 
 // BEGIN: Handle tasks received from content script
-function handleEvaluateProfiles(request, sender, sendResponse) {
+function handleProfileEvaluation(request, sender, sendResponse) {
   evaluateProfiles(request.data)
 }
 
-function handleSendCurrentJobStatus(request, sender, sendResponse) {
+function handleJobStatusRequest(request, sender, sendResponse) {
   sendResponse({ currentJob, tasks })
 }
 
-function handleStopJob(request, sender, sendResponse) {
+function handleJobStopRequest(request, sender, sendResponse) {
   stopJob()
   sendResponse({ status: JobStatus.STOPPED })
 }
 
-function handleGetJobDetails(request, sender, sendResponse) {
+function handleJobDetailsRequest(request, sender, sendResponse) {
   storage.get(JOB_DESCRIPTION).then((response) => {
     sendResponse({ data: response })
   })
 }
 
-function handleProjectDataClearance(request, sender, sendResponse) {
+function handleProjectDataClearRequest(request, sender, sendResponse) {
   storage.get(CANDIDATE_RATING).then((response) => {
     // @ts-ignore
     const newRating = { ...response }
@@ -115,11 +121,11 @@ function handleProjectDataClearance(request, sender, sendResponse) {
   })
 }
 
-function handleCloseTab(request, sender, sendResponse) {
+function handleTabCloseRequest(request, sender, sendResponse) {
   chrome.tabs.remove(sender.tab.id, () => {})
 }
 
-function handleDeleteAllDatabases(request, sender, sendResponse) {
+function handleDatabaseDeletionRequest(request, sender, sendResponse) {
   deleteAllDatabases().then(() => {
     console.log("got response after delete all db")
     storage.removeAll()
@@ -129,34 +135,30 @@ function handleDeleteAllDatabases(request, sender, sendResponse) {
   })
 }
 
-function handleTaskDataReceived(request, sender, sendResponse) {
-  makeAPICallAndSaveData(request.linkedInData, {
+function handleReceivedTaskData(request, sender, sendResponse) {
+  fetchAndStoreProfileData(request.linkedInData, {
     ...request.jobData,
     taskId: request.taskId
   })
 }
 
-function handleGetEvaluationFromIndexedDB(request, sender, sendResponse) {
+function handleEvaluationRetrieval(request, sender, sendResponse) {
   getEvaluationFromIndexedDB(request.payload)
     .then((data) => sendResponse({ success: true, data }))
     .catch((error) => sendResponse({ success: true, data: null }))
   return true // Indicates asynchronous response
 }
 
-function handleUpdateDataFromIndexedDB(request, sender, sendResponse) {
+function handleDataUpdateRequest(request, sender, sendResponse) {
   const data = request.payload
   deleteDataFromIndexedDB(data).then(() => {
     saveDataToIndexedDB(data).then(() => {
-      notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
+      notifyContentScript(ActionTypes.ITEM_ADDED)
     })
   })
 }
 
-async function handleGetEvaluationsAverageFromIndexedDB(
-  request,
-  sender,
-  sendResponse
-) {
+async function handleAverageEvaluationRequest(request, sender, sendResponse) {
   const { projectId, jobDescriptionId } = request.payload
   const evaluations = await getEvaluationsFromIndexedDB({
     projectId,
@@ -166,7 +168,7 @@ async function handleGetEvaluationsAverageFromIndexedDB(
   sendResponse({ success: true, data: averages })
 }
 
-function handleCreateDatabase(request, sender, sendResponse) {
+function handleDatabaseCreationRequest(request, sender, sendResponse) {
   createDatabase().then(() => sendResponse())
 }
 // END: Handle tasks received from content script
@@ -179,10 +181,10 @@ function evaluateProfiles(jobData: JobData) {
     status: JobStatus.PENDING
   }))
 
-  initiateJobProcessing({ ...jobData, jobId: jobId })
+  startJobProcessing({ ...jobData, jobId: jobId })
 }
 
-async function initiateJobProcessing(jobData) {
+async function startJobProcessing(jobData) {
   try {
     const activeTabs = await chrome.tabs.query({
       active: true,
@@ -219,7 +221,7 @@ async function initiateJobProcessing(jobData) {
 }
 
 // Mock API call with a timeout, then save data to IndexedDB
-async function makeAPICallAndSaveData(profileData, jobData: JobData) {
+async function fetchAndStoreProfileData(profileData, jobData: JobData) {
   console.log("jobData", jobData)
   const taskId = jobData.taskId
   const jobId = jobData.jobId
@@ -241,13 +243,13 @@ async function makeAPICallAndSaveData(profileData, jobData: JobData) {
     evaluation: profileEvaluation,
     evaluationRating: -1
   })
-  notifyContentScript(ActionTypes.ITEM_ADDED_TO_INDEXED_DB)
+  notifyContentScript(ActionTypes.ITEM_ADDED)
 
-  markTaskAsComplete(taskId, jobId)
+  markTaskCompletion(taskId, jobId)
 }
 
 // Mark the current task as complete
-function markTaskAsComplete(taskId: number, jobId: number) {
+function markTaskCompletion(taskId: number, jobId: number) {
   if (currentJob && currentJob.jobId === jobId) {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
@@ -255,12 +257,12 @@ function markTaskAsComplete(taskId: number, jobId: number) {
     }
   }
 
-  if (currentJob && areAllComplete(tasks)) {
+  if (currentJob && checkAllTasksComplete(tasks)) {
     currentJob.status = JobStatus.COMPLETE
   }
 }
 
-function areAllComplete(arr: Task[]): boolean {
+function checkAllTasksComplete(arr: Task[]): boolean {
   return arr.every((item) => item.status === JobStatus.COMPLETE)
 }
 

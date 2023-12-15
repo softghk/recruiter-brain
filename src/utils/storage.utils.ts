@@ -20,7 +20,7 @@ export function getEvaluationFromIndexedDB(
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: ActionTypes.GET_EVALUATION_FROM_INDEXED_DB,
+        action: ActionTypes.GET_EVALUATION,
         payload: { projectId, jobDescriptionId, profileId }
       })
       .then((response) => {
@@ -41,7 +41,7 @@ export function getEvaluationsAverageFromIndexedDB(
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: ActionTypes.GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB,
+        action: ActionTypes.GET_EVALUATIONS_AVERAGE,
         payload: { projectId, jobDescriptionId }
       })
       .then((response) => {
@@ -59,7 +59,7 @@ export function updateDataFromIndexedDB(data) {
   return new Promise((resolve, reject) => {
     chrome.runtime
       .sendMessage({
-        action: ActionTypes.UPDATE_DATA_FROM_INDEXED_DB,
+        action: ActionTypes.UPDATE_DATA,
         payload: data
       })
       .then((response) => {

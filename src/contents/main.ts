@@ -86,6 +86,7 @@ async function injectEvaluationResults() {
   // Observe the parent element for the addition or removal of the OL element
   const parentObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
+      // @ts-ignore
       if (mutation.type === "childList" || mutation.type === "subtree") {
         const hasOlElement = Array.from(mutation.addedNodes)
           .concat(Array.from(mutation.removedNodes))
@@ -219,7 +220,7 @@ async function handleMutation(mutation) {
             element
           )
           const listenerFunction = async (message, sender, sendResponse) => {
-            if (message.action === ActionTypes.ITEM_ADDED_TO_INDEXED_DB) {
+            if (message.action === ActionTypes.ITEM_ADDED) {
               console.log(`RECEIVED CORRECT MESSAGE: ${message.action}`)
 
               const jobData: any = await getJobData()
