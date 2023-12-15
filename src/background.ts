@@ -36,48 +36,29 @@ let tasks: Task[] = []
 let workingTabId = null
 
 // Listener for messages from content scripts
+const actionHandlers = {
+  [ActionTypes.EVALUATE_PROFILES]: handleEvaluateProfiles,
+  [ActionTypes.GET_STATUS]: handleSendCurrentJobStatus,
+  [ActionTypes.STOP_JOB]: handleStopJob,
+  [ActionTypes.GET_JOB_DETAILS]: handleGetJobDetails,
+  [ActionTypes.CLOSE_TAB]: handleCloseTab,
+  [ActionTypes.CLEAR_PROJECT_DATA]: handleProjectDataClearance,
+  [ActionTypes.DELETE_ALL_DATABASE]: handleDeleteAllDatabases,
+  [ActionTypes.TASK_DATA_RECEIVED]: handleTaskDataReceived,
+  [ActionTypes.GET_EVALUATION_FROM_INDEXED_DB]:
+    handleGetEvaluationFromIndexedDB,
+  [ActionTypes.UPDATE_DATA_FROM_INDEXED_DB]: handleUpdateDataFromIndexedDB,
+  [ActionTypes.GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB]:
+    handleGetEvaluationsAverageFromIndexedDB,
+  [ActionTypes.CREATE_DATABASE]: handleCreateDatabase
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case ActionTypes.EVALUATE_PROFILES:
-      handleEvaluateProfiles(request)
-      break
-    case ActionTypes.GET_STATUS:
-      handleSendCurrentJobStatus(sendResponse)
-      break
-    case ActionTypes.STOP_JOB:
-      handleStopJob(sendResponse)
-      break
-    case ActionTypes.GET_JOB_DETAILS:
-      handleGetJobDetails(request, sendResponse)
-      break
-    case ActionTypes.CLOSE_TAB:
-      handleCloseTab(sender)
-      break
-    case ActionTypes.CLEAR_PROJECT_DATA:
-      handleProjectDataClearance(request, sendResponse)
-      break
-    case ActionTypes.DELETE_ALL_DATABASE:
-      handleDeleteAllDatabases(sendResponse)
-      break
-    case ActionTypes.TASK_DATA_RECEIVED:
-      handleTaskDataReceived(request)
-      break
-    case ActionTypes.GET_EVALUATION_FROM_INDEXED_DB:
-      handleGetEvaluationFromIndexedDB(request, sendResponse)
-      break
-    case ActionTypes.UPDATE_DATA_FROM_INDEXED_DB:
-      handleUpdateDataFromIndexedDB(request)
-      break
-    case ActionTypes.GET_EVALUATIONS_AVERAGE_FROM_INDEXED_DB:
-      console.log("background received message")
-      handleGetEvaluationsAverageFromIndexedDB(request, sendResponse)
-      break
-    case ActionTypes.CREATE_DATABASE:
-      handleCreateDatabase(sendResponse)
-      break
-    default:
-      console.log("action handling not implemented", request.action)
-      break
+  const handler = actionHandlers[request.action]
+  if (handler) {
+    handler(request, sender, sendResponse)
+  } else {
+    console.log("action handling not implemented", request.action)
   }
 
   return true // Indicate that the response is asynchronous
@@ -101,26 +82,26 @@ chrome.tabs.onRemoved.addListener(function (tabId, info) {
 })
 
 // BEGIN: Handle tasks received from content script
-function handleEvaluateProfiles(request) {
+function handleEvaluateProfiles(request, sender, sendResponse) {
   evaluateProfiles(request.data)
 }
 
-function handleSendCurrentJobStatus(sendResponse) {
+function handleSendCurrentJobStatus(request, sender, sendResponse) {
   sendResponse({ currentJob, tasks })
 }
 
-function handleStopJob(sendResponse) {
+function handleStopJob(request, sender, sendResponse) {
   stopJob()
   sendResponse({ status: JobStatus.STOPPED })
 }
 
-function handleGetJobDetails(request, sendResponse) {
+function handleGetJobDetails(request, sender, sendResponse) {
   storage.get(JOB_DESCRIPTION).then((response) => {
     sendResponse({ data: response })
   })
 }
 
-function handleProjectDataClearance(request, sendResponse) {
+function handleProjectDataClearance(request, sender, sendResponse) {
   storage.get(CANDIDATE_RATING).then((response) => {
     // @ts-ignore
     const newRating = { ...response }
@@ -134,11 +115,11 @@ function handleProjectDataClearance(request, sendResponse) {
   })
 }
 
-function handleCloseTab(sender) {
+function handleCloseTab(request, sender, sendResponse) {
   chrome.tabs.remove(sender.tab.id, () => {})
 }
 
-function handleDeleteAllDatabases(sendResponse) {
+function handleDeleteAllDatabases(request, sender, sendResponse) {
   deleteAllDatabases().then(() => {
     console.log("got response after delete all db")
     storage.removeAll()
@@ -148,21 +129,21 @@ function handleDeleteAllDatabases(sendResponse) {
   })
 }
 
-function handleTaskDataReceived(request) {
+function handleTaskDataReceived(request, sender, sendResponse) {
   makeAPICallAndSaveData(request.linkedInData, {
     ...request.jobData,
     taskId: request.taskId
   })
 }
 
-function handleGetEvaluationFromIndexedDB(request, sendResponse) {
+function handleGetEvaluationFromIndexedDB(request, sender, sendResponse) {
   getEvaluationFromIndexedDB(request.payload)
     .then((data) => sendResponse({ success: true, data }))
     .catch((error) => sendResponse({ success: true, data: null }))
   return true // Indicates asynchronous response
 }
 
-function handleUpdateDataFromIndexedDB(request) {
+function handleUpdateDataFromIndexedDB(request, sender, sendResponse) {
   const data = request.payload
   deleteDataFromIndexedDB(data).then(() => {
     saveDataToIndexedDB(data).then(() => {
@@ -171,7 +152,11 @@ function handleUpdateDataFromIndexedDB(request) {
   })
 }
 
-async function handleGetEvaluationsAverageFromIndexedDB(request, sendResponse) {
+async function handleGetEvaluationsAverageFromIndexedDB(
+  request,
+  sender,
+  sendResponse
+) {
   const { projectId, jobDescriptionId } = request.payload
   const evaluations = await getEvaluationsFromIndexedDB({
     projectId,
@@ -181,7 +166,7 @@ async function handleGetEvaluationsAverageFromIndexedDB(request, sendResponse) {
   sendResponse({ success: true, data: averages })
 }
 
-function handleCreateDatabase(sendResponse) {
+function handleCreateDatabase(request, sender, sendResponse) {
   createDatabase().then(() => sendResponse())
 }
 // END: Handle tasks received from content script
