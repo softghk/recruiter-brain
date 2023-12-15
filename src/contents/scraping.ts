@@ -6,7 +6,7 @@ import {
   waitForElement
 } from "~src/utils/wait-for.utils"
 
-async function scrapingCode(jobData) {
+async function scrapeMultipleProfiles(jobData) {
   addOverlay()
   // wait for profile list
   await waitForElement("a[data-live-test-link-to-profile-link]")
@@ -88,5 +88,5 @@ async function scrapingCode(jobData) {
 
 if (window["isScraping"]) {
   const jobData = window["jobData"]
-  scrapingCode(jobData)
+  scrapeMultipleProfiles(jobData)
 }
