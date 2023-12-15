@@ -182,7 +182,7 @@ function handleDatabaseCreationRequest(request, sender, sendResponse) {
 }
 // END: Handle tasks received from content script
 
-function evaluateProfiles(jobData: JobData) {
+async function evaluateProfiles(jobData: JobData) {
   const jobId = uuidv4()
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
   tasks = Array.from({ length: jobData.amount }, (_, i) => ({
@@ -190,10 +190,6 @@ function evaluateProfiles(jobData: JobData) {
     status: JobStatus.PENDING
   }))
 
-  startJobProcessing({ ...jobData, jobId: jobId })
-}
-
-async function startJobProcessing(jobData) {
   try {
     const activeTabs = await chrome.tabs.query({
       active: true,
@@ -266,13 +262,9 @@ function markTaskCompletion(taskId: number, jobId: number) {
     }
   }
 
-  if (currentJob && checkAllTasksComplete(tasks)) {
+  if (currentJob && tasks.every((item) => item.status === JobStatus.COMPLETE)) {
     currentJob.status = JobStatus.COMPLETE
   }
-}
-
-function checkAllTasksComplete(arr: Task[]): boolean {
-  return arr.every((item) => item.status === JobStatus.COMPLETE)
 }
 
 // Stop the job
