@@ -35,7 +35,10 @@ let currentJob = null
 let tasks: Task[] = []
 let workingTabId = null
 
-// Listener for messages from content scripts
+chrome.runtime.onMessage.addListener(handleMessage)
+chrome.runtime.onInstalled.addListener(handleInstalled)
+chrome.tabs.onRemoved.addListener(handleTabRemoved)
+
 const actionHandlers = {
   [ActionTypes.EVALUATE_PROFILES]: handleEvaluateProfiles,
   [ActionTypes.GET_STATUS]: handleSendCurrentJobStatus,
@@ -52,34 +55,31 @@ const actionHandlers = {
     handleGetEvaluationsAverageFromIndexedDB,
   [ActionTypes.CREATE_DATABASE]: handleCreateDatabase
 }
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+async function handleMessage(request, sender, sendResponse) {
   const handler = actionHandlers[request.action]
   if (handler) {
-    handler(request, sender, sendResponse)
+    await handler(request, sender, sendResponse)
   } else {
     console.log("action handling not implemented", request.action)
   }
+  return true
+}
 
-  return true // Indicate that the response is asynchronous
-})
-
-chrome.runtime.onInstalled.addListener(function (object) {
+function handleInstalled(object) {
   createDatabase()
-  let externalUrl = "https://www.linkedin.com/talent/hire/"
-
+  const externalUrl = "https://www.linkedin.com/talent/hire/"
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
     chrome.tabs.create({ url: externalUrl }, function (tab) {})
   }
-})
+}
 
-chrome.tabs.onRemoved.addListener(function (tabId, info) {
-  chrome.tabs.get(tabId, function (tab) {
+function handleTabRemoved(tabId, info) {
+  chrome.tabs.get(tabId, async function (tab) {
     if (tabId === workingTabId && currentJob?.status !== JobStatus.COMPLETE) {
-      stopJob()
+      await stopJob()
     }
   })
-})
+}
 
 // BEGIN: Handle tasks received from content script
 function handleEvaluateProfiles(request, sender, sendResponse) {
