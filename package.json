@@ -28,6 +28,7 @@
     "axios": "^1.6.2",
     "crypto": "^1.0.1",
     "date-fns": "2.30",
+    "dexie": "^3.2.4",
     "firebase": "^10.6.0",
     "framer-motion": "10.12.18",
     "highlight.js": "^11.9.0",
