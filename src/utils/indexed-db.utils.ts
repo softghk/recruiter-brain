@@ -61,7 +61,7 @@ export function saveDataToIndexedDB({
       const db = event.target.result
       const tx = db.transaction(storeName, "readwrite")
       const store = tx.objectStore(storeName)
-      const data = {
+      const addData = {
         projectId,
         jobDescriptionId,
         profileId,
@@ -69,16 +69,53 @@ export function saveDataToIndexedDB({
         evaluationRating
       }
 
-      const addRequest = store.add(data)
+      // check if the data is available
+      const request = store.getAll()
 
-      addRequest.onsuccess = () => {
-        console.log("Data saved to IndexedDB", data)
-        resolve()
-      }
+      request.onsuccess = () => {
+        const data = request.result
+        // Filter the data based on the criteria
+        const filteredData = data.filter(
+          (item) =>
+            item.projectId === projectId &&
+            item.jobDescriptionId === jobDescriptionId &&
+            item.profileId === profileId
+        )
 
-      addRequest.onerror = () => {
-        console.error("Error saving data to IndexedDB")
-        reject()
+        if (filteredData.length) {
+          const deleteRequest = store.delete(filteredData[0].id)
+
+          deleteRequest.onsuccess = () => {
+            const addRequest = store.add(addData)
+
+            addRequest.onsuccess = () => {
+              console.log("Data saved to IndexedDB", data)
+              resolve()
+            }
+
+            addRequest.onerror = () => {
+              console.error("Error saving data to IndexedDB")
+              reject()
+            }
+          }
+
+          deleteRequest.onerror = () => {
+            console.error("Error deleting data from IndexedDB")
+            reject()
+          }
+        } else {
+          const addRequest = store.add(addData)
+
+          addRequest.onsuccess = () => {
+            console.log("Data saved to IndexedDB", data)
+            resolve()
+          }
+
+          addRequest.onerror = () => {
+            console.error("Error saving data to IndexedDB")
+            reject()
+          }
+        }
       }
 
       // Close the transaction
@@ -93,7 +130,7 @@ export function saveDataToIndexedDB({
   })
 }
 
-export async function deleteDataFromIndexedDB({ id, projectId }) {
+export async function deleteDataFromIndexedDB({ id }) {
   console.log("Delete Data from IndexedDB")
 
   // Open or create a database with an updated version
