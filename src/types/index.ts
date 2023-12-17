@@ -32,7 +32,6 @@ export const ActionTypes = {
   GET_EVALUATION: "get-data-from-indexed-db",
   UPDATE_DATA: "update-data-from-indexed-db",
   GET_EVALUATIONS_AVERAGE: "get-evaluations-average-from-indexed-db",
-  CREATE_DATABASE: "createDatabase",
   ITEM_ADDED: "item-added-to-indexed-db",
   SWITCH_BACK_TO_MAIN_TAB: "switch-back-to-main-tab"
 }
@@ -42,7 +41,7 @@ export interface JobData {
   href: string
   jobDescription: string
   jobDescriptionId: string
-  jobId: number
+  jobId: string
   jobTitle: string
   projectId: string
   searchConextId: string

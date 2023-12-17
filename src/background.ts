@@ -17,7 +17,6 @@ import {
 import { evaluateProfileApi } from "./utils/api-service.utils"
 import { calculateAverageRatings } from "./utils/average.util"
 import {
-  createDatabase,
   deleteAllDatabases,
   deleteAllFromIndexedDB,
   deleteDataFromIndexedDB,
@@ -58,7 +57,6 @@ const actionHandlers = {
   [ActionTypes.CLEAR_PROJECT_DATA]: handleProjectDataClearRequest,
 
   // Database
-  [ActionTypes.CREATE_DATABASE]: handleDatabaseCreationRequest,
   [ActionTypes.DELETE_ALL_DATABASE]: handleDatabaseDeletionRequest,
   [ActionTypes.UPDATE_DATA]: handleDataUpdateRequest
 }
@@ -77,10 +75,9 @@ async function handleMessage(request, sender, sendResponse) {
 }
 
 function handleExtensionInstalled(object) {
-  createDatabase()
   const externalUrl = "https://www.linkedin.com/talent/hire/"
   if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    chrome.tabs.create({ url: externalUrl }, function (tab) {})
+    chrome.tabs.create({ url: externalUrl }, function (tab) { })
   }
 }
 
@@ -131,7 +128,7 @@ function handleProjectDataClearRequest(request, sender, sendResponse) {
 }
 
 function handleTabCloseRequest(request, sender, sendResponse) {
-  chrome.tabs.remove(sender.tab.id, () => {})
+  chrome.tabs.remove(sender.tab.id, () => { })
 }
 
 function handleDatabaseDeletionRequest(request, sender, sendResponse) {
@@ -145,6 +142,7 @@ function handleDatabaseDeletionRequest(request, sender, sendResponse) {
 }
 
 function handleReceivedTaskData(request, sender, sendResponse) {
+  console.log("handleReceivedTaskData", request)
   fetchAndStoreProfileData(request.linkedInData, {
     ...request.jobData,
     taskId: request.taskId
@@ -177,13 +175,11 @@ async function handleAverageEvaluationRequest(request, sender, sendResponse) {
   sendResponse({ success: true, data: averages })
 }
 
-function handleDatabaseCreationRequest(request, sender, sendResponse) {
-  createDatabase().then(() => sendResponse())
-}
 // END: Handle tasks received from content script
 
 async function evaluateProfiles(jobData: JobData) {
   const jobId = uuidv4()
+  const newJobData = { ...jobData, jobId: jobId }
   currentJob = { ...jobData, status: JobStatus.PENDING, jobId: jobId }
   tasks = Array.from({ length: jobData.amount }, (_, i) => ({
     id: i,
@@ -211,7 +207,7 @@ async function evaluateProfiles(jobData: JobData) {
           window.jobData = jobData
           window.isScraping = true
         },
-        args: [jobData]
+        args: [newJobData]
       })
 
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -250,14 +246,13 @@ async function fetchAndStoreProfileData(profileData, jobData: JobData) {
   })
   notifyContentScript(ActionTypes.ITEM_ADDED)
 
-  markTaskCompletion(taskId, jobId)
-}
+  console.log("ITEM ADDED TO INDEXEDDB, ", currentJob, jobId)
 
-// Mark the current task as complete
-function markTaskCompletion(taskId: number, jobId: number) {
+  // Mark the current task as complete
   if (currentJob && currentJob.jobId === jobId) {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
+      console.log("MARK TASK AS COMPLETE", task)
       task.status = JobStatus.COMPLETE
     }
   }
@@ -278,4 +273,4 @@ function stopJob() {
   })
 }
 
-export {}
+export { }

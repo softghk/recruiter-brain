@@ -6,10 +6,10 @@ export function calculateAverageRatings(data) {
   let count = data.length
 
   data.forEach((item) => {
-    totalExperience += item.evaluation.rating.experience
-    totalEducation += item.evaluation.rating.education
-    totalSkills += item.evaluation.rating.skills
-    totalOverall += item.evaluation.rating.overall
+    totalExperience += (item.evaluation.rating?.experience || 0)
+    totalEducation += (item.evaluation.rating?.education || 0)
+    totalSkills += (item.evaluation.rating?.skills || 0)
+    totalOverall += (item.evaluation.rating?.overall || 0)
   })
 
   return {

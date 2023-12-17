@@ -72,19 +72,3 @@ export function updateDataFromIndexedDB(data) {
       })
   })
 }
-
-export function createDatabase(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    chrome.runtime
-      .sendMessage({
-        action: "createDatabase"
-      })
-      .then((response) => {
-        if (response.success) {
-          resolve()
-        } else {
-          reject()
-        }
-      })
-  })
-}

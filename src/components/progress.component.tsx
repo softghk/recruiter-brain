@@ -36,7 +36,7 @@ const ScanningProgress = ({
 
   useEffect(() => {
     // Content script to check job status every second
-    const intervalId = setInterval(() => {
+    const intervalId = setInterval(() => { 
       chrome.runtime.sendMessage({ action: "get-status" }, (response) => {
         // console.log("Current job status:", response)
         const tasks = response.tasks

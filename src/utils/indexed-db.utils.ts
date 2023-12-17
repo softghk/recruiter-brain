@@ -1,340 +1,58 @@
-const storeName = "evaluation"
-const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS
-const dbVersion = 5 // Increment this version when changes are made to the database structure
+import Dexie from 'dexie';
 
-export function createDatabase(): Promise<void> {
-  console.log("Create Database Started")
-  // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName, dbVersion)
+const dbName = process.env.PLASMO_PUBLIC_INDEXEDDB_DBNAME_EVALUATIONS;
 
-  return new Promise((resolve, reject) => {
-    // Handle database upgrade
-    openRequest.onupgradeneeded = (event) => {
-      const db = event.target.result
-      if (!db.objectStoreNames.contains(storeName)) {
-        db.createObjectStore(storeName, {
-          keyPath: "id",
-          autoIncrement: true
-        })
-        console.log("DB CREATED SUCCESSFULLY")
-      }
-    }
+class EvaluationDatabase extends Dexie {
+  evaluations: Dexie.Table<Evaluation, number>; // number is the type of the primary key
 
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      console.log("DB CONNECTION SUCCESSFUL")
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
+  constructor() {
+    super(dbName);
+    this.version(1).stores({
+      evaluations: '++id, projectId, jobDescriptionId, profileId, evaluation, evaluationRating'
+    });
+  }
 }
 
-// Save data to IndexedDB
-export function saveDataToIndexedDB({
-  projectId,
-  jobDescriptionId,
-  profileId,
-  evaluation,
-  evaluationRating
-}): Promise<void> {
-  // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName, dbVersion)
-
-  return new Promise((resolve, reject) => {
-    // Handle database upgrade
-    openRequest.onupgradeneeded = (event) => {
-      const db = event.target.result
-      if (!db.objectStoreNames.contains(storeName)) {
-        db.createObjectStore(storeName, {
-          keyPath: "id",
-          autoIncrement: true
-        })
-      }
-    }
-
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      const db = event.target.result
-      const tx = db.transaction(storeName, "readwrite")
-      const store = tx.objectStore(storeName)
-      const addData = {
-        projectId,
-        jobDescriptionId,
-        profileId,
-        evaluation,
-        evaluationRating
-      }
-
-      // check if the data is available
-      const request = store.getAll()
-
-      request.onsuccess = () => {
-        const data = request.result
-        // Filter the data based on the criteria
-        const filteredData = data.filter(
-          (item) =>
-            item.projectId === projectId &&
-            item.jobDescriptionId === jobDescriptionId &&
-            item.profileId === profileId
-        )
-
-        if (filteredData.length) {
-          const deleteRequest = store.delete(filteredData[0].id)
-
-          deleteRequest.onsuccess = () => {
-            const addRequest = store.add(addData)
-
-            addRequest.onsuccess = () => {
-              console.log("Data saved to IndexedDB", data)
-              resolve()
-            }
-
-            addRequest.onerror = () => {
-              console.error("Error saving data to IndexedDB")
-              reject()
-            }
-          }
-
-          deleteRequest.onerror = () => {
-            console.error("Error deleting data from IndexedDB")
-            reject()
-          }
-        } else {
-          const addRequest = store.add(addData)
-
-          addRequest.onsuccess = () => {
-            console.log("Data saved to IndexedDB", data)
-            resolve()
-          }
-
-          addRequest.onerror = () => {
-            console.error("Error saving data to IndexedDB")
-            reject()
-          }
-        }
-      }
-
-      // Close the transaction
-      tx.oncomplete = () => db.close()
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
+interface Evaluation {
+  id?: number;
+  projectId: string;
+  jobDescriptionId: string;
+  profileId: string;
+  evaluation: any;
+  evaluationRating: number;
 }
 
-export async function deleteDataFromIndexedDB({ id }) {
-  console.log("Delete Data from IndexedDB")
+const db = new EvaluationDatabase();
 
-  // Open or create a database with an updated version
-  const openRequest = indexedDB.open(dbName)
-
-  return new Promise((resolve, reject) => {
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      const db = event.target.result
-      const tx = db.transaction(storeName, "readwrite")
-      console.log("storeName", storeName)
-      const store = tx.objectStore(storeName)
-
-      const deleteRequest = store.delete(id)
-
-      deleteRequest.onsuccess = () => {
-        console.log("Data deleted from IndexedDB: ", id)
-        resolve(id)
-      }
-
-      deleteRequest.onerror = () => {
-        console.error("Error deleting data from IndexedDB")
-        reject()
-      }
-
-      // Close the transaction
-      tx.oncomplete = () => db.close()
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
+export async function saveDataToIndexedDB(evaluation: Evaluation): Promise<void> {
+  const data: any = await getEvaluationFromIndexedDB(evaluation);
+  if (data.length)
+    await deleteDataFromIndexedDB(data[0].id)
+  await db.evaluations.put(evaluation);
+  console.log("Data saved to IndexedDB");
 }
 
-export async function deleteAllFromIndexedDB({ projectId }) {
-  const openRequest = indexedDB.open(dbName)
-
-  return new Promise((resolve, reject) => {
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      try {
-        const db = event.target.result
-        const tx = db.transaction(storeName, "readwrite")
-        console.log("storeName", storeName)
-        const store = tx.objectStore(storeName)
-
-        const request = store.getAll()
-
-        request.onsuccess = () => {
-          const data = request.result
-          data
-            .filter((item) => item.projectId === projectId)
-            .map((item) => store.delete(item.id))
-          resolve(projectId)
-        }
-
-        request.onerror = () => {
-          reject("Error in retrieving data from IndexedDB")
-        }
-
-        tx.oncomplete = () => db.close()
-      } catch (error) {
-        resolve(projectId)
-      }
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
+export async function deleteDataFromIndexedDB(id: number): Promise<void> {
+  await db.evaluations.delete(id);
+  console.log("Data deleted from IndexedDB: ", id);
 }
 
-export function deleteAllDatabases(): Promise<void> {
-  const openRequest = indexedDB.open(dbName)
-
-  return new Promise((resolve, reject) => {
-    // Handle successful database opening
-    openRequest.onsuccess = async (event) => {
-      try {
-        const db = event.target.result
-        const tx = db.transaction(storeName, "readwrite")
-        console.log("storeName", storeName)
-        const store = tx.objectStore(storeName)
-
-        const deleteRequest = store.clear()
-
-        deleteRequest.onsuccess = () => {
-          console.log("All Data deleted from IndexedDB")
-          resolve()
-        }
-
-        deleteRequest.onerror = () => {
-          console.error("Error deleting data from IndexedDB")
-          resolve()
-        }
-
-        tx.oncomplete = () => db.close()
-      } catch (error) {
-        resolve()
-      }
-    }
-
-    // Handle errors in opening the database
-    openRequest.onerror = (event) => {
-      console.error("Error opening IndexedDB", event.target.errorCode)
-      reject()
-    }
-  })
+export async function deleteAllFromIndexedDB(projectId: string): Promise<void> {
+  await db.evaluations.where('projectId').equals(projectId).delete();
+  console.log("All data for project deleted from IndexedDB: ", projectId);
 }
 
-export function getEvaluationFromIndexedDB({
-  projectId,
-  jobDescriptionId,
-  profileId
-}) {
-  return new Promise((resolve, reject) => {
-    // Open the database
-    const openRequest = indexedDB.open(dbName)
-
-    openRequest.onsuccess = (event) => {
-      const db = event.target.result
-
-      try {
-        const tx = db.transaction(storeName, "readonly")
-        const store = tx.objectStore(storeName)
-        const request = store.getAll()
-
-        request.onsuccess = () => {
-          const data = request.result
-          // Filter the data based on the criteria
-          const filteredData = data.filter(
-            (item) =>
-              item.projectId === projectId &&
-              item.jobDescriptionId === jobDescriptionId &&
-              item.profileId === profileId
-          )
-          resolve(filteredData)
-        }
-
-        request.onerror = () => {
-          reject("Error in retrieving data from IndexedDB")
-        }
-      } catch (error) {
-        // Handle case where object store does not exist
-        if (error.name === "NotFoundError") {
-          console.log("NOT FOUND ERROR")
-          resolve(null) // Return null if the store does not exist
-        } else {
-          reject("Transaction failed", error)
-        }
-      }
-    }
-
-    openRequest.onerror = (event) => {
-      reject(`Error opening IndexedDB: ${event.target.errorCode}`)
-    }
-  })
+export async function deleteAllDatabases(): Promise<void> {
+  await db.evaluations.clear();
+  console.log("All Data deleted from IndexedDB");
 }
 
-export function getEvaluationsFromIndexedDB({ projectId, jobDescriptionId }) {
-  return new Promise((resolve, reject) => {
-    // Open the database
-    const openRequest = indexedDB.open(dbName)
+export async function getEvaluationFromIndexedDB({ projectId, jobDescriptionId, profileId }): Promise<Evaluation[]> {
+  const evaluations = await db.evaluations.where({ projectId, jobDescriptionId, profileId }).toArray();
+  return evaluations;
+}
 
-    openRequest.onsuccess = (event) => {
-      const db = event.target.result
-
-      try {
-        const tx = db.transaction(storeName, "readonly")
-        const store = tx.objectStore(storeName)
-        const request = store.getAll()
-
-        request.onsuccess = () => {
-          const data = request.result
-          // Filter the data based on the criteria
-          const filteredData = data.filter(
-            (item) =>
-              item.projectId === projectId &&
-              item.jobDescriptionId === jobDescriptionId
-          )
-          resolve(filteredData)
-        }
-
-        request.onerror = () => {
-          reject("Error in retrieving data from IndexedDB")
-        }
-      } catch (error) {
-        // Handle case where object store does not exist
-        if (error.name === "NotFoundError") {
-          console.log("NOT FOUND ERROR")
-          resolve(null) // Return null if the store does not exist
-        } else {
-          reject("Transaction failed", error)
-        }
-      }
-    }
-
-    openRequest.onerror = (event) => {
-      reject(`Error opening IndexedDB: ${event.target.errorCode}`)
-    }
-  })
+export async function getEvaluationsFromIndexedDB({ projectId, jobDescriptionId }): Promise<Evaluation[]> {
+  const evaluations = await db.evaluations.where({ projectId, jobDescriptionId }).toArray();
+  return evaluations;
 }

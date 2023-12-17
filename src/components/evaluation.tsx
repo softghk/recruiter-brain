@@ -18,7 +18,6 @@ import {
 import useFirebaseUser from "~src/firebase/useFirebaseUser"
 import { ActionTypes, JobInitialSetting, type JobSettings } from "~src/types"
 import { generateMD5 } from "~src/utils/hash.utils"
-import { createDatabase } from "~src/utils/storage.utils"
 import { waitForElement } from "~src/utils/wait-for.utils"
 
 import {
@@ -57,7 +56,6 @@ const EvaluateComponent = ({ mainStyle }) => {
   const onSaveJDToStore = (data: JobSettings) => {
     if (!description) setDescription({ [projectId]: data })
     else setDescription({ ...description, [projectId]: data })
-    createDatabase()
   }
 
   const onResetJD = () => {
