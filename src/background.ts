@@ -10,7 +10,6 @@ import {
 import {
   ActionTypes,
   JobStatus,
-  type CandidateRating,
   type JobData,
   type Task
 } from "./types"
@@ -34,7 +33,7 @@ let currentJob = null
 let tasks: Task[] = []
 let workingTabId = null
 
-chrome.runtime.onMessage.addListener(handleMessage)
+chrome.runtime.onMessage.addListener(handleChromeRuntimeMessage)
 chrome.runtime.onInstalled.addListener(handleExtensionInstalled)
 chrome.tabs.onRemoved.addListener(handleTabRemoved)
 
@@ -60,7 +59,8 @@ const actionHandlers = {
   [ActionTypes.DELETE_ALL_DATABASE]: handleDatabaseDeletionRequest,
   [ActionTypes.UPDATE_DATA]: handleDataUpdateRequest
 }
-async function handleMessage(request, sender, sendResponse) {
+
+async function handleChromeRuntimeMessage(request, sender, sendResponse) {
   const handler = actionHandlers[request.action]
   if (handler) {
     try {
@@ -122,7 +122,7 @@ function handleProjectDataClearRequest(request, sender, sendResponse) {
   })
   deleteAllFromIndexedDB({ projectId: request.data }).then((response) => {
     console.log("got response after delete db")
-    sendMessageToContentScript("delete-db")
+    sendMessageToContentScript(ActionTypes.DELETE_DB)
     sendResponse({ data: response })
   })
 }
@@ -135,8 +135,8 @@ function handleDatabaseDeletionRequest(request, sender, sendResponse) {
   deleteAllDatabases().then(() => {
     console.log("got response after delete all db")
     storage.removeAll()
-    sendMessageToContentScript("delete-db")
-    sendMessageToContentScript("reset-all")
+    sendMessageToContentScript(ActionTypes.DELETE_DB)
+    sendMessageToContentScript(ActionTypes.RESET_ALL)
     sendResponse({ data: "" })
   })
 }

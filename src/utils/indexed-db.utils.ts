@@ -37,7 +37,7 @@ export async function deleteDataFromIndexedDB(id: number): Promise<void> {
   console.log("Data deleted from IndexedDB: ", id);
 }
 
-export async function deleteAllFromIndexedDB(projectId: string): Promise<void> {
+export async function deleteAllFromIndexedDB({ projectId }): Promise<void> {
   await db.evaluations.where('projectId').equals(projectId).delete();
   console.log("All data for project deleted from IndexedDB: ", projectId);
 }

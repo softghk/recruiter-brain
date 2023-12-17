@@ -33,7 +33,14 @@ export const ActionTypes = {
   UPDATE_DATA: "update-data-from-indexed-db",
   GET_EVALUATIONS_AVERAGE: "get-evaluations-average-from-indexed-db",
   ITEM_ADDED: "item-added-to-indexed-db",
-  SWITCH_BACK_TO_MAIN_TAB: "switch-back-to-main-tab"
+  SWITCH_BACK_TO_MAIN_TAB: "switch-back-to-main-tab",
+  DELETE_DB: "delete-db",
+  RESET_ALL: "reset-all",
+}
+
+export const PROFILE_SELECTORS = {
+  listElement: "ol.profile-list",
+  parent: ".page-layout__workspace"
 }
 
 export interface JobData {
