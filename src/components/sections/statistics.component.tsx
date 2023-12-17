@@ -1,3 +1,4 @@
+import LoadingComponent from "../common/loading.component"
 import EcommerceSalesOverview from "@minimal/sections/overview/e-commerce/ecommerce-sales-overview"
 import { Button, Grid, Stack } from "@mui/material"
 import React, { useEffect, useState } from "react"
@@ -13,6 +14,7 @@ const DashboardComponent = () => {
   const { user, onLogout } = useFirebaseUser()
   const [visible] = useStorage(EXTENSION_VISIBLE, true)
   const [auth] = useStorage<AuthState>(AUTH_STATE)
+  const [loading, setLoading] = useState(true)
   const [data, setData] = useState([
     {
       label: "PROFILES EVALUATED",
@@ -26,23 +28,31 @@ const DashboardComponent = () => {
     }
   ])
 
-  console.log(user)
   useEffect(() => {
     if (!user) return
 
-    console.log("user", user)
-    user.getIdToken(true).then(async (token) => {
-      getStatisticData({ accessToken: token }).then((response: any) => {
-        setData(response)
+    setLoading(true)
+    user.getIdToken(true)
+      .then(async (token) => {
+        getStatisticData({ accessToken: token }).then((response: any) => {
+          setData(response)
+          setLoading(false)
+        })
       })
-    })
+      .catch(() => {
+        setLoading(false)
+      })
   }, [visible, user])
 
   return (
     <Stack spacing={2}>
       <Grid container width={768} spacing={2}>
         <Grid item xs={12}>
-          <EcommerceSalesOverview data={data} title="Daily Usage Stats" />
+          {
+            loading ? <LoadingComponent /> : (
+              <EcommerceSalesOverview data={data} title="Daily Usage Stats" />
+            )
+          }
         </Grid>
         {/* <Grid item xs={6}>
           <EcommerceSalesOverview data={data} title="Daily Usage Stats" />
