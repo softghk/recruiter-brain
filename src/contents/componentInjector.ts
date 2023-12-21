@@ -84,6 +84,8 @@ async function injectEvaluationResults() {
 }
 
 export const injectComponents = () => {
+	injectMainComponent()
+	return;
 	if (mainObserver) mainObserver.disconnect()
 
 	const targetNode = document.getElementsByTagName("body")[0]

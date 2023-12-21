@@ -1,4 +1,3 @@
-import type { PlasmoCSConfig } from "plasmo"
 import { auth } from "src/firebase/firebaseClient"
 import { injectComponents } from './componentInjector'
 
@@ -7,9 +6,9 @@ import { ActionTypes } from "~src/types"
 export { }
 
 // Configuration for PlasmoCS
-export const config: PlasmoCSConfig = {
-  matches: ["https://www.linkedin.com/talent/hire/*"]
-}
+// export const config: PlasmoCSConfig = {
+//   matches: ["https://www.linkedin.com/talent/hire/*"]
+// }
 
 // Inject components into the page
 injectComponents()

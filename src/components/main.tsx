@@ -1,6 +1,6 @@
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
-import React, { useEffect, useState } from "react"
+import { useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import useFirebaseUser from "src/firebase/useFirebaseUser"
 
@@ -19,7 +19,7 @@ import FabButton from "./common/fab-button.component"
 import LoadingComponent from "./common/loading.component"
 import Modal from "./common/modal.component"
 import Login from "./sections/login.component"
-import DashboardComponent from "./sections/statistics.component"
+import NoteComponent from "./sections/note.component"
 
 const Home = () => {
   const [extensionEnabled] = useStorage(EXTENSION_ENABLE, true)
@@ -55,10 +55,11 @@ const Home = () => {
       <Modal
         open={extensionVisible}
         onClose={toggleModal}
-        width={user && !isLoading ? 800 : 400}>
+        width={user && !isLoading ? 1200 : 400}
+      >
         {isLoading && <LoadingComponent />}
         {!userInfo.isAuth && !isLoading && <Login />}
-        {userInfo.isAuth && !isLoading && <DashboardComponent />}
+        {userInfo.isAuth && !isLoading && <NoteComponent />}
       </Modal>
       <FabButton
         sx={{

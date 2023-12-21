@@ -16,7 +16,6 @@ const clientCredentials = {
 }
 
 let firebase_app
-
 // Check if firebase app is already initialized to avoid creating new app on hot-reloads
 if (!getApps().length) {
   firebase_app = initializeApp(clientCredentials)
