@@ -49,13 +49,13 @@ const NoteSearchItemComponent = (props: NoteSearchItemProps) => {
           <Typography
             maxWidth={"80%"}
             fontWeight={600}
-            sx={{ fontWeight: 600 }}
+            sx={{ fontWeight: 600, color: "black" }}
             variant="subtitle2"
           >
             {title}
           </Typography>
           <Typography
-            sx={{ fontSize: "12px", textAlign: "right" }}
+            sx={{ fontSize: "12px", textAlign: "right", color: "gray" }}
             variant="subtitle2"
           >
             {pastTime}
@@ -72,6 +72,7 @@ const NoteSearchItemComponent = (props: NoteSearchItemProps) => {
             textOverflow={"ellipsis"}
             whiteSpace={"nowrap"}
             maxWidth={"80%"}
+            sx={{ color: "black" }}
             variant="body2"
           >
             {content}

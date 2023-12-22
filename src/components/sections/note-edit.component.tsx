@@ -43,15 +43,15 @@ const handleChangeTitle = (value: string) => {
       {
         (props.isEditing)?
           <Stack padding={"24px 24px 24px 24px"} direction="column" gap={3} height={"100%"}>
-            <TextField fullWidth label={"Title"} sx={{ borderRadius: 2 }} value={props.title} onChange={(e) => handleChangeTitle(e.target.value)} />
-            <TextField fullWidth label={"Content"} multiline rows={10} sx={{ borderRadius: 2 }} value={props.content} onChange={(e) => handleChangeContent(e.target.value)} />
+            <TextField fullWidth label={"Title"} sx={{ borderRadius: 2, color: "black" }} value={props.title} onChange={(e) => handleChangeTitle(e.target.value)} />
+            <TextField fullWidth label={"Content"} multiline rows={10} sx={{ borderRadius: 2, color: "black" }} value={props.content} onChange={(e) => handleChangeContent(e.target.value)} />
           </Stack>
           :
           <Stack padding={"24px 24px 24px 24px"} direction="column" gap={3} height={"100%"}>
-            <Typography fontSize={"18px"} fontWeight={700} lineHeight={"28px"}>
+            <Typography fontSize={"18px"} fontWeight={700} lineHeight={"28px"} sx={{ color: "black" }}>
               {props.title}
             </Typography>
-            <Typography fontSize={"13px"} fontWeight={500} lineHeight={"18px"}>
+            <Typography fontSize={"13px"} fontWeight={500} lineHeight={"18px"} sx={{ color: "black" }}>
               {props.content}
             </Typography>
           </Stack>

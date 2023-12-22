@@ -39,12 +39,13 @@ const NoteCreateComponent = (props: NoteCreateProps) => {
         fontSize={"18px"}
         fontWeight={700}
         lineHeight={"28px"}
+        sx={{ color: "black" }}
       >
         New Note
       </Typography>
       <Stack padding={"0px 24px 24px 24px"} direction="column" gap={3} height={"100%"}>
-        <TextField fullWidth label={"Title"} sx={{ borderRadius: 2 }} value={props.title} onChange={(e) => handleChangeTitle(e.target.value)} />
-        <TextField fullWidth label={"Content"} multiline rows={10} sx={{ borderRadius: 2 }} value={props.content} onChange={(e) => handleChangeContent(e.target.value)} />
+        <TextField fullWidth label={"Title"} sx={{ borderRadius: 2, color: "black"  }} value={props.title} onChange={(e) => handleChangeTitle(e.target.value)} />
+        <TextField fullWidth label={"Content"} multiline rows={10} sx={{ borderRadius: 2, color: "black"  }} value={props.content} onChange={(e) => handleChangeContent(e.target.value)} />
       </Stack>
       <Stack direction={"row"} justifyContent={"end"} padding={2} gap={2}>
         <Button
