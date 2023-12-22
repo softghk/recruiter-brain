@@ -5,10 +5,6 @@ import { ActionTypes } from "~src/types"
 
 export { }
 
-// Configuration for PlasmoCS
-// export const config: PlasmoCSConfig = {
-//   matches: ["https://www.linkedin.com/talent/hire/*"]
-// }
 
 // Inject components into the page
 injectComponents()
