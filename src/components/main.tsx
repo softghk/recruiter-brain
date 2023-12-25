@@ -18,6 +18,7 @@ import { waitForElement } from "~src/utils/wait-for.utils"
 import FabButton from "./common/fab-button.component"
 import LoadingComponent from "./common/loading.component"
 import Modal from "./common/modal.component"
+import { PopUp } from "./popUp/PopUp"
 import Login from "./sections/login.component"
 import NoteComponent from "./sections/note.component"
 
@@ -56,7 +57,7 @@ const Home = () => {
         open={extensionVisible}
         onClose={toggleModal}
         width={user && !isLoading ? 1200 : 400}
-      >
+        >
         {isLoading && <LoadingComponent />}
         {!userInfo.isAuth && !isLoading && <Login />}
         {userInfo.isAuth && !isLoading && <NoteComponent />}
@@ -71,6 +72,8 @@ const Home = () => {
         }}
         onClick={toggleModal}
       />
+      {/* {userInfo.isAuth && extensionVisible && !isLoading && <PopUp />} */}
+      <PopUp />
     </MinimalProvider>
   )
 }
