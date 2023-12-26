@@ -1,4 +1,4 @@
-import { Box, Button, Popover, Stack, Typography } from "@mui/material"
+import { Box, Popover, Typography } from "@mui/material"
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import React, { useEffect, useRef, useState } from "react"
 
@@ -23,6 +23,10 @@ interface PopUpViewProps {
   handleClickItem: (item: DataListType) => void
 }
 
+let isOpen = {
+  open: false
+}
+
 export default function PopUpView({
   anchorEl,
   handleClosePopup,
@@ -30,7 +34,6 @@ export default function PopUpView({
   handleClickItem
 }: PopUpViewProps) {
   const [dataList, setDataList] = useState<DataListType[]>([])
-  const [selId, setSelId] = useState("")
   const ref = useRef<HTMLDivElement>(null)
 
   const open = Boolean(anchorEl)
@@ -42,15 +45,14 @@ export default function PopUpView({
       orderBy("createdDate", "desc")
     )
     onSnapshot(q, (querySnapshot) => {
-      const docs = []
+      let docs = []
       querySnapshot.forEach(async (doc) => {
         const docItem = { ...doc.data() }
         docs.push({ ...docItem, id: doc.id })
       })
       setDataList(docs)
-      console.log("docs: ", docs)
     })
-  }, [selId])
+  }, [])
 
   const handleDocumentClick = (event: MouseEvent) => {
     if (anchorEl && !ref.current?.contains(event.target as Node)) {
@@ -61,9 +63,11 @@ export default function PopUpView({
   useEffect(() => {
     // Add event listener when the component mounts
     document.addEventListener("click", handleDocumentClick)
+    isOpen.open = false
 
     // Clean up the event listener when the component unmounts
     return () => {
+      isOpen.open = false
       document.removeEventListener("click", handleDocumentClick)
     }
   }, [anchorEl])
@@ -90,6 +94,13 @@ export default function PopUpView({
     ? getCaretCoordinates(anchorEl)
     : { top: 0, left: 0 }
 
+  const dataNewList = dataList.filter(
+    (item) =>
+      searchValue === "" ||
+      item.title.includes(searchValue) ||
+      item.content.includes(searchValue)
+  )
+
   return (
     <Popover
       id={id}
@@ -97,8 +108,10 @@ export default function PopUpView({
       anchorEl={anchorEl}
       onClose={handleClosePopup}
       onFocus={(e) => {
-        e.target.blur()
-        anchorEl.focus()
+        if (isOpen.open === false) {
+          anchorEl?.focus?.()
+          isOpen.open = true
+        }
       }}
       ref={ref}
       style={{
@@ -127,16 +140,24 @@ export default function PopUpView({
           gap: "12px",
           flexDirection: "column"
         }}>
-        {dataList.map((item, index) => (
+        {dataNewList.map((item, index) => (
           <Box
             style={{
               cursor: "pointer"
             }}
             onClick={() => handleClickItem(item)}
-            key={index}>
+            key={item.id}>
             <Typography>{item.title}</Typography>
           </Box>
         ))}
+        {dataNewList.length === 0 && (
+          <Typography
+            style={{
+              opacity: 0.7
+            }}>
+            There is no item
+          </Typography>
+        )}
       </div>
     </Popover>
   )
