@@ -33,12 +33,12 @@ export default function PopUpView({
   searchValue,
   handleClickItem
 }: PopUpViewProps) {
-  const [dataList, setDataList] = useState<DataListType[]>([])
   const ref = useRef<HTMLDivElement>(null)
-
+  
   const open = Boolean(anchorEl)
   const id = open ? "simple-popover" : undefined
-
+  
+  const [dataList, setDataList] = useState<DataListType[]>([])
   useEffect(() => {
     const q = query(
       collection(db, collectionName),
@@ -133,6 +133,22 @@ export default function PopUpView({
         vertical: "bottom",
         horizontal: "left"
       }}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="6"
+        viewBox="0 0 12 6"
+        style={{
+          
+        }}
+        fill="none">
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 0L4.58579 4.58579C5.36683 5.36683 6.63316 5.36684 7.41421 4.58579L12 0L0 0Z"
+          fill="black"
+        />
+      </svg>
       <div
         style={{
           outline: "unset !important",
@@ -140,6 +156,13 @@ export default function PopUpView({
           gap: "12px",
           flexDirection: "column"
         }}>
+        <Typography
+          style={{
+            color: "#B9B9B9"
+          }}>
+          {" "}
+          My Data Sets
+        </Typography>
         {dataNewList.map((item, index) => (
           <Box
             style={{
