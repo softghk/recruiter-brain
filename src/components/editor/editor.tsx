@@ -8,6 +8,7 @@ import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary"
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import {
   CLEAR_EDITOR_COMMAND,
   type EditorState,
@@ -17,6 +18,8 @@ import { useEffect, useLayoutEffect, useState } from "react"
 import { observer } from "rosma"
 
 import type { DataListType } from "~@minimal/sections/popup/view"
+import { collectionName } from "~src/firebase/firebaseApi"
+import { db } from "~src/firebase/firebaseClient"
 
 import { MentionNode } from "./MentionNode"
 import ComponentPickerMenuPlugin from "./picker"
@@ -24,9 +27,6 @@ import PopUpPlugin from "./plg"
 import { ClearEditorPlugin } from "./plugin/LexicalEditor"
 import { EmojiNode } from "./popup-editor"
 import PlaygroundEditorTheme from "./themes/PlaygroundEditorTheme"
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
-import { db } from "~src/firebase/firebaseClient"
-import { collectionName } from "~src/firebase/firebaseApi"
 
 // Lexical React plugins are React components, which makes them
 // highly composable. Furthermore, you can lazy load plugins if
@@ -125,14 +125,13 @@ function SubmitBtn({
 }
 
 export function Editor({
-  input,
-  // items
-}: {
+  input
+} // items
+: {
   input: HTMLTextAreaElement | HTMLInputElement
   items: DataListType[]
 }) {
-
-const [items, setItems] = useState([])
+  const [items, setItems] = useState([])
 
   useEffect(() => {
     const q = query(
@@ -205,16 +204,17 @@ const [items, setItems] = useState([])
       <RichTextPlugin
         contentEditable={<ContentEditable />}
         placeholder={
-          <span
+          <div
             style={{
               position: "absolute",
               left: "16px",
               top: "50%",
               transform: "translate(0, -50%)",
+              zIndex: 0,
               color: "#95959C"
             }}>
             {input.placeholder}
-          </span>
+          </div>
         }
         ErrorBoundary={LexicalErrorBoundary}
       />

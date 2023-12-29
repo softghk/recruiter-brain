@@ -181,11 +181,10 @@ export const PopUp = () => {
               // console.log("BUTTONS: ", popupInputs.buttonElement)
               const style = document.createElement("style")
               style.textContent =
-                `div#${id} > div {` + "  outline: unset;" + "}"
+                `div#${id} > div {` + "  outline: unset; position: relative; z-index:1;}"
               document.head.appendChild(style)
               const div = document.createElement("div")
               div.id = id
-              div.style.position = "relative"
               for (const style in input.style) {
                 div.style.setProperty(style, input.style[style])
               }
