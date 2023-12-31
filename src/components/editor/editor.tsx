@@ -167,7 +167,7 @@ export function Editor({
           }
           if (word.type === "emoji") {
             const foundedItem = items.find((item) =>
-              word.text.includes(item.title.replaceAll(" ", "_"))
+              word.text.includes(item.title)
             )
             if (foundedItem) {
               text = text + " " + foundedItem.content

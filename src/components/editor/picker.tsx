@@ -139,14 +139,8 @@ function getBaseOptions(editor: LexicalEditor, items: DataListType[]) {
           editor.update(() => {
             const selection = $getSelection()
             selection!.insertNodes([
-              $createEmojiNode(
-                item.title,
-                `/${item.title.replaceAll(" ", "_")}`
-              )
+              $createEmojiNode(item.title, `${item.title}`)
             ])
-            // if ($isRangeSelection(selection)) {
-            //   $setBlocksType(selection, () => $createParagraphNode());
-            // }
           })
       })
   )
@@ -196,12 +190,6 @@ export default function ComponentPickerMenuPlugin({
       editor.update(() => {
         nodeToRemove?.remove()
         selectedOption.onSelect(matchingString)
-        // const foundedItem = items.find((item) =>
-        //   selectedOption.title.includes(item.title.replaceAll(" ", "_"))
-        // )
-        // if (foundedItem && input) {
-        //   input.value = input.value + " " + foundedItem.content
-        // }
         closeMenu()
       })
     },
