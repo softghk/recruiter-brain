@@ -14,7 +14,13 @@ import {
 } from "@lexical/react/LexicalTypeaheadMenuPlugin"
 import { INSERT_TABLE_COMMAND } from "@lexical/table"
 import { Typography } from "@mui/material"
-import { $getSelection, TextNode, type LexicalEditor } from "lexical"
+import {
+  $getSelection,
+  $insertNodes,
+  TextNode,
+  type LexicalEditor,
+  $createTextNode
+} from "lexical"
 import { useCallback, useMemo, useState } from "react"
 import * as React from "react"
 import * as ReactDOM from "react-dom"
@@ -137,10 +143,7 @@ function getBaseOptions(editor: LexicalEditor, items: DataListType[]) {
         keywords: item.title.split(" "),
         onSelect: () =>
           editor.update(() => {
-            const selection = $getSelection()
-            selection!.insertNodes([
-              $createEmojiNode(item.title, `${item.title}`)
-            ])
+            $insertNodes([$createEmojiNode(item.title, `${item.title}`, items),  $createTextNode(' ')])
           })
       })
   )

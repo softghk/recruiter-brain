@@ -1,6 +1,6 @@
 import {
-  LexicalComposer,
-  type InitialEditorStateType
+  LexicalComposer
+  // type InitialEditorStateType
 } from "@lexical/react/LexicalComposer"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
@@ -76,32 +76,18 @@ function SubmitBtn({
     }
     const onKeyUp = (e: KeyboardEvent) => {
       editor.update(() => {
-        const root = editor.getEditorState().toJSON()
-        let text = ""
-        root.root.children.forEach((line) => {
-          // @ts-expect-error
-          line.children.forEach((word) => {
-            if (word.type === "text") {
-              text = text + " " + word.text
-            }
-            if (word.type === "emoji") {
-              const foundedItem = items.find((item) =>
-                word.text.includes(item.title.replaceAll(" ", "_"))
-              )
-              if (foundedItem) {
-                text = text + " " + foundedItem.content
-              }
-            }
-          })
-          text = text + "\n"
-        })
         const inputEvent = new Event("input", e)
         input.dispatchEvent(inputEvent)
-
+      })
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      editor.update(() => {
         if (e.key === "Enter") {
-          // if (form) {
-          //   // form?.submit()
-          // }
+          ;(
+            document.querySelector(
+              "[data-testid=send-button]"
+            ) as HTMLButtonElement
+          )?.click()
         }
       })
     }
@@ -113,9 +99,11 @@ function SubmitBtn({
       ) => {
         if (prevRootElement !== null) {
           prevRootElement.removeEventListener("keyup", onKeyUp)
+          prevRootElement.removeEventListener("keydown", onKeyDown)
         }
         if (rootElement !== null) {
           rootElement.addEventListener("keyup", onKeyUp)
+          rootElement.addEventListener("keydown", onKeyDown)
         }
       }
     )
@@ -126,8 +114,7 @@ function SubmitBtn({
 
 export function Editor({
   input
-} // items
-: {
+}: {
   input: HTMLTextAreaElement | HTMLInputElement
   items: DataListType[]
 }) {
@@ -145,7 +132,7 @@ export function Editor({
         docs.push({ ...docItem, id: doc.id })
       })
       setItems(docs)
-      console.log("OLDDocs: ", docs)
+      // console.log("OLDDocs: ", docs)
     })
   }, [])
   const loadContent = (editor: LexicalEditor) => {
@@ -207,7 +194,6 @@ export function Editor({
           <div
             style={{
               position: "absolute",
-              left: "16px",
               top: "50%",
               transform: "translate(0, -50%)",
               zIndex: 0,

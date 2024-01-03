@@ -24,7 +24,7 @@ export default function PopUpPlugin(): JSX.Element | null {
     return editor.registerCommand<string>(
       INSERT_TWEET_COMMAND,
       (payload) => {
-        const tweetNode = $createEmojiNode(payload, "")
+        const tweetNode = $createEmojiNode(payload, "", [])
         $insertNodeToNearestRoot(tweetNode)
 
         return true
