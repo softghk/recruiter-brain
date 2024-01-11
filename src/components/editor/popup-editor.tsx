@@ -101,9 +101,7 @@ export class EmojiNode extends TextNode {
     this.handleRemoveItem = this.handleRemoveItem.bind(this)
     this.handleEdit = this.handleEdit.bind(this)
     this.__menu = genMenu(__items)
-    // console.log(this.__menu)
     document.body.appendChild(this.__menu)
-    // console.log("lis", ...this.__menu.querySelectorAll("li"))
     ;[...this.__menu.querySelectorAll("li")].forEach((li) => {
       ;(li as HTMLLIElement).addEventListener("click", () => {
         this.__menu.style.display = "none"
@@ -112,6 +110,9 @@ export class EmojiNode extends TextNode {
           this.setTextContent(li.innerText.trim())
         })
       })
+    })
+    document.body.addEventListener("click", (e) => {
+      console.log("Body: ", e)
     })
   }
 

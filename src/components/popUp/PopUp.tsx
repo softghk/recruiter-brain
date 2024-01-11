@@ -12,7 +12,6 @@ interface PopUpInputTypes {
   searchValue: string
   listSelectedItems: DataListType[]
   listItems: DataListType[]
-  buttonElement: HTMLButtonElement | null
 }
 
 const popupInputs: PopUpInputTypes = {
@@ -20,10 +19,9 @@ const popupInputs: PopUpInputTypes = {
   inputList: [],
   searchValue: "",
   listSelectedItems: [],
-  listItems: [],
-  buttonElement: null
+  listItems: []
 }
-export const PopUp = () => {
+export const PopUp = ({ visible }: { visible: boolean }) => {
   const [items, setItems] = useState<DataListType[]>([])
   const initialInputs = async (list: DataListType[]) => {
     if (typeof window !== undefined) {
@@ -34,7 +32,9 @@ export const PopUp = () => {
         let div: HTMLDivElement | null
         if (
           isGpt4 &&
-          (div = document.getElementById("prompt-textarea_div_popup") as HTMLDivElement)
+          (div = document.getElementById(
+            "prompt-textarea_div_popup"
+          ) as HTMLDivElement)
         ) {
           div.style.paddingLeft = "55px"
         }
@@ -46,7 +46,11 @@ export const PopUp = () => {
           const listInputs = [...document.querySelectorAll("textarea")]
           listInputs.forEach(async (input) => {
             const id = input.id + "_div_popup"
-            if (
+            if (!visible) {
+              document.getElementById("prompt-textarea_div_popup")?.remove()
+              popupInputs.inputList = []
+              popupInputs.selectedInput = null
+            } else if (
               !popupInputs.inputList.includes(input) &&
               !document.getElementById(id)
             ) {
@@ -67,12 +71,11 @@ export const PopUp = () => {
               if (isGpt4) {
                 div.style.paddingLeft = "55px"
               }
-              div.style.maxHeight = input.style.height
+              div.style.minHeight = input.style.height
               div.style.height = "unset"
               input.parentElement.appendChild(div)
               input.style.display = "none"
 
-              // console.log("Initiating in ", isGpt4, div)
               ReactDOM.createRoot(div).render(
                 <Editor input={input} items={list} />
               )

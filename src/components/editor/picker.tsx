@@ -10,16 +10,19 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
-  useBasicTypeaheadTriggerMatch
+  PUNCTUATION,
+  // useBasicTypeaheadTriggerMatch,
+  type MenuTextMatch,
+  type TriggerFn
 } from "@lexical/react/LexicalTypeaheadMenuPlugin"
 import { INSERT_TABLE_COMMAND } from "@lexical/table"
 import { Typography } from "@mui/material"
 import {
+  $createTextNode,
   $getSelection,
   $insertNodes,
   TextNode,
-  type LexicalEditor,
-  $createTextNode
+  type LexicalEditor
 } from "lexical"
 import { useCallback, useMemo, useState } from "react"
 import * as React from "react"
@@ -132,10 +135,7 @@ function getDynamicOptions(editor: LexicalEditor, queryString: string) {
   return options
 }
 
-// type ShowModal = ReturnType<typeof useModal>[1];
-
 function getBaseOptions(editor: LexicalEditor, items: DataListType[]) {
-  console.log("ITEMS: ", items)
   return items.map(
     (item) =>
       new ComponentPickerOption(item.title, {
@@ -143,9 +143,47 @@ function getBaseOptions(editor: LexicalEditor, items: DataListType[]) {
         keywords: item.title.split(" "),
         onSelect: () =>
           editor.update(() => {
-            $insertNodes([$createEmojiNode(item.title, `${item.title}`, items),  $createTextNode(' ')])
+            $insertNodes([$createEmojiNode(item.title, `${item.title}`, items)])
           })
       })
+  )
+}
+
+function useBasicTypeaheadTriggerMatch(
+  trigger: string,
+  { minLength = 1, maxLength = 75 }: { minLength?: number; maxLength?: number }
+): TriggerFn {
+  return useCallback(
+    (text: string) => {
+      const validChars = "[^" + trigger + PUNCTUATION + "\\s]"
+      const TypeaheadTriggerRegex = new RegExp(
+        // "(^|\\s|\\()(" + //Remove the first space
+        "(" +
+          "[" +
+          trigger +
+          "]" +
+          "((?:" +
+          validChars +
+          "){0," +
+          maxLength +
+          "})" +
+          ")$"
+      )
+      const match = TypeaheadTriggerRegex.exec(text)
+      if (match !== null) {
+        const maybeLeadingWhitespace = match[0]
+        const matchingString = match[2]
+        if (matchingString.length >= minLength) {
+          return {
+            leadOffset: match.index + maybeLeadingWhitespace.length,
+            matchingString,
+            replaceableString: match[1]
+          }
+        }
+      }
+      return null
+    },
+    [maxLength, minLength, trigger]
   )
 }
 
@@ -157,7 +195,6 @@ export default function ComponentPickerMenuPlugin({
   input: HTMLTextAreaElement | HTMLInputElement
 }): JSX.Element {
   const [editor] = useLexicalComposerContext()
-  //   const [modal, showModal] = useModal();
   const [queryString, setQueryString] = useState<string | null>(null)
 
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", {

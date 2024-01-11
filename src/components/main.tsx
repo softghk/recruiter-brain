@@ -56,8 +56,7 @@ const Home = () => {
       <Modal
         open={extensionVisible}
         onClose={toggleModal}
-        width={user && !isLoading ? 1200 : 400}
-        >
+        width={user && !isLoading ? 1200 : 400}>
         {isLoading && <LoadingComponent />}
         {!userInfo.isAuth && !isLoading && <Login />}
         {userInfo.isAuth && !isLoading && <NoteComponent />}
@@ -73,7 +72,7 @@ const Home = () => {
         onClick={toggleModal}
       />
       {/* {userInfo.isAuth && extensionVisible && !isLoading && <PopUp />} */}
-      <PopUp />
+      {extensionEnabled && <PopUp visible={extensionEnabled} />}
     </MinimalProvider>
   )
 }

@@ -82,7 +82,7 @@ function SubmitBtn({
     }
     const onKeyDown = (e: KeyboardEvent) => {
       editor.update(() => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
           ;(
             document.querySelector(
               "[data-testid=send-button]"
