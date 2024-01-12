@@ -1,5 +1,8 @@
 import { LexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import type {
+  DOMConversionMap,
+  DOMConversionOutput,
+  DOMExportOutput,
   EditorConfig,
   LexicalEditor,
   LexicalNode,
@@ -7,20 +10,24 @@ import type {
   SerializedTextNode,
   Spread
 } from "lexical"
-import { TextNode } from "lexical"
+import { DecoratorNode, TextNode } from "lexical"
+import React, { Suspense } from "react"
 import { observer } from "rosma"
 
 import type { DataListType } from "~@minimal/sections/popup/view"
+
+const TextComponent = React.lazy(() => import("./plugin/TextComponent"))
 
 export type SerializedEmojiNode = Spread<
   {
     className: string
     type: "emoji"
+    items: DataListType[]
   },
   SerializedTextNode
 >
 
-const removeSvg = `<svg
+export const removeSvg = `<svg
       xmlns="http://www.w3.org/2000/svg"
       width="20"
       height="20"
@@ -36,7 +43,7 @@ const removeSvg = `<svg
       </g>
     </svg>`
 
-const editSvg = `<svg
+export const editSvg = `<svg
       xmlns="http://www.w3.org/2000/svg"
       width="20"
       height="20"
@@ -71,7 +78,18 @@ function genMenu(items: DataListType[]): HTMLDivElement {
   return div
 }
 
+function convertEmojiElement(domNode: HTMLElement): DOMConversionOutput | null {
+  const items = domNode.getAttribute("data-lexical-emoji-items")
+  const text = domNode.getAttribute("data-lexical-emoji-text")
+  if (items !== null && text !== null) {
+    const node = $createEmojiNode(text, text, JSON.parse(items))
+    return { node }
+  }
+  return null
+}
+
 export class EmojiNode extends TextNode {
+  // export class EmojiNode extends DecoratorNode<JSX.Element> {
   __className: string
   __chip!: HTMLSpanElement
   __menu!: HTMLDivElement
@@ -107,12 +125,23 @@ export class EmojiNode extends TextNode {
         this.__menu.style.display = "none"
         const editor: LexicalEditor = observer.get("editor")
         editor.update(() => {
-          this.setTextContent(li.innerText.trim())
+          const tex = li.innerText.trim()
+          this.setTextContent(tex)
+          this.replace(new EmojiNode(tex, `${tex}`, __items))
         })
       })
     })
     document.body.addEventListener("click", (e) => {
-      console.log("Body: ", e)
+      if (this.__menu.style.display === "block") {
+        if (
+          // @ts-ignore
+          !this.__menu.contains(e.target) &&
+          // @ts-ignore
+          !this.__chip.contains(e.target)
+        ) {
+          this.__menu.style.display = "none"
+        }
+      }
     })
   }
 
@@ -120,6 +149,7 @@ export class EmojiNode extends TextNode {
     const editor: LexicalEditor = observer.get("editor")
     editor.update(() => {
       this.remove()
+      this.__menu.style.display = "none"
     })
   }
 
@@ -134,7 +164,34 @@ export class EmojiNode extends TextNode {
     // console.table([cbr, mbr])
   }
 
+  static importDOM(): DOMConversionMap | null {
+    return {
+      span: (domNode: HTMLElement) => {
+        if (!domNode.hasAttribute("data-lexical-emoji-text")) {
+          return null
+        }
+        return {
+          conversion: convertEmojiElement,
+          priority: 2
+        }
+      }
+    }
+  }
+
+  exportDOM(): DOMExportOutput {
+    const element = document.createElement("span")
+    element.setAttribute("data-lexical-emoji-text", this.__text)
+    element.setAttribute(
+      "data-lexical-emoji-items",
+      JSON.stringify(this.__items)
+    )
+    return { element }
+  }
+
   createDOM(config: EditorConfig): HTMLElement {
+    const elem = document.createElement("span")
+    elem.style.display = "inline-block"
+    return elem
     const dom = document.createElement("span")
     const inner = super.createDOM(config)
     dom.className = this.__className
@@ -150,6 +207,14 @@ export class EmojiNode extends TextNode {
     dom.style.display = "inline-flex"
     dom.style.alignItems = "center"
 
+    // dom.addEventListener("mousedown", (e) => {
+    //   console.log("e: ", "clicked ", e)
+    //   // @ts-ignore
+    //   // e.preventDefault()
+    //   // e.stopPropagation()
+    //   return false
+
+    // })
     dom.appendChild(inner)
 
     const spanElement = document.createElement("span")
@@ -170,35 +235,44 @@ export class EmojiNode extends TextNode {
     spanElement.appendChild(buttonRemove)
     dom.appendChild(spanElement)
     this.__chip = dom
+    dom.contentEditable = "false"
+    // dom.focus()
+    dom.setAttribute("data-lexical-decorator", "true")
+
+    // dom.style.display = "inline-block"
     return dom
   }
 
-  updateDOM(
-    prevNode: TextNode,
-    dom: HTMLElement,
-    config: EditorConfig
-  ): boolean {
-    const inner = dom.firstChild
-    if (inner === null) {
-      return true
-    }
-    super.updateDOM(prevNode, inner as HTMLElement, config)
+  updateDOM() // prevNode: TextNode,
+  // dom: HTMLElement,
+  // config: EditorConfig
+  : boolean {
+    // const inner = dom.firstChild
+    // if (inner === null) {
+    //   return true
+    // }
+    // super.updateDOM(prevNode, inner as HTMLElement, config)
     return false
   }
 
-  //static importJSON(serializedNode: SerializedEmojiNode): EmojiNode {
-  //  const node = $createEmojiNode(serializedNode.className, serializedNode.text)
-  //  node.setFormat(serializedNode.format)
-  //  node.setDetail(serializedNode.detail)
-  //  node.setMode(serializedNode.mode)
-  //  node.setStyle(serializedNode.style)
-  //  return node
-  //}
+  static importJSON(serializedNode: SerializedEmojiNode): EmojiNode {
+    const node = $createEmojiNode(
+      serializedNode.className,
+      serializedNode.text,
+      serializedNode.items
+    )
+    node.setFormat(serializedNode.format)
+    node.setDetail(serializedNode.detail)
+    node.setMode(serializedNode.mode)
+    node.setStyle(serializedNode.style)
+    return node
+  }
 
   exportJSON(): SerializedEmojiNode {
     return {
       ...super.exportJSON(),
       className: this.getClassName(),
+      items: this.__items,
       type: "emoji"
     }
   }
@@ -206,6 +280,18 @@ export class EmojiNode extends TextNode {
   getClassName(): string {
     const self = this.getLatest()
     return self.__className
+  }
+
+  decorate(): JSX.Element {
+    return (
+      <Suspense fallback={null}>
+        <TextComponent
+          className={this.__className}
+          nodeKey={this.__key}
+          text={this.__text}
+        />
+      </Suspense>
+    )
   }
 }
 

@@ -16,11 +16,15 @@ import {
   type TriggerFn
 } from "@lexical/react/LexicalTypeaheadMenuPlugin"
 import { INSERT_TABLE_COMMAND } from "@lexical/table"
+import { $wrapNodeInElement } from "@lexical/utils"
 import { Typography } from "@mui/material"
 import {
+  $createParagraphNode,
   $createTextNode,
   $getSelection,
   $insertNodes,
+  $isRootOrShadowRoot,
+  $setSelection,
   TextNode,
   type LexicalEditor
 } from "lexical"
@@ -30,6 +34,7 @@ import * as ReactDOM from "react-dom"
 
 import type { DataListType } from "~@minimal/sections/popup/view"
 
+import { INSERT_EMOJI_COMMAND, INSERT_POLL_COMMAND } from "./plugin/EmojiPlugin"
 import { $createEmojiNode } from "./popup-editor"
 
 // import useModal from '../../hooks/useModal';
@@ -141,10 +146,42 @@ function getBaseOptions(editor: LexicalEditor, items: DataListType[]) {
       new ComponentPickerOption(item.title, {
         icon: <i className="icon paragraph" />,
         keywords: item.title.split(" "),
-        onSelect: () =>
-          editor.update(() => {
-            $insertNodes([$createEmojiNode(item.title, `${item.title}`, items)])
+        onSelect: () => {
+          editor.update(async () => {
+            editor.dispatchCommand(INSERT_POLL_COMMAND, {
+              items,
+              text: item.title
+            })
+            // editor.dispatchCommand(INSERT_EMOJI_COMMAND, {
+            //   items,
+            //   text: item.title
+            // })
+            //   const emojiNode = $createEmojiNode(
+            //     item.title,
+            //     `${item.title}`,
+            //     items
+            //   )
+            //   await $insertNodes([emojiNode])
+            //   const divElement = document.getElementById(
+            //     "prompt-textarea_div_popup"
+            //   )
+            //   const elementEmoji = emojiNode.__chip
+            //   console.log("DIVE LEEMENT: ", divElement, emojiNode)
+            //   if (elementEmoji) {
+            //     // elementEmoji?.focus()
+            //     // document.execCommand("selectAll", false, null)
+            //     // document.getSelection().collapseToEnd()
+            //     let sel = window.getSelection()
+            //     sel.selectAllChildren(elementEmoji)
+            //     sel.collapseToEnd()
+            //   }
+
+            //   // console.log("HERE SELECTED ", )
+            //   // emojiNode.selectEnd()
+            //   // $wrapNodeInElement(emojiNode, $createParagraphNode).selectEnd()
+            //   // $setSelection($getSelection())
           })
+        }
       })
   )
 }

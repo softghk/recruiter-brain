@@ -24,7 +24,9 @@ import { db } from "~src/firebase/firebaseClient"
 import { MentionNode } from "./MentionNode"
 import ComponentPickerMenuPlugin from "./picker"
 import PopUpPlugin from "./plg"
+import { EmojiPlugin } from "./plugin/EmojiPlugin"
 import { ClearEditorPlugin } from "./plugin/LexicalEditor"
+import { PollNode } from "./PollNode"
 import { EmojiNode } from "./popup-editor"
 import PlaygroundEditorTheme from "./themes/PlaygroundEditorTheme"
 
@@ -132,7 +134,6 @@ export function Editor({
         docs.push({ ...docItem, id: doc.id })
       })
       setItems(docs)
-      // console.log("OLDDocs: ", docs)
     })
   }, [])
   const loadContent = (editor: LexicalEditor) => {
@@ -140,28 +141,28 @@ export function Editor({
   }
 
   const onChangeEditor = (editorState: EditorState, editor: LexicalEditor) => {
-    editor.registerTextContentListener((text) => {
-      // console.log("TEXT: ", text)
-    })
+    editor.registerTextContentListener((text) => {})
     editor.update(() => {
       const root = editorState.toJSON()
       let text = ""
-      root.root.children.forEach((line) => {
+      root.root.children.forEach((line, index) => {
         // @ts-expect-error
         line.children.forEach((word) => {
           if (word.type === "text") {
-            text = text + " " + word.text
+            text = `${text} ${word.text}`
           }
-          if (word.type === "emoji") {
+          if (word.type === "poll") {
             const foundedItem = items.find((item) =>
               word.text.includes(item.title)
             )
             if (foundedItem) {
-              text = text + " " + foundedItem.content
+              text = `${text}${foundedItem.content}`
             }
           }
+          if (word.type === "linebreak") {
+            text = `${text} \n`
+          }
         })
-        text = text + "\n"
       })
       const keyPressEvent = new KeyboardEvent("keypress")
       const keydownEvent = new KeyboardEvent("keydown")
@@ -183,7 +184,7 @@ export function Editor({
     namespace: "MyEditor",
     theme: PlaygroundEditorTheme,
     onError,
-    nodes: [EmojiNode, MentionNode],
+    nodes: [EmojiNode, MentionNode, PollNode],
     editorState: loadContent
   }
   return (
@@ -209,6 +210,7 @@ export function Editor({
       <MyCustomAutoFocusPlugin />
       <OnChangePlugin onChange={onChangeEditor} />
       <ClearEditorPlugin />
+      <EmojiPlugin />
       <ComponentPickerMenuPlugin input={input} items={items} />
       <SubmitBtn input={input} items={items} />
     </LexicalComposer>
